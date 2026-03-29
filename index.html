@@ -66,7 +66,7 @@
   </div>
 </header>
 <main class="flex-grow pt-24 pb-32 px-6 max-w-2xl mx-auto w-full space-y-10">
-  <div class="flex flex-col items-start space-y-4">
+  <div id="chat-messages" class="flex flex-col items-start space-y-4">
     <div class="max-w-[85%] glass-card p-5 rounded-2xl rounded-tl-none border border-outline-variant/10">
       <p class="text-on-surface leading-relaxed">Good morning, Brooke. You have a thermo problem set due Monday and an M Racing meeting today. Before we plan — how are you feeling?</p>
     </div>
@@ -199,7 +199,7 @@
   const chatHistory = [];
 
   function appendMessage(role, text) {
-    const container = document.querySelector('main .flex.flex-col.items-start.space-y-4');
+    const container = document.getElementById('chat-messages');
     const isUser = role === 'user';
     const div = document.createElement('div');
     div.className = `flex flex-col items-${isUser ? 'end' : 'start'} space-y-2 w-full`;
