@@ -177,8 +177,16 @@
     return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
   }
 
+  const today = new Date();
+  let selectedDate = today;
+
+  function selectDay(date) {
+    selectedDate = date;
+    renderWeekGrid();
+    renderSchedule();
+  }
+
   function renderWeekGrid() {
-    const today = new Date();
     const dayOfWeek = today.getDay();
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - dayOfWeek);
@@ -186,7 +194,7 @@
     document.getElementById('month-year').textContent = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     document.getElementById('week-num').textContent = `WEEK ${getISOWeek(today)}`;
     document.getElementById('schedule-heading').textContent =
-      `${today.toLocaleDateString('en-US', { weekday: 'long' })}'s Schedule`;
+      `${selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}'s Schedule`;
 
     const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const grid = document.getElementById('week-grid');
@@ -196,20 +204,24 @@
       const d = new Date(weekStart);
       d.setDate(weekStart.getDate() + i);
       const isToday = d.toDateString() === today.toDateString();
+      const isSelected = d.toDateString() === selectedDate.toDateString();
 
       const div = document.createElement('div');
-      div.className = isToday
-        ? 'flex flex-col items-center p-3 rounded-2xl bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(240,96,122,0.3)] scale-105 cursor-pointer'
-        : 'flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer';
+      div.className = isSelected
+        ? 'flex flex-col items-center p-3 rounded-2xl bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(240,96,122,0.3)] scale-105 cursor-pointer transition-all'
+        : 'flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-all cursor-pointer';
 
-      const labelClass = isToday ? 'font-bold' : 'text-on-surface-variant font-bold';
-      const dotColor = isToday ? 'bg-on-primary-container opacity-60' : 'bg-surface-container-highest';
+      const labelClass = isSelected ? 'font-bold' : 'text-on-surface-variant font-bold';
+      const dotColor = isSelected ? '#5b001c' : (isToday ? '#F0607A' : '#373437');
 
       div.innerHTML = `
         <span class="text-[10px] uppercase tracking-[0.15rem] ${labelClass} mb-2">${DAY_NAMES[i]}</span>
         <span class="text-lg font-bold mb-3">${d.getDate()}</span>
-        <div class="w-1 h-1 rounded-full ${dotColor}"></div>
+        <div class="w-1 h-1 rounded-full" style="background-color:${dotColor}"></div>
       `;
+
+      const captured = new Date(d);
+      div.addEventListener('click', () => selectDay(captured));
       grid.appendChild(div);
     }
   }
@@ -234,11 +246,25 @@
     ).join('');
   }
 
-  // --- Schedule (from localStorage) ---
+  // --- Schedule (from localStorage, keyed by date) ---
+  function dateKey(date) {
+    return date.toISOString().split('T')[0];
+  }
+
   function renderSchedule() {
-    const schedule = JSON.parse(localStorage.getItem('noa_schedule') || 'null');
+    const key = `noa_schedule_${dateKey(selectedDate)}`;
+    const schedule = JSON.parse(localStorage.getItem(key) || 'null');
     const list = document.getElementById('schedule-list');
-    if (!schedule || !Array.isArray(schedule) || schedule.length === 0) return;
+    const isToday = selectedDate.toDateString() === today.toDateString();
+
+    if (!schedule || !Array.isArray(schedule) || schedule.length === 0) {
+      list.innerHTML = `<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/10 text-sm text-on-surface-variant">
+        ${isToday
+          ? 'Tell Noa your schedule on the Today tab and she\'ll show it here.'
+          : 'No schedule set for this day yet.'}
+      </div>`;
+      return;
+    }
 
     list.innerHTML = schedule.map(item => {
       const color = (COLOR_MAP[item.color] || COLOR_MAP.blue).hex;

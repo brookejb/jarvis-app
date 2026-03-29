@@ -257,7 +257,10 @@
         if (a.type === 'set_priorities') {
           setPriorities(a.items);
         } else if (a.type === 'set_schedule') {
-          try { localStorage.setItem('noa_schedule', JSON.stringify(a.items)); } catch (e) {}
+          try {
+            const key = `noa_schedule_${new Date().toISOString().split('T')[0]}`;
+            localStorage.setItem(key, JSON.stringify(a.items));
+          } catch (e) {}
         } else if (a.type === 'update_rituals') {
           try {
             const current = JSON.parse(localStorage.getItem('noa_rituals') || '{}');
