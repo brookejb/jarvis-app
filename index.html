@@ -111,40 +111,6 @@
       </div>
     </div>
   </div>
-  <!-- Canvas: Upcoming Assignments -->
-  <div class="w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-4" id="canvas-assignments-card">
-    <div class="flex justify-between items-center">
-      <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Upcoming from Canvas</h3>
-      <span id="canvas-status" class="text-[9px] uppercase font-bold tracking-widest text-on-surface-variant/50">Loading...</span>
-    </div>
-    <div id="canvas-assignments-list" class="space-y-3">
-      <div class="h-8 bg-surface-container-highest/40 rounded-lg animate-pulse"></div>
-      <div class="h-8 bg-surface-container-highest/40 rounded-lg animate-pulse"></div>
-      <div class="h-8 bg-surface-container-highest/40 rounded-lg animate-pulse"></div>
-    </div>
-  </div>
-
-  <!-- Canvas: Grades -->
-  <div class="w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-4" id="canvas-grades-card">
-    <div class="flex justify-between items-center">
-      <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Current Grades</h3>
-    </div>
-    <div id="canvas-grades-list" class="space-y-3">
-      <div class="h-8 bg-surface-container-highest/40 rounded-lg animate-pulse"></div>
-      <div class="h-8 bg-surface-container-highest/40 rounded-lg animate-pulse"></div>
-    </div>
-  </div>
-
-  <!-- Canvas: Announcements -->
-  <div class="w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-4" id="canvas-announcements-card">
-    <div class="flex justify-between items-center">
-      <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Announcements</h3>
-    </div>
-    <div id="canvas-announcements-list" class="space-y-3">
-      <div class="h-8 bg-surface-container-highest/40 rounded-lg animate-pulse"></div>
-    </div>
-  </div>
-
   <div class="flex flex-col items-start space-y-6">
     <div class="max-w-[85%] glass-card p-5 rounded-2xl rounded-tl-none border border-outline-variant/10">
       <p class="text-on-surface leading-relaxed">Your morning routine is the first step. Ready?</p>
@@ -256,77 +222,6 @@
   chatInput.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   });
-
-  async function loadCanvasData() {
-    try {
-      const res = await fetch('/api/canvas');
-      const data = await res.json();
-
-      if (data.error) {
-        document.getElementById('canvas-status').textContent = 'Unavailable';
-        return;
-      }
-
-      document.getElementById('canvas-status').textContent = 'Live';
-
-      // Render assignments
-      const assignmentsList = document.getElementById('canvas-assignments-list');
-      if (data.assignments && data.assignments.length > 0) {
-        assignmentsList.innerHTML = data.assignments.slice(0, 5).map(a => {
-          const due = a.due_at ? new Date(a.due_at) : null;
-          const dueStr = due ? due.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'No due date';
-          const daysUntil = due ? Math.ceil((due - Date.now()) / 86400000) : null;
-          const urgencyColor = daysUntil !== null && daysUntil <= 1 ? '#f0607a' : daysUntil <= 3 ? '#E87D4A' : '#5092eb';
-          return `
-            <div class="flex items-center gap-3">
-              <div class="w-1.5 h-8 rounded-full flex-shrink-0" style="background:${urgencyColor}"></div>
-              <div class="flex-grow min-w-0">
-                <p class="text-sm font-medium text-on-surface truncate">${a.name}</p>
-                <p class="text-[10px] text-on-surface-variant">${a.course_name} &middot; ${dueStr}</p>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } else {
-        assignmentsList.innerHTML = '<p class="text-sm text-on-surface-variant">No upcoming assignments.</p>';
-      }
-
-      // Render grades
-      const gradesList = document.getElementById('canvas-grades-list');
-      if (data.grades && data.grades.length > 0) {
-        gradesList.innerHTML = data.grades.filter(g => g.score !== null).map(g => {
-          const scoreColor = g.score >= 90 ? '#7DD4B0' : g.score >= 80 ? '#5092eb' : g.score >= 70 ? '#E87D4A' : '#f0607a';
-          return `
-            <div class="flex items-center justify-between">
-              <p class="text-sm font-medium text-on-surface truncate max-w-[70%]">${g.name}</p>
-              <span class="text-sm font-bold" style="color:${scoreColor}">${g.grade || Math.round(g.score) + '%'}</span>
-            </div>
-          `;
-        }).join('');
-        if (gradesList.innerHTML === '') {
-          gradesList.innerHTML = '<p class="text-sm text-on-surface-variant">Grades not available yet.</p>';
-        }
-      }
-
-      // Render announcements
-      const announcementsList = document.getElementById('canvas-announcements-list');
-      if (data.announcements && data.announcements.length > 0) {
-        announcementsList.innerHTML = data.announcements.slice(0, 3).map(a => `
-          <div class="space-y-1">
-            <p class="text-sm font-medium text-on-surface">${a.title}</p>
-            <p class="text-[10px] text-on-surface-variant">${a.context_name || ''}</p>
-          </div>
-        `).join('<div class="h-[1px] bg-outline-variant/10"></div>');
-      } else {
-        announcementsList.innerHTML = '<p class="text-sm text-on-surface-variant">No recent announcements.</p>';
-      }
-
-    } catch (err) {
-      document.getElementById('canvas-status').textContent = 'Offline';
-    }
-  }
-
-  loadCanvasData();
 </script>
 </body>
 </html>
