@@ -254,23 +254,51 @@
     }
   }
 
-  // --- Rituals (from localStorage) ---
+  // --- Rituals (computed from noa_habit_log, same source as daily checklist) ---
   function renderRituals() {
-    const rituals = JSON.parse(localStorage.getItem('noa_rituals') || 'null');
-    const bibleCount = rituals?.bible ?? 0;
-    const gymCount = rituals?.gym ?? 0;
+    const log = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
+
+    // Get this week's Sunday-Saturday range
+    const dayOfWeek = today.getDay();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - dayOfWeek);
+    weekStart.setHours(0, 0, 0, 0);
+
+    // Build per-day booleans for the week (Sun=0 through Sat=6)
+    const bibleDays = [];
+    const gymDays = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      const key = d.toISOString().split('T')[0];
+      bibleDays.push(!!log[key]?.bible);
+      gymDays.push(!!log[key]?.gym);
+    }
+
+    // Gym: Mon-Fri only (indices 1-5), max 5
+    const gymWeekDays = gymDays.slice(1, 6);
+    const bibleCount = bibleDays.filter(Boolean).length;
+    const gymCount = gymWeekDays.filter(Boolean).length;
 
     document.getElementById('bible-count').textContent = `${bibleCount}/7`;
     document.getElementById('gym-count').textContent = `${gymCount}/5`;
 
-    const bibleDots = document.getElementById('bible-dots');
-    bibleDots.innerHTML = Array.from({ length: 7 }, (_, i) =>
-      `<div class="w-3 h-3 rounded-full" style="background-color: ${i < bibleCount ? '#d2bbff' : '#373437'}"></div>`
+    // Bible dots: one per day of week, lit if done
+    const DAY_ABBR = ['S','M','T','W','T','F','S'];
+    document.getElementById('bible-dots').innerHTML = bibleDays.map((done, i) => `
+      <div class="flex flex-col items-center gap-1">
+        <div class="w-3 h-3 rounded-full" style="background-color:${done ? '#d2bbff' : '#373437'}"></div>
+        <span class="text-[8px] font-bold" style="color:${done ? '#d2bbff' : '#584143'}">${DAY_ABBR[i]}</span>
+      </div>`
     ).join('');
 
-    const gymDots = document.getElementById('gym-dots');
-    gymDots.innerHTML = Array.from({ length: 5 }, (_, i) =>
-      `<div class="w-3 h-3 rounded-full" style="background-color: ${i < gymCount ? '#7DD4B0' : '#373437'}"></div>`
+    // Gym dots: Mon-Fri only
+    const GYM_ABBR = ['M','T','W','T','F'];
+    document.getElementById('gym-dots').innerHTML = gymWeekDays.map((done, i) => `
+      <div class="flex flex-col items-center gap-1">
+        <div class="w-3 h-3 rounded-full" style="background-color:${done ? '#7DD4B0' : '#373437'}"></div>
+        <span class="text-[8px] font-bold" style="color:${done ? '#7DD4B0' : '#584143'}">${GYM_ABBR[i]}</span>
+      </div>`
     ).join('');
   }
 
