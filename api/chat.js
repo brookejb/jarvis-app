@@ -52,8 +52,8 @@ Set today's schedule (when Brooke tells you what her day looks like):
 [ACTION]{"type":"set_schedule","items":[{"time":"9:00 AM","title":"Event name","note":"optional note","color":"blue"}]}[/ACTION]
 
 Update ritual streaks (when Brooke logs a completed habit - Bible reading or gym):
-[ACTION]{"type":"update_rituals","bible":5,"gym":3}[/ACTION]
-Use the numbers she gives you, or increment by 1 from what you know.
+[ACTION]{"type":"update_rituals","bible":5,"gym":3,"bible_today":true,"gym_today":false}[/ACTION]
+bible and gym are the current week totals (0-7 and 0-5). bible_today and gym_today are booleans for whether she did each one today. Include all four fields.
 
 Update semester goal progress (when Brooke reports a grade, finishes an assignment, or asks to update a goal):
 [ACTION]{"type":"set_goal_progress","goals":[{"title":"Thermodynamics","desc":"B+ or better - building toward the engineer who understands the full system.","progress":80,"color":"#5092eb"}]}[/ACTION]
@@ -142,8 +142,13 @@ export default async function handler(req, res) {
     if (actionMatch) {
       try {
         const parsed = JSON.parse(actionMatch[1]);
-        if (parsed.type && parsed.items) {
+        if (parsed.type) {
           actions = parsed;
+          // Persist schedule to Redis so it survives page refreshes
+          if (parsed.type === 'set_schedule' && Array.isArray(parsed.items)) {
+            const today = new Date().toISOString().split('T')[0];
+            await kv.set(`noa_schedule_${today}`, parsed.items);
+          }
         }
       } catch (e) {
         // Action parse failed - not critical

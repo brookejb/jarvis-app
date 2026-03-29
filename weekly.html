@@ -183,7 +183,7 @@
   function selectDay(date) {
     selectedDate = date;
     renderWeekGrid();
-    renderSchedule();
+    loadWeeklyData();
   }
 
   function renderWeekGrid() {
@@ -246,22 +246,17 @@
     ).join('');
   }
 
-  // --- Schedule (from localStorage, keyed by date) ---
   function dateKey(date) {
     return date.toISOString().split('T')[0];
   }
 
-  function renderSchedule() {
-    const key = `noa_schedule_${dateKey(selectedDate)}`;
-    const schedule = JSON.parse(localStorage.getItem(key) || 'null');
+  function renderSchedule(schedule) {
     const list = document.getElementById('schedule-list');
     const isToday = selectedDate.toDateString() === today.toDateString();
 
-    if (!schedule || !Array.isArray(schedule) || schedule.length === 0) {
+    if (!schedule || schedule.length === 0) {
       list.innerHTML = `<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/10 text-sm text-on-surface-variant">
-        ${isToday
-          ? 'Tell Noa your schedule on the Today tab and she\'ll show it here.'
-          : 'No schedule set for this day yet.'}
+        ${isToday ? 'Tell Noa your schedule on the Today tab and she\'ll show it here.' : 'No schedule set for this day.'}
       </div>`;
       return;
     }
@@ -280,11 +275,12 @@
     }).join('');
   }
 
-  // --- Weekly Insight + Deadlines from API ---
+  // --- Weekly Insight + Deadlines + Schedule from API ---
   async function loadWeeklyData() {
     try {
-      const res = await fetch('/api/weekly');
+      const res = await fetch(`/api/weekly?date=${dateKey(selectedDate)}`);
       const data = await res.json();
+      renderSchedule(data.schedule || []);
 
       const insightEl = document.getElementById('weekly-insight');
       const detailEl = document.getElementById('weekly-detail');
@@ -331,7 +327,6 @@
 
   renderWeekGrid();
   renderRituals();
-  renderSchedule();
   loadWeeklyData();
 </script>
 </body>

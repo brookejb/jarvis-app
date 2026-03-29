@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Noa — Metrics</title>
+<title>Noa -- Metrics</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -47,7 +47,7 @@
 <nav class="bg-transparent top-0 z-50">
   <div class="flex justify-between items-center w-full px-6 py-4 max-w-screen-xl mx-auto">
     <div class="flex items-center gap-3">
-      <span class="material-symbols-outlined text-[#F0607A] text-2xl">radio_button_checked</span>
+      <span class="material-symbols-outlined text-[#F0607A] text-2xl" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span>
       <span class="text-xl font-bold text-[#e7e1e5] tracking-tighter">Noa</span>
     </div>
   </div>
@@ -58,46 +58,43 @@
     <h1 class="text-5xl font-extrabold tracking-tighter text-on-surface">Metrics</h1>
     <p class="text-on-surface-variant mt-2 text-lg">Your patterns, honestly.</p>
   </header>
+
+  <!-- Stat Cards -->
   <section class="mb-12">
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
         <span class="uppercase tracking-[0.15rem] text-[9px] font-bold text-on-surface-variant block mb-4">Gym Sessions</span>
-        <div class="text-4xl font-bold tracking-tight text-[#7DD4B0]">32</div>
-        <div class="text-[10px] text-on-surface-variant mt-1">this semester</div>
+        <div id="stat-gym" class="text-4xl font-bold tracking-tight text-[#7DD4B0]">0</div>
+        <div class="text-[10px] text-on-surface-variant mt-1">total logged</div>
       </div>
       <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
         <span class="uppercase tracking-[0.15rem] text-[9px] font-bold text-on-surface-variant block mb-4">Bible Days</span>
-        <div class="text-4xl font-bold tracking-tight text-secondary">48</div>
-        <div class="text-[10px] text-on-surface-variant mt-1">this semester</div>
+        <div id="stat-bible" class="text-4xl font-bold tracking-tight text-secondary">0</div>
+        <div class="text-[10px] text-on-surface-variant mt-1">total logged</div>
       </div>
       <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
-        <span class="uppercase tracking-[0.15rem] text-[9px] font-bold text-on-surface-variant block mb-4">Peak Focus</span>
-        <div class="text-4xl font-bold tracking-tight text-on-surface">11PM</div>
-        <div class="text-[10px] text-on-surface-variant mt-1">nocturnal peak</div>
+        <span class="uppercase tracking-[0.15rem] text-[9px] font-bold text-on-surface-variant block mb-4">Current Streak</span>
+        <div id="stat-streak" class="text-4xl font-bold tracking-tight text-on-surface">0</div>
+        <div class="text-[10px] text-on-surface-variant mt-1">days in a row</div>
       </div>
       <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
         <span class="uppercase tracking-[0.15rem] text-[9px] font-bold text-on-surface-variant block mb-4">Consistency</span>
-        <div class="text-4xl font-bold tracking-tight text-primary-container">82%</div>
-        <div class="text-[10px] text-on-surface-variant mt-1">weekly habits hit</div>
+        <div id="stat-consistency" class="text-4xl font-bold tracking-tight text-primary-container">-</div>
+        <div class="text-[10px] text-on-surface-variant mt-1">habits hit</div>
       </div>
     </div>
   </section>
+
+  <!-- Bar Charts -->
   <section class="grid md:grid-cols-2 gap-8 mb-12">
     <div class="bg-surface-container-low p-8 rounded-2xl relative overflow-hidden group">
       <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
         <span class="material-symbols-outlined text-8xl text-secondary">auto_stories</span>
       </div>
       <div class="relative z-10">
-        <span class="uppercase tracking-[0.15rem] text-[10px] font-bold text-secondary mb-6 block">Bible Reading — Past 4 Weeks</span>
-        <div class="flex items-end gap-3 h-40 mb-4">
-          <div class="flex-1 bg-secondary/40 rounded-t-sm h-[60%]"></div>
-          <div class="flex-1 bg-secondary/60 rounded-t-sm h-[70%]"></div>
-          <div class="flex-1 bg-secondary/30 rounded-t-sm h-[40%]"></div>
-          <div class="flex-1 bg-secondary rounded-t-sm h-[85%]"></div>
-        </div>
-        <div class="flex justify-between text-[10px] text-on-surface-variant font-bold tracking-widest uppercase">
-          <span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span>
-        </div>
+        <span class="uppercase tracking-[0.15rem] text-[10px] font-bold text-secondary mb-6 block">Bible Reading - Past 4 Weeks</span>
+        <div id="bible-chart" class="flex items-end gap-3 h-40 mb-4"></div>
+        <div id="bible-chart-labels" class="flex justify-between text-[10px] text-on-surface-variant font-bold tracking-widest uppercase"></div>
       </div>
     </div>
     <div class="bg-surface-container-low p-8 rounded-2xl relative overflow-hidden group">
@@ -105,47 +102,38 @@
         <span class="material-symbols-outlined text-8xl text-[#7DD4B0]">fitness_center</span>
       </div>
       <div class="relative z-10">
-        <span class="uppercase tracking-[0.15rem] text-[10px] font-bold text-[#7DD4B0] mb-6 block">Gym — Past 4 Weeks</span>
-        <div class="flex items-end gap-3 h-40 mb-4">
-          <div class="flex-1 bg-[#7DD4B0]/60 rounded-t-sm h-[70%]"></div>
-          <div class="flex-1 bg-[#7DD4B0]/30 rounded-t-sm h-[40%]"></div>
-          <div class="flex-1 bg-[#7DD4B0]/80 rounded-t-sm h-[85%]"></div>
-          <div class="flex-1 bg-[#7DD4B0]/50 rounded-t-sm h-[60%]"></div>
-        </div>
-        <div class="flex justify-between text-[10px] text-on-surface-variant font-bold tracking-widest uppercase">
-          <span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span>
-        </div>
+        <span class="uppercase tracking-[0.15rem] text-[10px] font-bold text-[#7DD4B0] mb-6 block">Gym - Past 4 Weeks</span>
+        <div id="gym-chart" class="flex items-end gap-3 h-40 mb-4"></div>
+        <div id="gym-chart-labels" class="flex justify-between text-[10px] text-on-surface-variant font-bold tracking-widest uppercase"></div>
       </div>
     </div>
   </section>
+
+  <!-- Activity Grid -->
   <section class="mb-12">
     <div class="bg-surface-container-low p-8 rounded-2xl">
       <div class="flex justify-between items-center mb-8">
         <div>
-          <span class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant block mb-1">Productivity Flow</span>
-          <h3 class="text-xl font-bold tracking-tight">Last 30 Days</h3>
+          <span class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant block mb-1">Habit Activity</span>
+          <h3 class="text-xl font-bold tracking-tight">Last 5 Weeks</h3>
         </div>
         <div class="flex items-center gap-2">
           <span class="text-[9px] uppercase font-bold text-on-surface-variant">Less</span>
           <div class="flex gap-1">
             <div class="w-3 h-3 rounded-[2px] bg-surface-container-highest"></div>
-            <div class="w-3 h-3 rounded-[2px] bg-primary/20"></div>
-            <div class="w-3 h-3 rounded-[2px] bg-primary/50"></div>
-            <div class="w-3 h-3 rounded-[2px] bg-primary"></div>
+            <div class="w-3 h-3 rounded-[2px]" style="background:#f0607a33"></div>
+            <div class="w-3 h-3 rounded-[2px]" style="background:#f0607a88"></div>
+            <div class="w-3 h-3 rounded-[2px] bg-primary-container"></div>
           </div>
           <span class="text-[9px] uppercase font-bold text-on-surface-variant">More</span>
         </div>
       </div>
-      <div class="grid grid-flow-col grid-rows-7 gap-2 overflow-x-auto hide-scrollbar pb-2">
-        <div class="w-8 h-8 rounded-md bg-primary/60"></div><div class="w-8 h-8 rounded-md bg-surface-container-highest"></div><div class="w-8 h-8 rounded-md bg-primary/30"></div><div class="w-8 h-8 rounded-md bg-primary"></div><div class="w-8 h-8 rounded-md bg-primary/10"></div><div class="w-8 h-8 rounded-md bg-primary/80"></div><div class="w-8 h-8 rounded-md bg-primary/40"></div>
-        <div class="w-8 h-8 rounded-md bg-primary"></div><div class="w-8 h-8 rounded-md bg-primary/20"></div><div class="w-8 h-8 rounded-md bg-surface-container-highest"></div><div class="w-8 h-8 rounded-md bg-primary/40"></div><div class="w-8 h-8 rounded-md bg-primary/90"></div><div class="w-8 h-8 rounded-md bg-primary/10"></div><div class="w-8 h-8 rounded-md bg-primary/30"></div>
-        <div class="w-8 h-8 rounded-md bg-primary/50"></div><div class="w-8 h-8 rounded-md bg-primary/10"></div><div class="w-8 h-8 rounded-md bg-primary/80"></div><div class="w-8 h-8 rounded-md bg-surface-container-highest"></div><div class="w-8 h-8 rounded-md bg-primary"></div><div class="w-8 h-8 rounded-md bg-primary/20"></div><div class="w-8 h-8 rounded-md bg-primary/40"></div>
-        <div class="w-8 h-8 rounded-md bg-primary/70"></div><div class="w-8 h-8 rounded-md bg-primary/10"></div><div class="w-8 h-8 rounded-md bg-primary/30"></div><div class="w-8 h-8 rounded-md bg-primary/50"></div><div class="w-8 h-8 rounded-md bg-primary/90"></div><div class="w-8 h-8 rounded-md bg-primary/10"></div><div class="w-8 h-8 rounded-md bg-primary/20"></div>
-        <div class="w-8 h-8 rounded-md bg-primary/30"></div><div class="w-8 h-8 rounded-md bg-surface-container-highest"></div><div class="w-8 h-8 rounded-md bg-primary/10"></div><div class="w-8 h-8 rounded-md bg-primary/60"></div><div class="w-8 h-8 rounded-md bg-primary/40"></div><div class="w-8 h-8 rounded-md bg-primary/10"></div><div class="w-8 h-8 rounded-md bg-primary"></div>
-      </div>
+      <div id="activity-grid" class="grid grid-flow-col grid-rows-7 gap-2 overflow-x-auto hide-scrollbar pb-2"></div>
+      <p id="no-data-msg" class="hidden text-sm text-on-surface-variant mt-4">No habit data yet. Tell Noa when you complete your Bible reading or gym on the Today tab.</p>
     </div>
   </section>
 </main>
+
 <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-16 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
   <a href="index.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
     <span class="material-symbols-outlined">today</span>
@@ -164,5 +152,136 @@
     <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Metrics</span>
   </a>
 </nav>
+
+<script>
+  function getLog() {
+    try { return JSON.parse(localStorage.getItem('noa_habit_log') || '{}'); } catch (e) { return {}; }
+  }
+
+  function dateStr(date) {
+    return date.toISOString().split('T')[0];
+  }
+
+  function addDays(date, n) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + n);
+    return d;
+  }
+
+  function startOfWeek(date) {
+    const d = new Date(date);
+    d.setDate(d.getDate() - d.getDay());
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  function renderStats(log) {
+    const entries = Object.values(log);
+    const gymTotal = entries.filter(e => e.gym).length;
+    const bibleTotal = entries.filter(e => e.bible).length;
+
+    document.getElementById('stat-gym').textContent = gymTotal;
+    document.getElementById('stat-bible').textContent = bibleTotal;
+
+    // Consistency: % of logged days with at least 1 habit
+    const daysLogged = entries.length;
+    const daysWithHabit = entries.filter(e => e.bible || e.gym).length;
+    document.getElementById('stat-consistency').textContent =
+      daysLogged > 0 ? `${Math.round((daysWithHabit / daysLogged) * 100)}%` : '-';
+
+    // Current streak: consecutive days back from today with at least 1 habit
+    const today = new Date();
+    let streak = 0;
+    for (let i = 0; i < 365; i++) {
+      const d = dateStr(addDays(today, -i));
+      const entry = log[d];
+      if (entry && (entry.bible || entry.gym)) {
+        streak++;
+      } else if (i > 0) {
+        break; // Allow today to be empty, but stop on any prior miss
+      }
+    }
+    document.getElementById('stat-streak').textContent = streak;
+  }
+
+  function renderBarChart(log, key, containerId, labelId, color) {
+    const today = new Date();
+    const weeks = [];
+    for (let w = 3; w >= 0; w--) {
+      const weekStart = startOfWeek(addDays(today, -w * 7));
+      let count = 0;
+      for (let d = 0; d < 7; d++) {
+        const ds = dateStr(addDays(weekStart, d));
+        if (log[ds]?.[key]) count++;
+      }
+      const label = w === 0 ? 'This Wk' : `${w}w ago`;
+      weeks.push({ count, label });
+    }
+
+    const maxPossible = key === 'bible' ? 7 : 5;
+    const maxCount = Math.max(...weeks.map(w => w.count), 1);
+
+    const chart = document.getElementById(containerId);
+    chart.innerHTML = weeks.map(w => {
+      const heightPct = Math.max((w.count / maxPossible) * 100, w.count > 0 ? 8 : 0);
+      const opacity = w.count > 0 ? 0.3 + (w.count / maxPossible) * 0.7 : 0.15;
+      return `
+        <div class="flex-1 flex flex-col items-center justify-end gap-1">
+          <span class="text-[10px] font-bold text-on-surface-variant">${w.count}</span>
+          <div class="w-full rounded-t-sm transition-all" style="height:${heightPct}%;background-color:${color};opacity:${opacity};min-height:${w.count>0?'4px':'2px'}"></div>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById(labelId).innerHTML = weeks.map(w =>
+      `<span>${w.label}</span>`
+    ).join('');
+  }
+
+  function renderActivityGrid(log) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const gridStart = addDays(startOfWeek(today), -28); // 5 weeks back from start of current week
+
+    const grid = document.getElementById('activity-grid');
+    const noDataMsg = document.getElementById('no-data-msg');
+    const hasAnyData = Object.keys(log).length > 0;
+
+    if (!hasAnyData) {
+      grid.innerHTML = Array.from({ length: 35 }, () =>
+        `<div class="w-8 h-8 rounded-md bg-surface-container-highest opacity-30"></div>`
+      ).join('');
+      noDataMsg.classList.remove('hidden');
+      return;
+    }
+
+    grid.innerHTML = Array.from({ length: 35 }, (_, i) => {
+      const d = addDays(gridStart, i);
+      const ds = dateStr(d);
+      const entry = log[ds];
+      const isFuture = d > today;
+      const count = entry ? (entry.bible ? 1 : 0) + (entry.gym ? 1 : 0) : 0;
+
+      let bg;
+      if (isFuture) bg = 'background:#373437;opacity:0.2';
+      else if (count === 0) bg = 'background:#373437;opacity:0.5';
+      else if (count === 1) bg = 'background:#f0607a;opacity:0.4';
+      else bg = 'background:#f0607a;opacity:0.9';
+
+      const title = `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}: ${count}/2 habits`;
+      return `<div class="w-8 h-8 rounded-md cursor-default" style="${bg}" title="${title}"></div>`;
+    }).join('');
+  }
+
+  function render() {
+    const log = getLog();
+    renderStats(log);
+    renderBarChart(log, 'bible', 'bible-chart', 'bible-chart-labels', '#d2bbff');
+    renderBarChart(log, 'gym', 'gym-chart', 'gym-chart-labels', '#7DD4B0');
+    renderActivityGrid(log);
+  }
+
+  render();
+</script>
 </body>
 </html>
