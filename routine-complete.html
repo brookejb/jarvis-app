@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Jarvis — Routine Complete</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary-container": "#f0607a",
+          "surface-container": "#211f22",
+          "surface-container-highest": "#373437",
+          "on-primary-container": "#5b001c",
+          "on-primary-fixed": "#400011",
+          "secondary-container": "#523787",
+          "surface-container-low": "#1d1b1e",
+          "on-surface": "#e7e1e5",
+          "on-surface-variant": "#dfbfc1",
+          "background": "#151316",
+          "outline-variant": "#584143",
+          "tertiary": "#a7c8ff",
+        },
+        fontFamily: { "headline": ["Inter"], "body": ["Inter"] },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .glass-card { background: rgba(55, 52, 55, 0.15); backdrop-filter: blur(20px); border: 1px solid rgba(88, 65, 67, 0.15); }
+  .nocturnal-glow { box-shadow: 0 0 60px -15px rgba(240, 96, 122, 0.15); }
+  body { background-color: #151316; color: #e7e1e5; font-family: 'Inter', sans-serif; min-height: max(884px, 100dvh); }
+</style>
+</head>
+<body class="min-h-screen flex flex-col items-center overflow-x-hidden">
+<header class="flex justify-between items-center w-full px-6 py-4 max-h-20 fixed top-0 z-50 bg-transparent">
+  <div class="text-xl font-bold text-[#e7e1e5] flex items-center gap-2">
+    <span class="material-symbols-outlined text-[#F0607A]" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span>
+    <span class="text-2xl font-bold tracking-tighter">Jarvis</span>
+  </div>
+</header>
+<main class="flex-1 w-full max-w-lg px-6 flex flex-col items-start pt-28 pb-40">
+  <div class="mb-16 w-full">
+    <p class="uppercase tracking-[0.15rem] text-[10px] font-bold text-primary-container mb-4">ROUTINE COMPLETE</p>
+    <h1 class="text-5xl font-extrabold tracking-tight text-on-surface leading-tight mb-2">You're ready,<br/>Brooke.</h1>
+    <p class="text-on-surface-variant text-lg tracking-wide">Read your Bible and start your day.</p>
+  </div>
+  <div class="w-full space-y-10">
+    <div class="glass-card rounded-xl p-8 nocturnal-glow relative overflow-hidden group">
+      <div class="absolute -right-10 -top-10 w-40 h-40 bg-primary-container/10 blur-3xl rounded-full"></div>
+      <div class="relative z-10">
+        <span class="material-symbols-outlined text-primary-container mb-6 opacity-60">auto_stories</span>
+        <p class="text-xl italic font-medium leading-relaxed text-on-surface mb-6">"The Lord is my light and my salvation; whom shall I fear? The Lord is the stronghold of my life; of whom shall I be afraid?"</p>
+        <div class="flex items-center justify-between">
+          <span class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Psalm 27:1</span>
+          <span class="material-symbols-outlined text-on-surface-variant text-sm hover:text-primary-container transition-colors cursor-pointer">bookmark</span>
+        </div>
+      </div>
+    </div>
+    <div class="bg-surface-container-low rounded-xl p-6 flex items-start gap-4 border border-outline-variant/10">
+      <div class="bg-surface-container-highest p-3 rounded-lg">
+        <span class="material-symbols-outlined text-tertiary">calendar_today</span>
+      </div>
+      <div>
+        <p class="text-on-surface font-semibold mb-1">Schedule Update</p>
+        <p class="text-on-surface-variant text-sm leading-snug">Your first meeting starts in 45 minutes.</p>
+      </div>
+    </div>
+  </div>
+  <div class="fixed bottom-24 left-0 right-0 px-6 max-w-lg mx-auto z-40">
+    <a href="index.html" class="w-full bg-primary-container hover:opacity-90 active:scale-95 transition-all py-4 rounded-full text-on-primary-fixed font-extrabold text-sm uppercase tracking-[0.15rem] flex items-center justify-center gap-2 shadow-[0_10px_30px_-5px_#F0607A40]">
+      Let's go
+      <span class="material-symbols-outlined text-base">arrow_forward</span>
+    </a>
+  </div>
+</main>
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-16 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
+  <a href="index.html" class="flex flex-col items-center justify-center text-[#F0607A] relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-[#F0607A] after:rounded-full after:shadow-[0_0_8px_#F0607A] scale-110">
+    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">today</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Today</span>
+  </a>
+  <a href="weekly.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">date_range</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Week</span>
+  </a>
+  <a href="goals.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">ads_click</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Goals</span>
+  </a>
+  <a href="metrics.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">equalizer</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Metrics</span>
+  </a>
+</nav>
+<div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
+  <div class="absolute top-[10%] left-[-10%] w-[50%] h-[50%] bg-[#523787] opacity-10 blur-[120px] rounded-full"></div>
+  <div class="absolute bottom-[20%] right-[-5%] w-[40%] h-[40%] bg-[#F0607A] opacity-5 blur-[100px] rounded-full"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Jarvis — Morning Check-In</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary-container": "#f0607a",
+          "surface-container": "#211f22",
+          "surface-container-highest": "#373437",
+          "surface-tint": "#ffb2bb",
+          "primary": "#ffb2bb",
+          "on-secondary-container": "#c3a6ff",
+          "surface-bright": "#3b383c",
+          "background": "#151316",
+          "tertiary": "#a7c8ff",
+          "on-surface": "#e7e1e5",
+          "secondary": "#d2bbff",
+          "on-background": "#e7e1e5",
+          "tertiary-container": "#5092eb",
+          "outline-variant": "#584143",
+          "on-primary-container": "#5b001c",
+          "inverse-on-surface": "#322f33",
+          "secondary-container": "#523787",
+          "surface-container-lowest": "#0f0d10",
+          "on-secondary": "#3b1e6f",
+          "outline": "#a68a8c",
+          "surface-container-high": "#2c292c",
+          "surface-container-low": "#1d1b1e",
+          "inverse-primary": "#ad2d4a",
+          "surface": "#151316",
+          "on-surface-variant": "#dfbfc1",
+          "surface-variant": "#373437"
+        },
+        fontFamily: { "headline": ["Inter"], "body": ["Inter"], "label": ["Inter"] },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  body { background-color: #151316; color: #e7e1e5; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  .glass-card { background: rgba(55, 52, 55, 0.15); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { min-height: max(884px, 100dvh); }
+</style>
+</head>
+<body class="bg-background min-h-screen flex flex-col">
+<header class="fixed top-0 left-0 right-0 z-50 bg-transparent flex justify-between items-center w-full px-6 py-4 max-w-screen-xl mx-auto">
+  <div class="flex items-center gap-2 text-xl font-bold text-[#e7e1e5]">
+    <span class="material-symbols-outlined text-[#F0607A] scale-95" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span>
+    <span class="text-2xl font-bold tracking-tighter">Jarvis</span>
+  </div>
+  <div class="flex flex-col items-end">
+    <span class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">FRIDAY, OCT 27</span>
+  </div>
+</header>
+<main class="flex-grow pt-24 pb-32 px-6 max-w-2xl mx-auto w-full space-y-10">
+  <div class="flex flex-col items-start space-y-4">
+    <div class="max-w-[85%] glass-card p-5 rounded-2xl rounded-tl-none border border-outline-variant/10">
+      <p class="text-on-surface leading-relaxed">Good morning, Brooke. You have a thermo problem set due Monday and an M Racing meeting today. Before we plan — how are you feeling?</p>
+    </div>
+  </div>
+  <div class="flex flex-wrap gap-3">
+    <button class="px-5 py-2.5 rounded-full glass-card border border-outline-variant/20 uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant hover:opacity-80 transition-opacity">Sharp</button>
+    <button class="px-5 py-2.5 rounded-full bg-primary-container text-on-primary-container uppercase tracking-[0.15rem] text-[10px] font-bold shadow-[0_0_20px_rgba(240,96,122,0.3)] scale-110">Solid</button>
+    <button class="px-5 py-2.5 rounded-full glass-card border border-outline-variant/20 uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant hover:opacity-80 transition-opacity">Meh</button>
+    <button class="px-5 py-2.5 rounded-full glass-card border border-outline-variant/20 uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant hover:opacity-80 transition-opacity">Burnt</button>
+  </div>
+  <div class="flex flex-col items-start space-y-6">
+    <div class="max-w-[85%] glass-card p-5 rounded-2xl rounded-tl-none border border-outline-variant/10">
+      <p class="text-on-surface leading-relaxed">Good. Here's what I'd prioritize today given your workload —</p>
+    </div>
+    <div class="w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-6">
+      <div class="flex justify-between items-center">
+        <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Priority Matrix</h3>
+        <span class="material-symbols-outlined text-on-surface-variant text-sm">more_horiz</span>
+      </div>
+      <div class="space-y-4">
+        <div class="flex items-center gap-4 group">
+          <div class="w-1.5 h-10 rounded-full bg-tertiary-container shadow-[0_0_12px_#5092eb]"></div>
+          <div class="flex-grow">
+            <p class="text-sm font-medium text-on-surface">Finish Ch. 4 Thermo Practice</p>
+            <span class="text-[9px] uppercase tracking-wider text-tertiary-container font-bold">Academic</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 group">
+          <div class="w-1.5 h-10 rounded-full bg-[#E87D4A] shadow-[0_0_12px_#E87D4A]"></div>
+          <div class="flex-grow">
+            <p class="text-sm font-medium text-on-surface">M Racing: Aero Review</p>
+            <span class="text-[9px] uppercase tracking-wider text-[#E87D4A] font-bold">Racing</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 group">
+          <div class="w-1.5 h-10 rounded-full bg-[#7DD4B0] shadow-[0_0_12px_#7DD4B0]"></div>
+          <div class="flex-grow">
+            <p class="text-sm font-medium text-on-surface">Gym: Lower Body</p>
+            <span class="text-[9px] uppercase tracking-wider text-[#7DD4B0] font-bold">Movement</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flex flex-col items-start space-y-6">
+    <div class="max-w-[85%] glass-card p-5 rounded-2xl rounded-tl-none border border-outline-variant/10">
+      <p class="text-on-surface leading-relaxed">Your morning routine is the first step. Ready?</p>
+    </div>
+    <a href="morning-routine.html" class="w-full py-5 rounded-full bg-gradient-to-r from-primary-container to-[#ad2d4a] text-on-primary-fixed font-bold text-sm tracking-tight flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(240,96,122,0.15)]">
+      Begin Morning Routine
+      <span class="material-symbols-outlined">arrow_forward</span>
+    </a>
+  </div>
+</main>
+<div class="fixed bottom-24 left-0 right-0 px-6 z-40">
+  <div class="max-w-2xl mx-auto space-y-4">
+    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+      <button class="whitespace-nowrap px-4 py-2 rounded-full glass-card border border-outline-variant/10 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Reschedule something</button>
+      <button class="whitespace-nowrap px-4 py-2 rounded-full glass-card border border-outline-variant/10 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">What's due this week?</button>
+    </div>
+    <div class="relative group">
+      <div class="absolute inset-y-0 left-5 flex items-center text-on-surface-variant">
+        <span class="material-symbols-outlined text-xl">mic</span>
+      </div>
+      <input class="w-full h-16 bg-surface-container-low/80 backdrop-blur-xl border-none rounded-2xl pl-14 pr-16 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-1 focus:ring-primary-container/30 transition-all" placeholder="Talk to Jarvis..." type="text"/>
+      <div class="absolute inset-y-0 right-3 flex items-center">
+        <button class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container hover:scale-105 active:scale-95 transition-transform">
+          <span class="material-symbols-outlined">send</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-16 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
+  <a href="index.html" class="flex flex-col items-center justify-center text-[#F0607A] relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-[#F0607A] after:rounded-full after:shadow-[0_0_8px_#F0607A] scale-110">
+    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">today</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Today</span>
+  </a>
+  <a href="weekly.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">date_range</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Week</span>
+  </a>
+  <a href="goals.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">ads_click</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Goals</span>
+  </a>
+  <a href="metrics.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">equalizer</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Metrics</span>
+  </a>
+</nav>
+<div class="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary-container/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+<div class="fixed bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-secondary-container/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
+</body>
+</html>
