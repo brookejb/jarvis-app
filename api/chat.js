@@ -48,8 +48,9 @@ Max 5 items. Only emit this when you have a concrete, actionable list to set. No
 
 You can also emit these action types when appropriate:
 
-Set today's schedule (when Brooke tells you what her day looks like):
-[ACTION]{"type":"set_schedule","items":[{"time":"9:00 AM","title":"Event name","note":"optional note","color":"blue"}]}[/ACTION]
+Set a day's schedule (when Brooke tells you what her day looks like):
+[ACTION]{"type":"set_schedule","date":"YYYY-MM-DD","items":[{"time":"9:00 AM","title":"Event name","note":"optional note","color":"blue"}]}[/ACTION]
+Always include the date field as YYYY-MM-DD for the specific day being scheduled. If planning today use today's date, if planning tomorrow use tomorrow's date, etc.
 
 Update ritual streaks (when Brooke logs a completed habit - Bible reading or gym):
 [ACTION]{"type":"update_rituals","bible":5,"gym":3,"bible_today":true,"gym_today":false}[/ACTION]
@@ -147,7 +148,8 @@ export default async function handler(req, res) {
           // Persist schedule to Redis so it survives page refreshes
           if (parsed.type === 'set_schedule' && Array.isArray(parsed.items)) {
             const today = new Date().toISOString().split('T')[0];
-            await kv.set(`noa_schedule_${today}`, parsed.items);
+            const scheduleDate = parsed.date || today;
+            await kv.set(`noa_schedule_${scheduleDate}`, parsed.items);
           }
         }
       } catch (e) {
