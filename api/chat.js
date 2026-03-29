@@ -142,8 +142,13 @@ export default async function handler(req, res) {
     if (actionMatch) {
       try {
         const parsed = JSON.parse(actionMatch[1]);
-        if (parsed.type && parsed.items) {
+        if (parsed.type) {
           actions = parsed;
+          // Persist schedule to Redis so it survives page refreshes
+          if (parsed.type === 'set_schedule' && Array.isArray(parsed.items)) {
+            const today = new Date().toISOString().split('T')[0];
+            await kv.set(`noa_schedule_${today}`, parsed.items);
+          }
         }
       } catch (e) {
         // Action parse failed - not critical

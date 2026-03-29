@@ -37,6 +37,13 @@ Return a JSON object with this exact structure - no other text, just valid JSON:
 Color options: blue (Academic), orange (Racing), green (Movement), pink (Personal/Faith), purple (Other).
 Include only deadlines you actually know about from memory. Max 5. If you know nothing specific, return an empty deadlines array.`;
 
+  // Load schedule for the requested date from Redis
+  const requestedDate = req.query.date || new Date().toISOString().split('T')[0];
+  let schedule = [];
+  try {
+    schedule = await kv.get(`noa_schedule_${requestedDate}`) || [];
+  } catch (e) {}
+
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -58,7 +65,7 @@ Include only deadlines you actually know about from memory. Max 5. If you know n
 
     const text = data.content[0].text.trim();
     const parsed = JSON.parse(text);
-    res.json(parsed);
+    res.json({ ...parsed, schedule });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
