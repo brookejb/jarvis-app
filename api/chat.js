@@ -103,7 +103,7 @@ export default async function handler(req, res) {
       }
     }
 
-    res.json({ reply: cleanReply });
+    res.json({ reply: cleanReply, _debug: { memoryFound: !!memoryMatch, rawReply } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
