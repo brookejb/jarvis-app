@@ -62,13 +62,13 @@
     <span class="text-2xl font-bold tracking-tighter">Noa</span>
   </div>
   <div class="flex flex-col items-end">
-    <span class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">FRIDAY, OCT 27</span>
+    <span id="header-date" class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant"></span>
   </div>
 </header>
 <main class="flex-grow pt-24 pb-32 px-6 max-w-2xl mx-auto w-full space-y-10">
   <div id="chat-messages" class="flex flex-col items-start space-y-4">
     <div class="max-w-[85%] glass-card p-5 rounded-2xl rounded-tl-none border border-outline-variant/10">
-      <p class="text-on-surface leading-relaxed">Good morning, Brooke. You have a thermo problem set due Monday and an M Racing meeting today. Before we plan, how are you feeling?</p>
+      <p id="greeting-text" class="text-on-surface leading-relaxed opacity-50">Good morning, Brooke...</p>
     </div>
   </div>
   <div class="flex flex-wrap gap-3">
@@ -270,6 +270,34 @@
   });
 
   loadSavedPriorities();
+
+  // Set today's date in header
+  const headerDate = document.getElementById('header-date');
+  if (headerDate) {
+    headerDate.textContent = new Date().toLocaleDateString('en-US', {
+      weekday: 'long', month: 'short', day: 'numeric',
+    }).toUpperCase();
+  }
+
+  // Load personalized greeting
+  async function loadGreeting() {
+    try {
+      const res = await fetch('/api/greeting');
+      const data = await res.json();
+      const el = document.getElementById('greeting-text');
+      if (el && data.greeting) {
+        el.textContent = data.greeting;
+        el.classList.remove('opacity-50');
+      }
+    } catch (e) {
+      const el = document.getElementById('greeting-text');
+      if (el) {
+        el.textContent = 'Good morning, Brooke. What are we tackling today?';
+        el.classList.remove('opacity-50');
+      }
+    }
+  }
+  loadGreeting();
 </script>
 </body>
 </html>
