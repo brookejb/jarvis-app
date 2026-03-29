@@ -266,6 +266,15 @@
             const current = JSON.parse(localStorage.getItem('noa_rituals') || '{}');
             const updated = { bible: a.bible ?? current.bible ?? 0, gym: a.gym ?? current.gym ?? 0 };
             localStorage.setItem('noa_rituals', JSON.stringify(updated));
+            if (a.bible_today !== undefined || a.gym_today !== undefined) {
+              const todayKey = new Date().toISOString().split('T')[0];
+              const log = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
+              log[todayKey] = {
+                bible: a.bible_today ?? log[todayKey]?.bible ?? false,
+                gym: a.gym_today ?? log[todayKey]?.gym ?? false,
+              };
+              localStorage.setItem('noa_habit_log', JSON.stringify(log));
+            }
           } catch (e) {}
         } else if (a.type === 'set_goal_progress') {
           try { localStorage.setItem('noa_semester_goals', JSON.stringify(a.goals)); } catch (e) {}
