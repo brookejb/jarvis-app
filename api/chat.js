@@ -37,7 +37,14 @@ Examples:
 - She says "I have a meeting thursday" -> save "Meeting on Thursday"
 - She says "I like working out in the morning" -> save "Prefers morning workouts"
 
-Never skip this block when a concrete fact is shared. Save what you know now, even if incomplete.`;
+Never skip this block when a concrete fact is shared. Save what you know now, even if incomplete.
+
+ACTION RULE:
+When Brooke explicitly asks you to update, plan, or set her priorities - or when you are recommending a concrete set of things to focus on today - append this block at the very end of your response, after any MEMORY block:
+[ACTION]{"type":"set_priorities","items":[{"label":"Task name","category":"Category","color":"blue"}]}[/ACTION]
+
+Color options: blue (Academic), orange (Racing/Engineering), green (Movement/Gym), pink (Personal/Faith), purple (Other).
+Max 5 items. Only emit this when you have a concrete, actionable list to set. Not for general conversation.`;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -110,7 +117,23 @@ export default async function handler(req, res) {
       }
     }
 
-    res.json({ reply: cleanReply });
+    // Extract action block if present
+    const actionMatch = cleanReply.match(/\[ACTION\]([\s\S]*?)\[\/ACTION\]/);
+    const finalReply = cleanReply.replace(/\[ACTION\][\s\S]*?\[\/ACTION\]/g, '').trim();
+
+    let actions = null;
+    if (actionMatch) {
+      try {
+        const parsed = JSON.parse(actionMatch[1]);
+        if (parsed.type && parsed.items) {
+          actions = parsed;
+        }
+      } catch (e) {
+        // Action parse failed - not critical
+      }
+    }
+
+    res.json({ reply: finalReply, ...(actions && { actions }) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

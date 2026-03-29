@@ -86,7 +86,7 @@
         <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Priority Matrix</h3>
         <span class="material-symbols-outlined text-on-surface-variant text-sm">more_horiz</span>
       </div>
-      <div class="space-y-4">
+      <div id="priority-list" class="space-y-4">
         <div class="flex items-center gap-4 group">
           <div class="w-1.5 h-10 rounded-full bg-tertiary-container shadow-[0_0_12px_#5092eb]"></div>
           <div class="flex-grow">
@@ -161,6 +161,49 @@
 <div class="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary-container/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
 <div class="fixed bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-secondary-container/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
 <script>
+  // Priority matrix
+  const COLOR_MAP = {
+    blue:   { hex: '#5092eb', shadow: '0 0 12px #5092eb' },
+    orange: { hex: '#E87D4A', shadow: '0 0 12px #E87D4A' },
+    green:  { hex: '#7DD4B0', shadow: '0 0 12px #7DD4B0' },
+    pink:   { hex: '#F0607A', shadow: '0 0 12px #F0607A' },
+    purple: { hex: '#c3a6ff', shadow: '0 0 12px #c3a6ff' },
+  };
+
+  function renderPriorityItem(item) {
+    const c = COLOR_MAP[item.color] || COLOR_MAP.blue;
+    const div = document.createElement('div');
+    div.className = 'flex items-center gap-4 group';
+    div.innerHTML = `
+      <div class="w-1.5 h-10 rounded-full flex-shrink-0" style="background-color:${c.hex};box-shadow:${c.shadow};"></div>
+      <div class="flex-grow">
+        <p class="text-sm font-medium text-on-surface">${item.label}</p>
+        <span class="text-[9px] uppercase tracking-wider font-bold" style="color:${c.hex};">${item.category}</span>
+      </div>
+    `;
+    return div;
+  }
+
+  const PRIORITY_KEY = 'noa_priorities';
+
+  function setPriorities(items) {
+    const list = document.getElementById('priority-list');
+    if (!list) return;
+    list.innerHTML = '';
+    items.forEach(item => list.appendChild(renderPriorityItem(item)));
+    try { localStorage.setItem(PRIORITY_KEY, JSON.stringify(items)); } catch (e) {}
+  }
+
+  function loadSavedPriorities() {
+    try {
+      const saved = localStorage.getItem(PRIORITY_KEY);
+      if (saved) {
+        const items = JSON.parse(saved);
+        if (Array.isArray(items) && items.length > 0) setPriorities(items);
+      }
+    } catch (e) {}
+  }
+
   // Chat state
   const chatHistory = [];
 
@@ -209,6 +252,9 @@
       const reply = data.reply || 'Something went wrong, try again.';
       chatHistory.push({ role: 'assistant', content: reply });
       appendMessage('assistant', reply);
+      if (data.actions && data.actions.type === 'set_priorities') {
+        setPriorities(data.actions.items);
+      }
     } catch (err) {
       appendMessage('assistant', 'Connection error. Try again.');
     } finally {
@@ -222,6 +268,8 @@
   chatInput.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   });
+
+  loadSavedPriorities();
 </script>
 </body>
 </html>
