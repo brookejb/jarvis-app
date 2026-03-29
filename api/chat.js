@@ -28,9 +28,16 @@ Your role:
 
 When she asks what's due or what to focus on, give her a direct answer with a clear recommendation.
 
-If you learn something new and important about Brooke in this conversation that you should remember for next time (a new deadline, preference, habit, life update, goal shift), add this EXACTLY at the very end of your response, after your main reply:
-[MEMORY]{"facts":["short fact 1","short fact 2"]}[/MEMORY]
-Only include facts that are genuinely new and worth remembering long-term. Skip this block entirely if nothing new came up.`;
+MEMORY RULE - NON-NEGOTIABLE:
+Any time Brooke tells you a concrete fact (exam date, deadline, preference, life update, habit, goal), you MUST save it immediately - even if you are also asking follow-up questions. Add this block at the very end of your response, after everything else:
+[MEMORY]{"facts":["concise fact 1","concise fact 2"]}[/MEMORY]
+
+Examples:
+- She says "my thermo exam is tuesday" -> save "ME 335 Thermo exam is on Tuesday"
+- She says "I have a meeting thursday" -> save "Meeting on Thursday"
+- She says "I like working out in the morning" -> save "Prefers morning workouts"
+
+Never skip this block when a concrete fact is shared. Save what you know now, even if incomplete.`;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
