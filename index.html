@@ -165,9 +165,9 @@
       <div class="absolute inset-y-0 left-5 flex items-center text-on-surface-variant">
         <span class="material-symbols-outlined text-xl">mic</span>
       </div>
-      <input class="w-full h-16 bg-surface-container-low/80 backdrop-blur-xl border-none rounded-2xl pl-14 pr-16 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-1 focus:ring-primary-container/30 transition-all" placeholder="Talk to Noa..." type="text"/>
+      <input id="chat-input" class="w-full h-16 bg-surface-container-low/80 backdrop-blur-xl border-none rounded-2xl pl-14 pr-16 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-1 focus:ring-primary-container/30 transition-all" placeholder="Talk to Noa..." type="text"/>
       <div class="absolute inset-y-0 right-3 flex items-center">
-        <button class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container hover:scale-105 active:scale-95 transition-transform">
+        <button id="send-btn" class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container hover:scale-105 active:scale-95 transition-transform">
           <span class="material-symbols-outlined">send</span>
         </button>
       </div>
@@ -195,6 +195,70 @@
 <div class="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary-container/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
 <div class="fixed bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-secondary-container/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
 <script>
+  // Chat state
+  const chatHistory = [];
+
+  function appendMessage(role, text) {
+    const container = document.querySelector('main .flex.flex-col.items-start.space-y-4');
+    const isUser = role === 'user';
+    const div = document.createElement('div');
+    div.className = `flex flex-col items-${isUser ? 'end' : 'start'} space-y-2 w-full`;
+    div.innerHTML = `
+      <div class="max-w-[85%] p-5 rounded-2xl ${isUser
+        ? 'bg-primary-container/20 border border-primary-container/20 rounded-tr-none ml-auto'
+        : 'glass-card border border-outline-variant/10 rounded-tl-none'
+      }">
+        <p class="text-on-surface leading-relaxed text-sm">${text}</p>
+      </div>
+    `;
+    container.appendChild(div);
+    div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }
+
+  function setLoading(on) {
+    const btn = document.getElementById('send-btn');
+    btn.innerHTML = on
+      ? '<span class="material-symbols-outlined animate-spin">refresh</span>'
+      : '<span class="material-symbols-outlined">send</span>';
+    btn.disabled = on;
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = '';
+    appendMessage('user', text);
+    chatHistory.push({ role: 'user', content: text });
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: chatHistory }),
+      });
+      const data = await res.json();
+      const reply = data.reply || 'Something went wrong — try again.';
+      chatHistory.push({ role: 'assistant', content: reply });
+      appendMessage('assistant', reply);
+    } catch (err) {
+      appendMessage('assistant', 'Connection error. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('chat-input');
+    const btn = document.getElementById('send-btn');
+    btn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+  });
+
   async function loadCanvasData() {
     try {
       const res = await fetch('/api/canvas');
