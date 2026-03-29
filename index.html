@@ -250,13 +250,11 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('chat-input');
-    const btn = document.getElementById('send-btn');
-    btn.addEventListener('click', sendMessage);
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-    });
+  const chatInput = document.getElementById('chat-input');
+  const sendBtn = document.getElementById('send-btn');
+  sendBtn.addEventListener('click', sendMessage);
+  chatInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   });
 
   async function loadCanvasData() {
