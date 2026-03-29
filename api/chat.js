@@ -80,6 +80,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'messages array required' });
   }
 
+  // Today's date - injected so Noa always knows the correct date
+  const now = new Date();
+  const todayISO = now.toISOString().split('T')[0];
+  const todayReadable = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
   // Load Noa's memory
   let memoryFacts = [];
   try {
@@ -92,7 +97,9 @@ export default async function handler(req, res) {
     ? `\n\nWhat you've learned about Brooke from past conversations:\n${memoryFacts.map(f => `- ${f}`).join('\n')}`
     : '';
 
-  const systemPrompt = BASE_SYSTEM + memoryBlock;
+  const dateBlock = `\n\nToday is ${todayReadable} (${todayISO}). Use this exact date when generating any action blocks that require a date field.`;
+
+  const systemPrompt = BASE_SYSTEM + dateBlock + memoryBlock;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
