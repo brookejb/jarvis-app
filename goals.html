@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Noa — Goals</title>
+<title>Noa -- Goals</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -44,62 +44,27 @@
 <body class="bg-background text-on-surface font-body min-h-screen pb-32">
 <header class="flex justify-between items-center w-full px-6 py-4 max-w-screen-xl mx-auto">
   <div class="text-xl font-bold text-[#e7e1e5] flex items-center gap-2">
-    <span class="material-symbols-outlined text-[#F0607A]">radio_button_checked</span>
+    <span class="material-symbols-outlined text-[#F0607A]" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span>
     <span class="text-2xl font-bold tracking-tighter">Noa</span>
   </div>
 </header>
 <main class="max-w-screen-xl mx-auto px-6 pt-4">
+
   <section class="mb-16">
     <h1 class="text-6xl font-extrabold tracking-tighter mb-2">Goals</h1>
     <p class="uppercase tracking-[0.15rem] text-[12px] font-bold text-on-surface-variant opacity-70">Why the work matters.</p>
   </section>
+
+  <!-- Semester Goals -->
   <section class="mb-14">
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-sm uppercase tracking-[0.15rem] font-bold text-on-surface-variant">Semester Goals</h2>
       <div class="h-[1px] flex-grow ml-6 bg-outline-variant/20"></div>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div class="bg-surface-container-low p-6 rounded-xl flex items-center justify-between hover:bg-surface-container-high transition-colors">
-        <div>
-          <h3 class="text-lg font-bold mb-1">Thermodynamics</h3>
-          <p class="text-sm text-on-surface-variant">B+ or better — building toward the engineer who understands the full system.</p>
-        </div>
-        <div class="relative w-12 h-12 flex items-center justify-center ml-4 flex-shrink-0">
-          <svg class="w-full h-full -rotate-90">
-            <circle class="text-surface-container-highest" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" stroke-width="3"></circle>
-            <circle cx="24" cy="24" fill="transparent" r="20" stroke="#5B9CF6" stroke-dasharray="125.6" stroke-dashoffset="31.4" stroke-width="3"></circle>
-          </svg>
-          <span class="absolute text-[10px] font-bold">75%</span>
-        </div>
-      </div>
-      <div class="bg-surface-container-low p-6 rounded-xl flex items-center justify-between hover:bg-surface-container-high transition-colors">
-        <div>
-          <h3 class="text-lg font-bold mb-1">EECS 314</h3>
-          <p class="text-sm text-on-surface-variant">Catch up on late submissions — negotiate with professor this week.</p>
-        </div>
-        <div class="relative w-12 h-12 flex items-center justify-center ml-4 flex-shrink-0">
-          <svg class="w-full h-full -rotate-90">
-            <circle class="text-surface-container-highest" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" stroke-width="3"></circle>
-            <circle cx="24" cy="24" fill="transparent" r="20" stroke="#5B9CF6" stroke-dasharray="125.6" stroke-dashoffset="75.3" stroke-width="3"></circle>
-          </svg>
-          <span class="absolute text-[10px] font-bold">40%</span>
-        </div>
-      </div>
-      <div class="bg-surface-container-low p-6 rounded-xl flex items-center justify-between hover:bg-surface-container-high transition-colors">
-        <div>
-          <h3 class="text-lg font-bold mb-1">All Other Classes</h3>
-          <p class="text-sm text-on-surface-variant">Stay caught up — protect the momentum you've built.</p>
-        </div>
-        <div class="relative w-12 h-12 flex items-center justify-center ml-4 flex-shrink-0">
-          <svg class="w-full h-full -rotate-90">
-            <circle class="text-surface-container-highest" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" stroke-width="3"></circle>
-            <circle cx="24" cy="24" fill="transparent" r="20" stroke="#5B9CF6" stroke-dasharray="125.6" stroke-dashoffset="12.5" stroke-width="3"></circle>
-          </svg>
-          <span class="absolute text-[10px] font-bold">90%</span>
-        </div>
-      </div>
-    </div>
+    <div id="semester-goals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </section>
+
+  <!-- M Racing + Milestones -->
   <section class="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-14">
     <div class="lg:col-span-2 relative overflow-hidden rounded-xl bg-surface-container-low p-8 border border-outline-variant/10">
       <div class="absolute top-0 right-0 w-64 h-64 bg-tertiary-container/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
@@ -109,58 +74,45 @@
           <span class="bg-[#E87D4A]/20 text-[#E87D4A] text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-[#E87D4A]/30">In Progress</span>
         </div>
         <p class="text-on-surface-variant mb-6 font-medium">Director of Business Subteam</p>
-        <div class="grid md:grid-cols-2 gap-8">
-          <ul class="space-y-4">
-            <li class="flex items-start gap-3">
-              <span class="material-symbols-outlined text-tertiary text-sm mt-1">check_circle</span>
-              <span class="text-on-surface font-medium">Sponsorship email campaign (250 sent)</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="material-symbols-outlined text-on-surface-variant text-sm mt-1">radio_button_unchecked</span>
-              <span class="text-on-surface/80 font-medium">Follow up on sponsor leads</span>
-            </li>
-          </ul>
-          <ul class="space-y-4">
-            <li class="flex items-start gap-3">
-              <span class="material-symbols-outlined text-on-surface-variant text-sm mt-1">radio_button_unchecked</span>
-              <span class="text-on-surface/80 font-medium">Business deck for lead review</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="material-symbols-outlined text-on-surface-variant text-sm mt-1">radio_button_unchecked</span>
-              <span class="text-on-surface/80 font-medium">Director application preparation</span>
-            </li>
-          </ul>
-        </div>
+        <div id="racing-checklist" class="grid md:grid-cols-2 gap-4"></div>
       </div>
     </div>
     <div class="flex flex-col gap-6">
       <div class="flex-1 glass-card p-6 rounded-xl relative overflow-hidden">
         <h4 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant mb-4">Big Picture</h4>
         <h3 class="text-xl font-bold">Ross Application</h3>
-        <p class="text-sm text-on-surface-variant mt-2">Due March 31 — final touches remaining.</p>
+        <p id="ross-note" class="text-sm text-on-surface-variant mt-2">Due March 31 - final touches remaining.</p>
+      </div>
+      <div class="flex-1 glass-card p-6 rounded-xl relative overflow-hidden">
+        <h4 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant mb-4">Vision</h4>
+        <h3 class="text-xl font-bold">Sydney, Australia</h3>
+        <p class="text-sm text-on-surface-variant mt-2">Every daily decision connects to this.</p>
       </div>
       <div class="flex-1 glass-card p-6 rounded-xl relative overflow-hidden">
         <h4 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant mb-4">Milestone</h4>
-        <h3 class="text-xl font-bold">Michigan — Graduation</h3>
+        <h3 class="text-xl font-bold">Michigan - Graduation</h3>
         <p class="text-sm text-on-surface-variant mt-2">ME + Ross dual degree. Every day moves this forward.</p>
       </div>
     </div>
   </section>
+
+  <!-- Noa Insight -->
   <section class="mt-20">
     <div class="relative max-w-2xl mx-auto">
       <div class="absolute -inset-1 bg-gradient-to-r from-primary-container to-secondary-container rounded-2xl blur opacity-20"></div>
       <div class="relative glass-card p-8 rounded-2xl flex items-center gap-8">
         <div class="w-16 h-16 rounded-full flex-shrink-0 relative overflow-hidden flex items-center justify-center">
           <div class="absolute inset-0 orb-glow animate-pulse"></div>
-          <span class="material-symbols-outlined text-primary relative z-10 text-3xl">radio_button_checked</span>
+          <span class="material-symbols-outlined text-primary relative z-10 text-3xl" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span>
         </div>
         <div>
           <h4 class="text-primary-container uppercase tracking-[0.15rem] text-[10px] font-bold mb-2">Noa Insight</h4>
-          <p class="text-lg leading-relaxed text-on-surface/90 italic">"The thermo problem set you've been avoiding is directly tied to your academic goal this semester. 45 minutes today moves this forward."</p>
+          <p id="goals-insight" class="text-lg leading-relaxed text-on-surface/90 italic opacity-40">Loading...</p>
         </div>
       </div>
     </div>
   </section>
+
 </main>
 <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-16 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
   <a href="index.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
@@ -180,5 +132,111 @@
     <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Metrics</span>
   </a>
 </nav>
+<script>
+  const CIRC = 125.66; // 2 * pi * 20
+
+  // Default data - overridden by localStorage if Noa has updated it
+  const DEFAULT_SEMESTER_GOALS = [
+    { title: 'Thermodynamics', desc: 'B+ or better - building toward the engineer who understands the full system.', progress: 75, color: '#5092eb' },
+    { title: 'EECS 314', desc: 'Catch up on late submissions - stay consistent through the end.', progress: 40, color: '#5092eb' },
+    { title: 'All Other Classes', desc: 'Stay caught up - protect the momentum you have built.', progress: 90, color: '#5092eb' },
+  ];
+
+  const DEFAULT_CHECKLIST = [
+    { label: 'Sponsorship email campaign (250 sent)', done: true },
+    { label: 'Follow up on sponsor leads', done: false },
+    { label: 'Business deck for lead review', done: false },
+    { label: 'Director application preparation', done: false },
+  ];
+
+  function progressOffset(pct) {
+    return CIRC * (1 - pct / 100);
+  }
+
+  function renderSemesterGoals() {
+    const saved = JSON.parse(localStorage.getItem('noa_semester_goals') || 'null');
+    const goals = saved || DEFAULT_SEMESTER_GOALS;
+    const container = document.getElementById('semester-goals');
+    container.innerHTML = goals.map((g, i) => `
+      <div class="bg-surface-container-low p-6 rounded-xl flex items-center justify-between hover:bg-surface-container-high transition-colors">
+        <div class="flex-1 mr-4">
+          <h3 class="text-lg font-bold mb-1">${g.title}</h3>
+          <p class="text-sm text-on-surface-variant">${g.desc}</p>
+        </div>
+        <div class="relative w-12 h-12 flex items-center justify-center flex-shrink-0">
+          <svg class="w-full h-full -rotate-90">
+            <circle cx="24" cy="24" fill="transparent" r="20" stroke="#373437" stroke-width="3"></circle>
+            <circle cx="24" cy="24" fill="transparent" r="20" stroke="${g.color}" stroke-dasharray="${CIRC}" stroke-dashoffset="${progressOffset(g.progress)}" stroke-width="3" stroke-linecap="round"></circle>
+          </svg>
+          <span class="absolute text-[10px] font-bold">${g.progress}%</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderChecklist() {
+    const saved = JSON.parse(localStorage.getItem('noa_racing_checklist') || 'null');
+    const items = saved || DEFAULT_CHECKLIST;
+    const container = document.getElementById('racing-checklist');
+
+    function saveAndRender(updated) {
+      localStorage.setItem('noa_racing_checklist', JSON.stringify(updated));
+      renderChecklist();
+    }
+
+    // Split into two columns
+    const half = Math.ceil(items.length / 2);
+    const cols = [items.slice(0, half), items.slice(half)];
+
+    container.innerHTML = cols.map(col => `
+      <ul class="space-y-4">
+        ${col.map((item, colIdx) => {
+          const globalIdx = items.indexOf(item);
+          return `
+            <li class="flex items-start gap-3 cursor-pointer group" data-idx="${globalIdx}">
+              <span class="material-symbols-outlined text-sm mt-1 transition-colors ${item.done ? 'text-tertiary' : 'text-on-surface-variant group-hover:text-on-surface'}"
+                style="font-variation-settings: 'FILL' ${item.done ? 1 : 0};">
+                ${item.done ? 'check_circle' : 'radio_button_unchecked'}
+              </span>
+              <span class="font-medium transition-colors ${item.done ? 'text-on-surface' : 'text-on-surface/70'}">${item.label}</span>
+            </li>
+          `;
+        }).join('')}
+      </ul>
+    `).join('');
+
+    // Add click handlers
+    container.querySelectorAll('[data-idx]').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.dataset.idx);
+        const updated = [...items];
+        updated[idx] = { ...updated[idx], done: !updated[idx].done };
+        saveAndRender(updated);
+      });
+    });
+  }
+
+  async function loadGoalsInsight() {
+    try {
+      const res = await fetch('/api/goals');
+      const data = await res.json();
+      const el = document.getElementById('goals-insight');
+      if (el && data.insight) {
+        el.textContent = `"${data.insight}"`;
+        el.classList.remove('opacity-40');
+      }
+    } catch (e) {
+      const el = document.getElementById('goals-insight');
+      if (el) {
+        el.textContent = '"Keep showing up. The compound effect is real."';
+        el.classList.remove('opacity-40');
+      }
+    }
+  }
+
+  renderSemesterGoals();
+  renderChecklist();
+  loadGoalsInsight();
+</script>
 </body>
 </html>
