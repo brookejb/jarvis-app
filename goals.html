@@ -132,6 +132,34 @@
     <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Metrics</span>
   </a>
 </nav>
+<!-- Noa Side Panel -->
+<div id="noa-overlay" class="fixed inset-0 bg-black/40 z-[90] hidden backdrop-blur-sm"></div>
+<div id="noa-panel" class="fixed right-0 top-0 h-full w-[360px] max-w-[90vw] bg-[#1d1b1e] z-[100] transform translate-x-full transition-transform duration-300 flex flex-col shadow-2xl border-l border-[#584143]/20">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-[#584143]/20">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-[#F0607A]" style="font-variation-settings:'FILL' 1;">radio_button_checked</span>
+      <span class="font-bold tracking-tight">Noa</span>
+    </div>
+    <button id="noa-close" class="text-[#dfbfc1] hover:text-[#e7e1e5] transition-colors">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+  <div id="noa-messages" class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar"></div>
+  <div class="p-4 border-t border-[#584143]/20">
+    <div class="relative">
+      <input id="noa-input" class="w-full h-12 bg-[#211f22] rounded-xl pl-4 pr-12 text-[#e7e1e5] placeholder:text-[#dfbfc1]/50 focus:outline-none focus:ring-1 focus:ring-[#f0607a]/30 text-sm" placeholder="Talk to Noa..." type="text"/>
+      <button id="noa-send" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-[#f0607a] flex items-center justify-center text-[#5b001c] hover:scale-105 active:scale-95 transition-transform">
+        <span class="material-symbols-outlined text-sm">send</span>
+      </button>
+    </div>
+  </div>
+</div>
+<button id="noa-toggle" class="fixed right-0 top-1/2 -translate-y-1/2 z-[89] bg-[#f0607a] text-[#5b001c] py-5 px-2 rounded-l-2xl shadow-lg hover:px-3 transition-all flex flex-col items-center gap-2">
+  <span class="material-symbols-outlined text-lg" style="font-variation-settings:'FILL' 1;">radio_button_checked</span>
+  <span class="text-[8px] font-bold uppercase" style="writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:0.15em">Noa</span>
+</button>
+<script src="/noa-chat.js"></script>
+
 <script>
   const CIRC = 125.66; // 2 * pi * 20
 

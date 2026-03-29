@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Noa — Morning Check-In</title>
+<title>Noa -- Morning Check-In</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -65,81 +65,68 @@
     <span id="header-date" class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant"></span>
   </div>
 </header>
+
 <main class="flex-grow pt-24 pb-32 px-6 max-w-2xl mx-auto w-full space-y-10">
-  <div id="chat-messages" class="flex flex-col items-start space-y-4">
-    <div class="max-w-[85%] glass-card p-5 rounded-2xl rounded-tl-none border border-outline-variant/10">
-      <p id="greeting-text" class="text-on-surface leading-relaxed opacity-50">Good morning, Brooke...</p>
-    </div>
+  <!-- Greeting -->
+  <div class="max-w-[85%] glass-card p-5 rounded-2xl rounded-tl-none border border-outline-variant/10">
+    <p id="greeting-text" class="text-on-surface leading-relaxed opacity-50">Good morning, Brooke...</p>
   </div>
+
+  <!-- Feeling buttons -->
   <div class="flex flex-wrap gap-3">
-    <button class="px-5 py-2.5 rounded-full glass-card border border-outline-variant/20 uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant hover:opacity-80 transition-opacity">Sharp</button>
-    <button class="px-5 py-2.5 rounded-full bg-primary-container text-on-primary-container uppercase tracking-[0.15rem] text-[10px] font-bold shadow-[0_0_20px_rgba(240,96,122,0.3)] scale-110">Solid</button>
-    <button class="px-5 py-2.5 rounded-full glass-card border border-outline-variant/20 uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant hover:opacity-80 transition-opacity">Meh</button>
-    <button class="px-5 py-2.5 rounded-full glass-card border border-outline-variant/20 uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant hover:opacity-80 transition-opacity">Burnt</button>
+    <button onclick="noaSend('I\'m feeling sharp today')" class="px-5 py-2.5 rounded-full glass-card border border-outline-variant/20 uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant hover:opacity-80 transition-opacity">Sharp</button>
+    <button onclick="noaSend('I\'m feeling solid today')" class="px-5 py-2.5 rounded-full bg-primary-container text-on-primary-container uppercase tracking-[0.15rem] text-[10px] font-bold shadow-[0_0_20px_rgba(240,96,122,0.3)] scale-110">Solid</button>
+    <button onclick="noaSend('I\'m feeling meh today')" class="px-5 py-2.5 rounded-full glass-card border border-outline-variant/20 uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant hover:opacity-80 transition-opacity">Meh</button>
+    <button onclick="noaSend('I\'m feeling burnt out today')" class="px-5 py-2.5 rounded-full glass-card border border-outline-variant/20 uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant hover:opacity-80 transition-opacity">Burnt</button>
   </div>
-  <div class="flex flex-col items-start space-y-6">
-    <div class="max-w-[85%] glass-card p-5 rounded-2xl rounded-tl-none border border-outline-variant/10">
-      <p class="text-on-surface leading-relaxed">Good. Here's what I'd prioritize today given your workload:</p>
+
+  <!-- Priority Matrix -->
+  <div class="w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-6">
+    <div class="flex justify-between items-center">
+      <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Priority Matrix</h3>
+      <span class="material-symbols-outlined text-on-surface-variant text-sm">more_horiz</span>
     </div>
-    <div class="w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-6">
-      <div class="flex justify-between items-center">
-        <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Priority Matrix</h3>
-        <span class="material-symbols-outlined text-on-surface-variant text-sm">more_horiz</span>
+    <div id="priority-list" class="space-y-4">
+      <div class="flex items-center gap-4 group">
+        <div class="w-1.5 h-10 rounded-full bg-tertiary-container shadow-[0_0_12px_#5092eb]"></div>
+        <div class="flex-grow">
+          <p class="text-sm font-medium text-on-surface">Finish Ch. 4 Thermo Practice</p>
+          <span class="text-[9px] uppercase tracking-wider text-tertiary-container font-bold">Academic</span>
+        </div>
       </div>
-      <div id="priority-list" class="space-y-4">
-        <div class="flex items-center gap-4 group">
-          <div class="w-1.5 h-10 rounded-full bg-tertiary-container shadow-[0_0_12px_#5092eb]"></div>
-          <div class="flex-grow">
-            <p class="text-sm font-medium text-on-surface">Finish Ch. 4 Thermo Practice</p>
-            <span class="text-[9px] uppercase tracking-wider text-tertiary-container font-bold">Academic</span>
-          </div>
+      <div class="flex items-center gap-4 group">
+        <div class="w-1.5 h-10 rounded-full bg-[#E87D4A] shadow-[0_0_12px_#E87D4A]"></div>
+        <div class="flex-grow">
+          <p class="text-sm font-medium text-on-surface">M Racing: Aero Review</p>
+          <span class="text-[9px] uppercase tracking-wider text-[#E87D4A] font-bold">Racing</span>
         </div>
-        <div class="flex items-center gap-4 group">
-          <div class="w-1.5 h-10 rounded-full bg-[#E87D4A] shadow-[0_0_12px_#E87D4A]"></div>
-          <div class="flex-grow">
-            <p class="text-sm font-medium text-on-surface">M Racing: Aero Review</p>
-            <span class="text-[9px] uppercase tracking-wider text-[#E87D4A] font-bold">Racing</span>
-          </div>
-        </div>
-        <div class="flex items-center gap-4 group">
-          <div class="w-1.5 h-10 rounded-full bg-[#7DD4B0] shadow-[0_0_12px_#7DD4B0]"></div>
-          <div class="flex-grow">
-            <p class="text-sm font-medium text-on-surface">Gym: Lower Body</p>
-            <span class="text-[9px] uppercase tracking-wider text-[#7DD4B0] font-bold">Movement</span>
-          </div>
+      </div>
+      <div class="flex items-center gap-4 group">
+        <div class="w-1.5 h-10 rounded-full bg-[#7DD4B0] shadow-[0_0_12px_#7DD4B0]"></div>
+        <div class="flex-grow">
+          <p class="text-sm font-medium text-on-surface">Gym: Lower Body</p>
+          <span class="text-[9px] uppercase tracking-wider text-[#7DD4B0] font-bold">Movement</span>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Morning Routine -->
   <div class="flex flex-col items-start space-y-6">
-    <div class="max-w-[85%] glass-card p-5 rounded-2xl rounded-tl-none border border-outline-variant/10">
-      <p class="text-on-surface leading-relaxed">Your morning routine is the first step. Ready?</p>
-    </div>
     <a href="morning-routine.html" class="w-full py-5 rounded-full bg-gradient-to-r from-primary-container to-[#ad2d4a] text-on-primary-fixed font-bold text-sm tracking-tight flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(240,96,122,0.15)]">
       Begin Morning Routine
       <span class="material-symbols-outlined">arrow_forward</span>
     </a>
   </div>
-</main>
-<div class="fixed bottom-24 left-0 right-0 px-6 z-40">
-  <div class="max-w-2xl mx-auto space-y-4">
-    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-      <button class="whitespace-nowrap px-4 py-2 rounded-full glass-card border border-outline-variant/10 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Reschedule something</button>
-      <button class="whitespace-nowrap px-4 py-2 rounded-full glass-card border border-outline-variant/10 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">What's due this week?</button>
-    </div>
-    <div class="relative group">
-      <div class="absolute inset-y-0 left-5 flex items-center text-on-surface-variant">
-        <span class="material-symbols-outlined text-xl">mic</span>
-      </div>
-      <input id="chat-input" class="w-full h-16 bg-surface-container-low/80 backdrop-blur-xl border-none rounded-2xl pl-14 pr-16 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-1 focus:ring-primary-container/30 transition-all" placeholder="Talk to Noa..." type="text"/>
-      <div class="absolute inset-y-0 right-3 flex items-center">
-        <button id="send-btn" class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container hover:scale-105 active:scale-95 transition-transform">
-          <span class="material-symbols-outlined">send</span>
-        </button>
-      </div>
-    </div>
+
+  <!-- Quick replies -->
+  <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+    <button onclick="noaSend('Help me reschedule something')" class="whitespace-nowrap px-4 py-2 rounded-full glass-card border border-outline-variant/10 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant hover:opacity-80 transition-opacity">Reschedule something</button>
+    <button onclick="noaSend('What\'s due this week?')" class="whitespace-nowrap px-4 py-2 rounded-full glass-card border border-outline-variant/10 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant hover:opacity-80 transition-opacity">What's due this week?</button>
+    <button onclick="noaSend('Update my priorities for today')" class="whitespace-nowrap px-4 py-2 rounded-full glass-card border border-outline-variant/10 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant hover:opacity-80 transition-opacity">Update priorities</button>
   </div>
-</div>
+</main>
+
 <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-16 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
   <a href="index.html" class="flex flex-col items-center justify-center text-[#F0607A] relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-[#F0607A] after:rounded-full after:shadow-[0_0_8px_#F0607A] scale-110">
     <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">today</span>
@@ -158,8 +145,37 @@
     <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Metrics</span>
   </a>
 </nav>
+
 <div class="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary-container/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
 <div class="fixed bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-secondary-container/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
+
+<!-- Noa Side Panel -->
+<div id="noa-overlay" class="fixed inset-0 bg-black/40 z-[90] hidden backdrop-blur-sm"></div>
+<div id="noa-panel" class="fixed right-0 top-0 h-full w-[360px] max-w-[90vw] bg-[#1d1b1e] z-[100] transform translate-x-full transition-transform duration-300 flex flex-col shadow-2xl border-l border-[#584143]/20">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-[#584143]/20">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-[#F0607A]" style="font-variation-settings:'FILL' 1;">radio_button_checked</span>
+      <span class="font-bold tracking-tight">Noa</span>
+    </div>
+    <button id="noa-close" class="text-[#dfbfc1] hover:text-[#e7e1e5] transition-colors">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+  <div id="noa-messages" class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar"></div>
+  <div class="p-4 border-t border-[#584143]/20">
+    <div class="relative">
+      <input id="noa-input" class="w-full h-12 bg-[#211f22] rounded-xl pl-4 pr-12 text-[#e7e1e5] placeholder:text-[#dfbfc1]/50 focus:outline-none focus:ring-1 focus:ring-[#f0607a]/30 text-sm" placeholder="Talk to Noa..." type="text"/>
+      <button id="noa-send" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-[#f0607a] flex items-center justify-center text-[#5b001c] hover:scale-105 active:scale-95 transition-transform">
+        <span class="material-symbols-outlined text-sm">send</span>
+      </button>
+    </div>
+  </div>
+</div>
+<button id="noa-toggle" class="fixed right-0 top-1/2 -translate-y-1/2 z-[89] bg-[#f0607a] text-[#5b001c] py-5 px-2 rounded-l-2xl shadow-lg hover:px-3 transition-all flex flex-col items-center gap-2">
+  <span class="material-symbols-outlined text-lg" style="font-variation-settings:'FILL' 1;">radio_button_checked</span>
+  <span class="text-[8px] font-bold uppercase" style="writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:0.15em">Noa</span>
+</button>
+
 <script>
   // Priority matrix
   const COLOR_MAP = {
@@ -184,121 +200,29 @@
     return div;
   }
 
-  const PRIORITY_KEY = 'noa_priorities';
-
   function setPriorities(items) {
     const list = document.getElementById('priority-list');
     if (!list) return;
     list.innerHTML = '';
     items.forEach(item => list.appendChild(renderPriorityItem(item)));
-    try { localStorage.setItem(PRIORITY_KEY, JSON.stringify(items)); } catch (e) {}
+    try { localStorage.setItem('noa_priorities', JSON.stringify(items)); } catch (e) {}
   }
 
-  function loadSavedPriorities() {
-    try {
-      const saved = localStorage.getItem(PRIORITY_KEY);
-      if (saved) {
-        const items = JSON.parse(saved);
-        if (Array.isArray(items) && items.length > 0) setPriorities(items);
-      }
-    } catch (e) {}
-  }
-
-  // Chat state
-  const chatHistory = [];
-
-  function appendMessage(role, text) {
-    const container = document.getElementById('chat-messages');
-    const isUser = role === 'user';
-    const div = document.createElement('div');
-    div.className = `flex flex-col items-${isUser ? 'end' : 'start'} space-y-2 w-full`;
-    div.innerHTML = `
-      <div class="max-w-[85%] p-5 rounded-2xl ${isUser
-        ? 'bg-primary-container/20 border border-primary-container/20 rounded-tr-none ml-auto'
-        : 'glass-card border border-outline-variant/10 rounded-tl-none'
-      }">
-        <p class="text-on-surface leading-relaxed text-sm">${text}</p>
-      </div>
-    `;
-    container.appendChild(div);
-    div.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  }
-
-  function setLoading(on) {
-    const btn = document.getElementById('send-btn');
-    btn.innerHTML = on
-      ? '<span class="material-symbols-outlined animate-spin">refresh</span>'
-      : '<span class="material-symbols-outlined">send</span>';
-    btn.disabled = on;
-  }
-
-  async function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const text = input.value.trim();
-    if (!text) return;
-
-    input.value = '';
-    appendMessage('user', text);
-    chatHistory.push({ role: 'user', content: text });
-    setLoading(true);
-
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: chatHistory }),
-      });
-      const data = await res.json();
-      const reply = data.reply || 'Something went wrong, try again.';
-      chatHistory.push({ role: 'assistant', content: reply });
-      appendMessage('assistant', reply);
-      if (data.actions) {
-        const a = data.actions;
-        if (a.type === 'set_priorities') {
-          setPriorities(a.items);
-        } else if (a.type === 'set_schedule') {
-          try {
-            const key = `noa_schedule_${new Date().toISOString().split('T')[0]}`;
-            localStorage.setItem(key, JSON.stringify(a.items));
-          } catch (e) {}
-        } else if (a.type === 'update_rituals') {
-          try {
-            const current = JSON.parse(localStorage.getItem('noa_rituals') || '{}');
-            const updated = { bible: a.bible ?? current.bible ?? 0, gym: a.gym ?? current.gym ?? 0 };
-            localStorage.setItem('noa_rituals', JSON.stringify(updated));
-            if (a.bible_today !== undefined || a.gym_today !== undefined) {
-              const todayKey = new Date().toISOString().split('T')[0];
-              const log = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
-              log[todayKey] = {
-                bible: a.bible_today ?? log[todayKey]?.bible ?? false,
-                gym: a.gym_today ?? log[todayKey]?.gym ?? false,
-              };
-              localStorage.setItem('noa_habit_log', JSON.stringify(log));
-            }
-          } catch (e) {}
-        } else if (a.type === 'set_goal_progress') {
-          try { localStorage.setItem('noa_semester_goals', JSON.stringify(a.goals)); } catch (e) {}
-        } else if (a.type === 'update_racing_checklist') {
-          try { localStorage.setItem('noa_racing_checklist', JSON.stringify(a.items)); } catch (e) {}
-        }
-      }
-    } catch (err) {
-      appendMessage('assistant', 'Connection error. Try again.');
-    } finally {
-      setLoading(false);
+  // Load saved priorities
+  try {
+    const saved = localStorage.getItem('noa_priorities');
+    if (saved) {
+      const items = JSON.parse(saved);
+      if (Array.isArray(items) && items.length > 0) setPriorities(items);
     }
-  }
+  } catch (e) {}
 
-  const chatInput = document.getElementById('chat-input');
-  const sendBtn = document.getElementById('send-btn');
-  sendBtn.addEventListener('click', sendMessage);
-  chatInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-  });
+  // Hook for noa-chat.js to update page elements
+  window.onNoaAction = function(a) {
+    if (a.type === 'set_priorities' && a.items) setPriorities(a.items);
+  };
 
-  loadSavedPriorities();
-
-  // Set today's date in header
+  // Date header
   const headerDate = document.getElementById('header-date');
   if (headerDate) {
     headerDate.textContent = new Date().toLocaleDateString('en-US', {
@@ -306,7 +230,7 @@
     }).toUpperCase();
   }
 
-  // Load personalized greeting
+  // Personalized greeting
   async function loadGreeting() {
     try {
       const res = await fetch('/api/greeting');
@@ -318,13 +242,11 @@
       }
     } catch (e) {
       const el = document.getElementById('greeting-text');
-      if (el) {
-        el.textContent = 'Good morning, Brooke. What are we tackling today?';
-        el.classList.remove('opacity-50');
-      }
+      if (el) { el.textContent = 'Good morning, Brooke. What are we tackling today?'; el.classList.remove('opacity-50'); }
     }
   }
   loadGreeting();
 </script>
+<script src="/noa-chat.js"></script>
 </body>
 </html>
