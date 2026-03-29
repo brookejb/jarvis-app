@@ -44,6 +44,11 @@ Include only deadlines you actually know about from memory. Max 5. If you know n
     schedule = await kv.get(`noa_schedule_${requestedDate}`) || [];
   } catch (e) {}
 
+  // Schedule is always returned regardless of whether Claude succeeds
+  let insight = '';
+  let insightDetail = '';
+  let deadlines = [];
+
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -61,12 +66,18 @@ Include only deadlines you actually know about from memory. Max 5. If you know n
     });
 
     const data = await response.json();
-    if (data.error) return res.status(500).json({ error: data.error.message });
-
-    const text = data.content[0].text.trim();
-    const parsed = JSON.parse(text);
-    res.json({ ...parsed, schedule });
+    if (!data.error) {
+      const text = data.content[0].text.trim();
+      // Strip any markdown code fences Claude might add
+      const cleaned = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '').trim();
+      const parsed = JSON.parse(cleaned);
+      insight = parsed.insight || '';
+      insightDetail = parsed.insightDetail || '';
+      deadlines = parsed.deadlines || [];
+    }
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    // Claude failed - still return schedule below
   }
+
+  res.json({ insight, insightDetail, deadlines, schedule });
 }
