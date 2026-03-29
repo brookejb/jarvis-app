@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Noa — Morning Routine</title>
+<title>Noa -- Morning Routine</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -35,60 +35,220 @@
   .nocturnal-bg { background: radial-gradient(circle at 20% 30%, rgba(82, 55, 135, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(240, 96, 122, 0.1) 0%, transparent 50%), #151316; }
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
   body { min-height: max(884px, 100dvh); }
+  #progress-ring { transition: stroke-dashoffset 1s linear; }
 </style>
 </head>
-<body class="nocturnal-bg text-on-surface font-body min-h-screen flex flex-col overflow-hidden">
-<header class="flex justify-between items-center w-full px-6 py-4 max-w-screen-xl mx-auto">
+<body class="nocturnal-bg text-on-surface font-body min-h-screen flex flex-col">
+
+<header class="flex justify-between items-center w-full px-6 py-4 max-w-screen-xl mx-auto flex-shrink-0">
   <div class="flex items-center gap-2 text-xl font-bold text-[#e7e1e5]">
-    <span class="material-symbols-outlined text-[#F0607A]">radio_button_checked</span>
+    <span class="material-symbols-outlined text-[#F0607A]" style="font-variation-settings:'FILL' 1;">radio_button_checked</span>
     <span class="tracking-tighter font-headline">Noa</span>
   </div>
   <div class="flex items-center gap-4">
-    <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Step 2 of 6</span>
+    <span id="step-label" class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Step 1 of 5</span>
   </div>
 </header>
-<main class="flex-1 flex flex-col items-center justify-center px-8 text-left max-w-xl mx-auto w-full">
-  <div class="w-full flex gap-1.5 mb-16 h-1">
-    <div class="flex-1 h-full bg-primary-container rounded-full"></div>
-    <div class="flex-1 h-full bg-primary-container rounded-full"></div>
-    <div class="flex-1 h-full bg-surface-container-highest rounded-full"></div>
-    <div class="flex-1 h-full bg-surface-container-highest rounded-full"></div>
-    <div class="flex-1 h-full bg-surface-container-highest rounded-full"></div>
-    <div class="flex-1 h-full bg-surface-container-highest rounded-full"></div>
+
+<main class="flex-1 flex flex-col items-center justify-between px-8 max-w-xl mx-auto w-full py-4">
+
+  <!-- Progress bar -->
+  <div id="progress-bar" class="w-full flex gap-1.5 h-1 mb-8">
+    <div class="flex-1 h-full rounded-full bg-surface-container-highest transition-colors duration-500"></div>
+    <div class="flex-1 h-full rounded-full bg-surface-container-highest transition-colors duration-500"></div>
+    <div class="flex-1 h-full rounded-full bg-surface-container-highest transition-colors duration-500"></div>
+    <div class="flex-1 h-full rounded-full bg-surface-container-highest transition-colors duration-500"></div>
+    <div class="flex-1 h-full rounded-full bg-surface-container-highest transition-colors duration-500"></div>
   </div>
-  <section class="space-y-4 w-full">
+
+  <!-- Step info -->
+  <section class="space-y-3 w-full">
     <span class="text-[10px] uppercase tracking-[0.2rem] text-on-surface-variant font-bold">Current Task</span>
-    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight text-on-surface">Drink water, take your supplements.</h1>
+    <h1 id="step-title" class="text-3xl md:text-4xl font-extrabold tracking-tighter leading-tight text-on-surface transition-all duration-300"></h1>
+    <p id="step-subtitle" class="text-on-surface-variant text-sm leading-relaxed"></p>
   </section>
-  <div class="relative flex items-center justify-center my-20">
+
+  <!-- Timer ring -->
+  <div class="relative flex items-center justify-center my-8 cursor-pointer select-none" id="timer-area">
     <div class="absolute w-64 h-64 rounded-full bg-secondary-container opacity-10 blur-[60px]"></div>
-    <svg class="w-64 h-64 transform -rotate-90">
-      <circle class="text-surface-container-highest" cx="128" cy="128" fill="transparent" r="120" stroke="currentColor" stroke-width="4"></circle>
-      <circle class="text-primary-container" cx="128" cy="128" fill="transparent" r="120" stroke="currentColor" stroke-dasharray="753.6" stroke-dashoffset="188.4" stroke-width="4"></circle>
+    <svg class="w-64 h-64 transform -rotate-90" viewBox="0 0 256 256">
+      <circle cx="128" cy="128" fill="transparent" r="108" stroke="#373437" stroke-width="6"></circle>
+      <circle id="progress-ring" cx="128" cy="128" fill="transparent" r="108"
+        stroke="#f0607a" stroke-width="6"
+        stroke-dasharray="678.6" stroke-dashoffset="0"
+        stroke-linecap="round"></circle>
     </svg>
-    <div class="absolute flex flex-col items-center">
-      <span class="text-7xl font-bold tracking-tighter tabular-nums">01:45</span>
-      <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant opacity-60">Remaining</span>
+    <div class="absolute flex flex-col items-center gap-1">
+      <span id="time-display" class="text-6xl font-bold tracking-tighter tabular-nums">00:00</span>
+      <span id="timer-status" class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant opacity-60">Tap to pause</span>
     </div>
   </div>
-  <div class="glass-panel w-full p-5 rounded-2xl flex items-center gap-4 mb-10">
-    <div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary-container">
-      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+
+  <!-- Step icon hint -->
+  <div class="glass-panel w-full p-4 rounded-2xl flex items-center gap-4">
+    <div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center flex-shrink-0">
+      <span id="step-icon" class="material-symbols-outlined text-primary-container" style="font-variation-settings:'FILL' 1;"></span>
     </div>
-    <div>
-      <p class="text-sm font-bold text-on-surface">Hydration Goal</p>
-      <p class="text-xs text-on-surface-variant">Recommended: 500ml of room temp water.</p>
-    </div>
+    <p id="step-hint" class="text-sm text-on-surface-variant leading-snug"></p>
   </div>
+
 </main>
-<footer class="p-8 pb-12 flex flex-col items-center gap-6 w-full max-w-xl mx-auto">
-  <a href="routine-complete.html" class="w-full h-16 bg-gradient-to-r from-primary-container to-[#f2748b] rounded-full text-on-primary-container font-bold text-lg flex items-center justify-center gap-2 shadow-[0_20px_40px_rgba(240,96,122,0.15)] active:scale-95 transition-transform">
-    Done
+
+<footer class="p-6 pb-10 flex flex-col items-center gap-4 w-full max-w-xl mx-auto flex-shrink-0">
+  <button id="done-btn" onclick="completeStep()" class="w-full h-16 bg-gradient-to-r from-primary-container to-[#f2748b] rounded-full text-on-primary-container font-bold text-lg flex items-center justify-center gap-2 shadow-[0_20px_40px_rgba(240,96,122,0.15)] active:scale-95 transition-all">
+    <span id="done-label">Done</span>
     <span class="material-symbols-outlined">arrow_forward</span>
-  </a>
-  <a href="index.html" class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold hover:text-on-surface transition-colors">Skip this step</a>
+  </button>
+  <button onclick="skipStep()" class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold hover:text-on-surface transition-colors">Skip this step</button>
 </footer>
+
 <div class="fixed -z-10 top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary-container/5 rounded-full blur-[120px]"></div>
 <div class="fixed -z-10 bottom-[5%] left-[-10%] w-[400px] h-[400px] bg-secondary-container/10 rounded-full blur-[100px]"></div>
+
+<script>
+  const CIRC = 2 * Math.PI * 108; // 678.6
+
+  const STEPS = [
+    {
+      id: 'wake',
+      title: 'Get up, restroom, brush teeth',
+      subtitle: 'First movement of the day. Just get going.',
+      icon: 'bed',
+      hint: 'Get your body moving. The hardest part is the first 30 seconds.',
+      duration: 120,
+    },
+    {
+      id: 'water',
+      title: 'Drink water, supplements, make bed',
+      subtitle: 'Hydrate before anything else.',
+      icon: 'water_drop',
+      hint: 'Water first, then supplements. 500ml to start the engine.',
+      duration: 60,
+    },
+    {
+      id: 'gym-clothes',
+      title: 'Put on gym clothes',
+      subtitle: 'Getting dressed is the commitment.',
+      icon: 'fitness_center',
+      hint: 'Clothes on = you\'re going. No debate after this point.',
+      duration: 150,
+    },
+    {
+      id: 'make-bed',
+      title: 'Make your bed',
+      subtitle: 'First win of the day. Non-negotiable.',
+      icon: 'hotel',
+      hint: 'A made bed is a signal to your brain that the day has started right.',
+      duration: 60,
+    },
+    {
+      id: 'snack',
+      title: 'Grab a snack',
+      subtitle: 'Quick fuel before you move.',
+      icon: 'nutrition',
+      hint: 'Fast and easy. You\'re about to work out - grab something and go.',
+      duration: 30,
+    },
+  ];
+
+  let currentStep = 0;
+  let timeLeft = 0;
+  let totalTime = 0;
+  let paused = false;
+  let timerInterval = null;
+  let completedSteps = [];
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  }
+
+  function updateRing() {
+    const pct = totalTime > 0 ? timeLeft / totalTime : 0;
+    document.getElementById('progress-ring').setAttribute('stroke-dashoffset', CIRC * pct);
+  }
+
+  function updateProgressBar() {
+    const bars = document.getElementById('progress-bar').children;
+    for (let i = 0; i < bars.length; i++) {
+      bars[i].style.backgroundColor = i <= currentStep ? '#f0607a' : '#373437';
+    }
+  }
+
+  function renderStep(idx) {
+    const step = STEPS[idx];
+    totalTime = step.duration;
+    timeLeft = step.duration;
+    paused = false;
+
+    document.getElementById('step-label').textContent = `Step ${idx + 1} of ${STEPS.length}`;
+    document.getElementById('step-title').textContent = step.title;
+    document.getElementById('step-subtitle').textContent = step.subtitle;
+    document.getElementById('step-icon').textContent = step.icon;
+    document.getElementById('step-hint').textContent = step.hint;
+    document.getElementById('time-display').textContent = formatTime(timeLeft);
+    document.getElementById('timer-status').textContent = 'Tap to pause';
+    document.getElementById('done-label').textContent = idx < STEPS.length - 1 ? 'Done, next step' : 'Finish routine';
+    document.getElementById('done-btn').classList.remove('animate-pulse', 'scale-105');
+
+    updateRing();
+    updateProgressBar();
+    startTimer();
+  }
+
+  function startTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      if (paused) return;
+      timeLeft = Math.max(0, timeLeft - 1);
+      document.getElementById('time-display').textContent = formatTime(timeLeft);
+      updateRing();
+      if (timeLeft === 0) {
+        clearInterval(timerInterval);
+        document.getElementById('timer-status').textContent = 'Time\'s up';
+        document.getElementById('done-btn').classList.add('animate-pulse');
+      }
+    }, 1000);
+  }
+
+  function togglePause() {
+    paused = !paused;
+    document.getElementById('timer-status').textContent = paused ? 'Paused - tap to resume' : 'Tap to pause';
+  }
+
+  function completeStep() {
+    clearInterval(timerInterval);
+    completedSteps.push(STEPS[currentStep].id);
+    if (currentStep < STEPS.length - 1) {
+      currentStep++;
+      renderStep(currentStep);
+    } else {
+      finishRoutine();
+    }
+  }
+
+  function skipStep() {
+    clearInterval(timerInterval);
+    if (currentStep < STEPS.length - 1) {
+      currentStep++;
+      renderStep(currentStep);
+    } else {
+      finishRoutine();
+    }
+  }
+
+  function finishRoutine() {
+    const dk = new Date().toISOString().split('T')[0];
+    const routineLog = JSON.parse(localStorage.getItem('noa_routine_log') || '{}');
+    routineLog[dk] = { completed: true, steps: completedSteps, timestamp: new Date().toISOString() };
+    localStorage.setItem('noa_routine_log', JSON.stringify(routineLog));
+    window.location.href = 'routine-complete.html';
+  }
+
+  document.getElementById('timer-area').addEventListener('click', togglePause);
+
+  renderStep(0);
+</script>
 </body>
 </html>
