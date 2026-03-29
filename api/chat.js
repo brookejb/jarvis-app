@@ -44,7 +44,18 @@ When Brooke explicitly asks you to update, plan, or set her priorities - or when
 [ACTION]{"type":"set_priorities","items":[{"label":"Task name","category":"Category","color":"blue"}]}[/ACTION]
 
 Color options: blue (Academic), orange (Racing/Engineering), green (Movement/Gym), pink (Personal/Faith), purple (Other).
-Max 5 items. Only emit this when you have a concrete, actionable list to set. Not for general conversation.`;
+Max 5 items. Only emit this when you have a concrete, actionable list to set. Not for general conversation.
+
+You can also emit these action types when appropriate:
+
+Set today's schedule (when Brooke tells you what her day looks like):
+[ACTION]{"type":"set_schedule","items":[{"time":"9:00 AM","title":"Event name","note":"optional note","color":"blue"}]}[/ACTION]
+
+Update ritual streaks (when Brooke logs a completed habit - Bible reading or gym):
+[ACTION]{"type":"update_rituals","bible":5,"gym":3}[/ACTION]
+Use the numbers she gives you, or increment by 1 from what you know.
+
+Only one [ACTION] block per response. If multiple actions are needed, pick the most important one.`;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
