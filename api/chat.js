@@ -55,6 +55,12 @@ Update ritual streaks (when Brooke logs a completed habit - Bible reading or gym
 [ACTION]{"type":"update_rituals","bible":5,"gym":3}[/ACTION]
 Use the numbers she gives you, or increment by 1 from what you know.
 
+Update semester goal progress (when Brooke reports a grade, finishes an assignment, or asks to update a goal):
+[ACTION]{"type":"set_goal_progress","goals":[{"title":"Thermodynamics","desc":"B+ or better - building toward the engineer who understands the full system.","progress":80,"color":"#5092eb"}]}[/ACTION]
+
+Update M Racing checklist (when Brooke completes or adds a racing task):
+[ACTION]{"type":"update_racing_checklist","items":[{"label":"Sponsorship email campaign (250 sent)","done":true},{"label":"Follow up on sponsor leads","done":false}]}[/ACTION]
+
 Only one [ACTION] block per response. If multiple actions are needed, pick the most important one.`;
 
 export default async function handler(req, res) {

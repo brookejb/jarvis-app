@@ -267,6 +267,10 @@
             const updated = { bible: a.bible ?? current.bible ?? 0, gym: a.gym ?? current.gym ?? 0 };
             localStorage.setItem('noa_rituals', JSON.stringify(updated));
           } catch (e) {}
+        } else if (a.type === 'set_goal_progress') {
+          try { localStorage.setItem('noa_semester_goals', JSON.stringify(a.goals)); } catch (e) {}
+        } else if (a.type === 'update_racing_checklist') {
+          try { localStorage.setItem('noa_racing_checklist', JSON.stringify(a.items)); } catch (e) {}
         }
       }
     } catch (err) {
