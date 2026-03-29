@@ -68,7 +68,7 @@
 <main class="flex-grow pt-24 pb-32 px-6 max-w-2xl mx-auto w-full space-y-10">
   <div id="chat-messages" class="flex flex-col items-start space-y-4">
     <div class="max-w-[85%] glass-card p-5 rounded-2xl rounded-tl-none border border-outline-variant/10">
-      <p class="text-on-surface leading-relaxed">Good morning, Brooke. You have a thermo problem set due Monday and an M Racing meeting today. Before we plan — how are you feeling?</p>
+      <p class="text-on-surface leading-relaxed">Good morning, Brooke. You have a thermo problem set due Monday and an M Racing meeting today. Before we plan, how are you feeling?</p>
     </div>
   </div>
   <div class="flex flex-wrap gap-3">
@@ -79,7 +79,7 @@
   </div>
   <div class="flex flex-col items-start space-y-6">
     <div class="max-w-[85%] glass-card p-5 rounded-2xl rounded-tl-none border border-outline-variant/10">
-      <p class="text-on-surface leading-relaxed">Good. Here's what I'd prioritize today given your workload —</p>
+      <p class="text-on-surface leading-relaxed">Good. Here's what I'd prioritize today given your workload:</p>
     </div>
     <div class="w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-6">
       <div class="flex justify-between items-center">
@@ -206,7 +206,7 @@
         body: JSON.stringify({ messages: chatHistory }),
       });
       const data = await res.json();
-      const reply = data.reply || 'Something went wrong — try again.';
+      const reply = data.reply || 'Something went wrong, try again.';
       chatHistory.push({ role: 'assistant', content: reply });
       appendMessage('assistant', reply);
     } catch (err) {
