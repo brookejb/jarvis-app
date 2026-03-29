@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Noa — Weekly View</title>
+<title>Noa -- Weekly View</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -47,181 +47,91 @@
 <body class="bg-surface-dim text-on-surface font-body min-h-screen pb-32">
 <header class="flex justify-between items-center w-full px-6 py-4 max-w-screen-xl mx-auto sticky top-0 z-50 backdrop-blur-md">
   <div class="flex items-center gap-2 text-xl font-bold text-[#e7e1e5]">
-    <span class="material-symbols-outlined text-[#F0607A]">radio_button_checked</span>
+    <span class="material-symbols-outlined text-[#F0607A]" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span>
     <span class="text-2xl font-bold tracking-tighter">Noa</span>
   </div>
 </header>
 <main class="px-6 space-y-10 max-w-screen-xl mx-auto pt-4">
+
+  <!-- Weekly Insight -->
   <section class="relative group">
     <div class="absolute -inset-1 bg-gradient-to-r from-primary-container to-secondary-container rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
     <div class="relative glass-card rounded-2xl p-8">
       <div class="space-y-2">
         <p class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Weekly Insight</p>
-        <h1 class="text-3xl font-bold tracking-tighter text-on-surface leading-tight">Heavy week ahead — <span class="text-primary-container">front-load the hard stuff.</span></h1>
-        <p class="text-on-surface-variant max-w-md">Thermo exam Friday and two M Racing deadlines. Monday and Tuesday are your best windows.</p>
+        <h1 id="weekly-insight" class="text-3xl font-bold tracking-tighter text-on-surface leading-tight opacity-40">Loading...</h1>
+        <p id="weekly-detail" class="text-on-surface-variant max-w-md opacity-40"></p>
       </div>
     </div>
   </section>
+
+  <!-- Week Grid -->
   <section class="space-y-4">
     <div class="flex justify-between items-end">
-      <h2 class="text-lg font-bold tracking-tight">March 2026</h2>
-      <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Week 13</span>
+      <h2 id="month-year" class="text-lg font-bold tracking-tight"></h2>
+      <span id="week-num" class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold"></span>
     </div>
-    <div class="grid grid-cols-7 gap-2">
-      <div class="flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer">
-        <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold mb-2">Sun</span>
-        <span class="text-lg font-bold mb-3">29</span>
-        <div class="w-1 h-1 rounded-full bg-surface-container-highest"></div>
-      </div>
-      <div class="flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer">
-        <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold mb-2">Mon</span>
-        <span class="text-lg font-bold mb-3">30</span>
-        <div class="flex gap-1">
-          <div class="w-1 h-1 rounded-full bg-tertiary-container"></div>
-          <div class="w-1 h-1 rounded-full bg-[#7DD4B0]"></div>
-        </div>
-      </div>
-      <div class="flex flex-col items-center p-3 rounded-2xl bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(240,96,122,0.3)] scale-105 cursor-pointer">
-        <span class="text-[10px] uppercase tracking-[0.15rem] font-bold mb-2">Tue</span>
-        <span class="text-lg font-bold mb-3">31</span>
-        <div class="flex gap-1">
-          <div class="w-1 h-1 rounded-full bg-on-primary-container"></div>
-          <div class="w-1 h-1 rounded-full bg-on-primary-container"></div>
-          <div class="w-1 h-1 rounded-full bg-on-primary-container"></div>
-        </div>
-      </div>
-      <div class="flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer">
-        <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold mb-2">Wed</span>
-        <span class="text-lg font-bold mb-3">1</span>
-        <div class="flex gap-1">
-          <div class="w-1 h-1 rounded-full bg-[#E87D4A]"></div>
-          <div class="w-1 h-1 rounded-full bg-tertiary-container"></div>
-        </div>
-      </div>
-      <div class="flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer relative">
-        <div class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></div>
-        <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold mb-2">Thu</span>
-        <span class="text-lg font-bold mb-3">2</span>
-        <div class="flex gap-1"><div class="w-1 h-1 rounded-full bg-secondary-container"></div></div>
-      </div>
-      <div class="flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer relative">
-        <div class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></div>
-        <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold mb-2">Fri</span>
-        <span class="text-lg font-bold mb-3">3</span>
-        <div class="flex gap-1">
-          <div class="w-1 h-1 rounded-full bg-primary-container"></div>
-          <div class="w-1 h-1 rounded-full bg-tertiary-container"></div>
-        </div>
-      </div>
-      <div class="flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer">
-        <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold mb-2">Sat</span>
-        <span class="text-lg font-bold mb-3">4</span>
-        <div class="w-1 h-1 rounded-full bg-surface-container-highest"></div>
-      </div>
-    </div>
+    <div id="week-grid" class="grid grid-cols-7 gap-2"></div>
   </section>
+
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+    <!-- Today's Schedule -->
     <div class="lg:col-span-2 space-y-6">
       <div class="flex items-center gap-3">
-        <h3 class="text-xl font-bold tracking-tight">Tuesday's Schedule</h3>
+        <h3 id="schedule-heading" class="text-xl font-bold tracking-tight">Today's Schedule</h3>
         <div class="h-[1px] flex-1 bg-outline-variant/10"></div>
       </div>
-      <div class="space-y-4">
-        <div class="flex items-start gap-6 group">
-          <div class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold pt-1 min-w-[60px]">09:00 AM</div>
-          <div class="flex-1 p-4 rounded-xl bg-surface-container-low border-l-4 border-tertiary-container hover:bg-surface-container-high transition-colors">
-            <h4 class="font-bold">ME 335: Thermodynamics</h4>
-            <p class="text-sm text-on-surface-variant">Dow Building</p>
-          </div>
-        </div>
-        <div class="flex items-start gap-6 group">
-          <div class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold pt-1 min-w-[60px]">01:00 PM</div>
-          <div class="flex-1 p-4 rounded-xl bg-surface-container-low border-l-4 border-primary-container hover:bg-surface-container-high transition-colors">
-            <h4 class="font-bold">Thermo Problem Set — Deep Work</h4>
-            <p class="text-sm text-on-surface-variant">Due Monday</p>
-          </div>
-        </div>
-        <div class="flex items-start gap-6 group">
-          <div class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold pt-1 min-w-[60px]">04:00 PM</div>
-          <div class="flex-1 p-4 rounded-xl glass-card border-l-4 border-[#E87D4A] hover:bg-surface-container-high transition-colors">
-            <h4 class="font-bold">M Racing Meeting</h4>
-            <p class="text-sm text-on-surface-variant">Wilson Center</p>
-          </div>
+      <div id="schedule-list" class="space-y-4">
+        <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/10 text-sm text-on-surface-variant">
+          Tell Noa your schedule on the Today tab and she'll show it here.
         </div>
       </div>
     </div>
+
+    <!-- Rituals -->
     <div class="space-y-6">
       <div class="flex items-center gap-3">
         <h3 class="text-xl font-bold tracking-tight">Rituals</h3>
         <div class="h-[1px] flex-1 bg-outline-variant/10"></div>
       </div>
-      <div class="glass-card rounded-2xl p-6 space-y-8">
+      <div id="rituals-card" class="glass-card rounded-2xl p-6 space-y-8">
         <div class="space-y-4">
           <div class="flex justify-between items-center">
             <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Bible Reading</span>
-            <span class="text-[10px] font-bold text-secondary">5/7</span>
+            <span id="bible-count" class="text-[10px] font-bold text-secondary">0/7</span>
           </div>
-          <div class="flex gap-2">
-            <div class="w-3 h-3 rounded-full bg-secondary"></div>
-            <div class="w-3 h-3 rounded-full bg-secondary"></div>
-            <div class="w-3 h-3 rounded-full bg-secondary"></div>
-            <div class="w-3 h-3 rounded-full bg-secondary"></div>
-            <div class="w-3 h-3 rounded-full bg-secondary"></div>
-            <div class="w-3 h-3 rounded-full bg-surface-container-highest"></div>
-            <div class="w-3 h-3 rounded-full bg-surface-container-highest"></div>
-          </div>
+          <div id="bible-dots" class="flex gap-2"></div>
         </div>
         <div class="space-y-4">
           <div class="flex justify-between items-center">
             <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Gym</span>
-            <span class="text-[10px] font-bold text-[#7DD4B0]">3/5</span>
+            <span id="gym-count" class="text-[10px] font-bold text-[#7DD4B0]">0/5</span>
           </div>
-          <div class="flex gap-2">
-            <div class="w-3 h-3 rounded-full bg-[#7DD4B0]"></div>
-            <div class="w-3 h-3 rounded-full bg-[#7DD4B0]"></div>
-            <div class="w-3 h-3 rounded-full bg-[#7DD4B0]"></div>
-            <div class="w-3 h-3 rounded-full bg-surface-container-highest"></div>
-            <div class="w-3 h-3 rounded-full bg-surface-container-highest"></div>
-          </div>
+          <div id="gym-dots" class="flex gap-2"></div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Upcoming Deadlines -->
   <section class="space-y-6">
     <div class="flex items-center gap-3">
       <h3 class="text-xl font-bold tracking-tight">Upcoming Deadlines</h3>
       <div class="h-[1px] flex-1 bg-outline-variant/10"></div>
     </div>
-    <div class="flex overflow-x-auto pb-4 gap-4 no-scrollbar">
-      <div class="min-w-[280px] p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center">
-          <span class="material-symbols-outlined text-primary-container">assignment</span>
+    <div id="deadlines-list" class="flex overflow-x-auto pb-4 gap-4 no-scrollbar">
+      <div class="min-w-[280px] p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-center gap-4 opacity-40">
+        <div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center">
+          <span class="material-symbols-outlined text-on-surface-variant">hourglass_empty</span>
         </div>
         <div>
-          <h4 class="font-bold text-sm">Thermo Problem Set</h4>
-          <p class="text-xs text-on-surface-variant">Due Monday · Academic</p>
-        </div>
-      </div>
-      <div class="min-w-[280px] p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full bg-[#E87D4A]/10 flex items-center justify-center">
-          <span class="material-symbols-outlined text-[#E87D4A]">directions_car</span>
-        </div>
-        <div>
-          <h4 class="font-bold text-sm">M Racing: Chassis Review</h4>
-          <p class="text-xs text-on-surface-variant">Due Thursday · Racing</p>
-        </div>
-      </div>
-      <div class="min-w-[280px] p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full bg-tertiary-container/10 flex items-center justify-center">
-          <span class="material-symbols-outlined text-tertiary-container">school</span>
-        </div>
-        <div>
-          <h4 class="font-bold text-sm">Thermo Exam</h4>
-          <p class="text-xs text-on-surface-variant">Friday · Academic</p>
+          <h4 class="font-bold text-sm">Loading deadlines...</h4>
+          <p class="text-xs text-on-surface-variant">Checking with Noa</p>
         </div>
       </div>
     </div>
   </section>
+
 </main>
 <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-16 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
   <a href="index.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
@@ -241,5 +151,162 @@
     <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Metrics</span>
   </a>
 </nav>
+<script>
+  const COLOR_MAP = {
+    blue:   { hex: '#5092eb' },
+    orange: { hex: '#E87D4A' },
+    green:  { hex: '#7DD4B0' },
+    pink:   { hex: '#F0607A' },
+    purple: { hex: '#c3a6ff' },
+  };
+
+  const ICON_MAP = {
+    Academic: 'assignment',
+    Racing: 'directions_car',
+    Movement: 'fitness_center',
+    'Personal/Faith': 'menu_book',
+    Other: 'task_alt',
+  };
+
+  // --- Week Grid ---
+  function getISOWeek(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const day = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - day);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  }
+
+  function renderWeekGrid() {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - dayOfWeek);
+
+    document.getElementById('month-year').textContent = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    document.getElementById('week-num').textContent = `WEEK ${getISOWeek(today)}`;
+    document.getElementById('schedule-heading').textContent =
+      `${today.toLocaleDateString('en-US', { weekday: 'long' })}'s Schedule`;
+
+    const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const grid = document.getElementById('week-grid');
+    grid.innerHTML = '';
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      const isToday = d.toDateString() === today.toDateString();
+
+      const div = document.createElement('div');
+      div.className = isToday
+        ? 'flex flex-col items-center p-3 rounded-2xl bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(240,96,122,0.3)] scale-105 cursor-pointer'
+        : 'flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer';
+
+      const labelClass = isToday ? 'font-bold' : 'text-on-surface-variant font-bold';
+      const dotColor = isToday ? 'bg-on-primary-container opacity-60' : 'bg-surface-container-highest';
+
+      div.innerHTML = `
+        <span class="text-[10px] uppercase tracking-[0.15rem] ${labelClass} mb-2">${DAY_NAMES[i]}</span>
+        <span class="text-lg font-bold mb-3">${d.getDate()}</span>
+        <div class="w-1 h-1 rounded-full ${dotColor}"></div>
+      `;
+      grid.appendChild(div);
+    }
+  }
+
+  // --- Rituals (from localStorage) ---
+  function renderRituals() {
+    const rituals = JSON.parse(localStorage.getItem('noa_rituals') || 'null');
+    const bibleCount = rituals?.bible ?? 0;
+    const gymCount = rituals?.gym ?? 0;
+
+    document.getElementById('bible-count').textContent = `${bibleCount}/7`;
+    document.getElementById('gym-count').textContent = `${gymCount}/5`;
+
+    const bibleDots = document.getElementById('bible-dots');
+    bibleDots.innerHTML = Array.from({ length: 7 }, (_, i) =>
+      `<div class="w-3 h-3 rounded-full" style="background-color: ${i < bibleCount ? '#d2bbff' : '#373437'}"></div>`
+    ).join('');
+
+    const gymDots = document.getElementById('gym-dots');
+    gymDots.innerHTML = Array.from({ length: 5 }, (_, i) =>
+      `<div class="w-3 h-3 rounded-full" style="background-color: ${i < gymCount ? '#7DD4B0' : '#373437'}"></div>`
+    ).join('');
+  }
+
+  // --- Schedule (from localStorage) ---
+  function renderSchedule() {
+    const schedule = JSON.parse(localStorage.getItem('noa_schedule') || 'null');
+    const list = document.getElementById('schedule-list');
+    if (!schedule || !Array.isArray(schedule) || schedule.length === 0) return;
+
+    list.innerHTML = schedule.map(item => {
+      const color = (COLOR_MAP[item.color] || COLOR_MAP.blue).hex;
+      return `
+        <div class="flex items-start gap-6 group">
+          <div class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold pt-1 min-w-[60px]">${item.time}</div>
+          <div class="flex-1 p-4 rounded-xl bg-surface-container-low hover:bg-surface-container-high transition-colors" style="border-left: 4px solid ${color}">
+            <h4 class="font-bold">${item.title}</h4>
+            ${item.note ? `<p class="text-sm text-on-surface-variant">${item.note}</p>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // --- Weekly Insight + Deadlines from API ---
+  async function loadWeeklyData() {
+    try {
+      const res = await fetch('/api/weekly');
+      const data = await res.json();
+
+      const insightEl = document.getElementById('weekly-insight');
+      const detailEl = document.getElementById('weekly-detail');
+      if (insightEl && data.insight) {
+        insightEl.textContent = data.insight;
+        insightEl.classList.remove('opacity-40');
+      }
+      if (detailEl && data.insightDetail) {
+        detailEl.textContent = data.insightDetail;
+        detailEl.classList.remove('opacity-40');
+      }
+
+      const deadlinesList = document.getElementById('deadlines-list');
+      if (deadlinesList && Array.isArray(data.deadlines) && data.deadlines.length > 0) {
+        deadlinesList.innerHTML = data.deadlines.map(d => {
+          const color = (COLOR_MAP[d.color] || COLOR_MAP.blue).hex;
+          const icon = ICON_MAP[d.category] || 'task_alt';
+          return `
+            <div class="min-w-[280px] p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: ${color}18">
+                <span class="material-symbols-outlined" style="color: ${color}">${icon}</span>
+              </div>
+              <div>
+                <h4 class="font-bold text-sm">${d.title}</h4>
+                <p class="text-xs text-on-surface-variant">${d.due} - ${d.category}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else if (deadlinesList && data.deadlines?.length === 0) {
+        deadlinesList.innerHTML = `
+          <div class="min-w-[280px] p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10 text-sm text-on-surface-variant">
+            No upcoming deadlines found. Tell Noa about them on the Today tab.
+          </div>`;
+      }
+    } catch (e) {
+      const insightEl = document.getElementById('weekly-insight');
+      if (insightEl) {
+        insightEl.textContent = 'Could not load weekly insight.';
+        insightEl.classList.remove('opacity-40');
+      }
+    }
+  }
+
+  renderWeekGrid();
+  renderRituals();
+  renderSchedule();
+  loadWeeklyData();
+</script>
 </body>
 </html>

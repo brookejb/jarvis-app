@@ -252,8 +252,19 @@
       const reply = data.reply || 'Something went wrong, try again.';
       chatHistory.push({ role: 'assistant', content: reply });
       appendMessage('assistant', reply);
-      if (data.actions && data.actions.type === 'set_priorities') {
-        setPriorities(data.actions.items);
+      if (data.actions) {
+        const a = data.actions;
+        if (a.type === 'set_priorities') {
+          setPriorities(a.items);
+        } else if (a.type === 'set_schedule') {
+          try { localStorage.setItem('noa_schedule', JSON.stringify(a.items)); } catch (e) {}
+        } else if (a.type === 'update_rituals') {
+          try {
+            const current = JSON.parse(localStorage.getItem('noa_rituals') || '{}');
+            const updated = { bible: a.bible ?? current.bible ?? 0, gym: a.gym ?? current.gym ?? 0 };
+            localStorage.setItem('noa_rituals', JSON.stringify(updated));
+          } catch (e) {}
+        }
       }
     } catch (err) {
       appendMessage('assistant', 'Connection error. Try again.');
