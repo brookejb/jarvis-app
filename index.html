@@ -84,30 +84,10 @@
   <div class="w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-6">
     <div class="flex justify-between items-center">
       <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Priority Matrix</h3>
-      <span class="material-symbols-outlined text-on-surface-variant text-sm">more_horiz</span>
+      <span id="priorities-done-count" class="text-[10px] font-bold text-on-surface-variant opacity-0"></span>
     </div>
-    <div id="priority-list" class="space-y-4">
-      <div class="flex items-center gap-4 group">
-        <div class="w-1.5 h-10 rounded-full bg-tertiary-container shadow-[0_0_12px_#5092eb]"></div>
-        <div class="flex-grow">
-          <p class="text-sm font-medium text-on-surface">Finish Ch. 4 Thermo Practice</p>
-          <span class="text-[9px] uppercase tracking-wider text-tertiary-container font-bold">Academic</span>
-        </div>
-      </div>
-      <div class="flex items-center gap-4 group">
-        <div class="w-1.5 h-10 rounded-full bg-[#E87D4A] shadow-[0_0_12px_#E87D4A]"></div>
-        <div class="flex-grow">
-          <p class="text-sm font-medium text-on-surface">M Racing: Aero Review</p>
-          <span class="text-[9px] uppercase tracking-wider text-[#E87D4A] font-bold">Racing</span>
-        </div>
-      </div>
-      <div class="flex items-center gap-4 group">
-        <div class="w-1.5 h-10 rounded-full bg-[#7DD4B0] shadow-[0_0_12px_#7DD4B0]"></div>
-        <div class="flex-grow">
-          <p class="text-sm font-medium text-on-surface">Gym: Lower Body</p>
-          <span class="text-[9px] uppercase tracking-wider text-[#7DD4B0] font-bold">Movement</span>
-        </div>
-      </div>
+    <div id="priority-list" class="space-y-1">
+      <p class="text-sm text-on-surface-variant opacity-40 py-2">Tell Noa what you're focusing on today</p>
     </div>
   </div>
 
@@ -177,50 +157,115 @@
 </button>
 
 <script>
-  // Priority matrix
   const COLOR_MAP = {
-    blue:   { hex: '#5092eb', shadow: '0 0 12px #5092eb' },
-    orange: { hex: '#E87D4A', shadow: '0 0 12px #E87D4A' },
-    green:  { hex: '#7DD4B0', shadow: '0 0 12px #7DD4B0' },
-    pink:   { hex: '#F0607A', shadow: '0 0 12px #F0607A' },
-    purple: { hex: '#c3a6ff', shadow: '0 0 12px #c3a6ff' },
+    blue:   { hex: '#5092eb' },
+    orange: { hex: '#E87D4A' },
+    green:  { hex: '#7DD4B0' },
+    pink:   { hex: '#F0607A' },
+    purple: { hex: '#c3a6ff' },
   };
 
-  function renderPriorityItem(item) {
-    const c = COLOR_MAP[item.color] || COLOR_MAP.blue;
-    const div = document.createElement('div');
-    div.className = 'flex items-center gap-4 group';
-    div.innerHTML = `
-      <div class="w-1.5 h-10 rounded-full flex-shrink-0" style="background-color:${c.hex};box-shadow:${c.shadow};"></div>
-      <div class="flex-grow">
-        <p class="text-sm font-medium text-on-surface">${item.label}</p>
-        <span class="text-[9px] uppercase tracking-wider font-bold" style="color:${c.hex};">${item.category}</span>
-      </div>
-    `;
-    return div;
+  const TODAY = new Date().toISOString().split('T')[0];
+  const CHECKS_KEY = `noa_daily_checks_${TODAY}`;
+
+  function loadChecks() {
+    try { return JSON.parse(localStorage.getItem(CHECKS_KEY) || '[]'); } catch(e) { return []; }
   }
 
-  function setPriorities(items) {
+  function saveChecks(arr) {
+    localStorage.setItem(CHECKS_KEY, JSON.stringify(arr));
+  }
+
+  function isGymItem(item) {
+    const t = ((item.label || '') + ' ' + (item.category || '')).toLowerCase();
+    return /gym|workout|exercise|movement|lower body|upper body|lift|training|fitness/.test(t);
+  }
+
+  function isBibleItem(item) {
+    const t = ((item.label || '') + ' ' + (item.category || '')).toLowerCase();
+    return /bible|devotional|faith|scripture|verse|church/.test(t);
+  }
+
+  function updateHabitLog(item, checked) {
+    if (!isGymItem(item) && !isBibleItem(item)) return;
+    try {
+      const log = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
+      if (!log[TODAY]) log[TODAY] = {};
+      if (isGymItem(item)) log[TODAY].gym = checked;
+      if (isBibleItem(item)) log[TODAY].bible = checked;
+      localStorage.setItem('noa_habit_log', JSON.stringify(log));
+    } catch(e) {}
+  }
+
+  function renderPriorities() {
     const list = document.getElementById('priority-list');
+    const doneCount = document.getElementById('priorities-done-count');
     if (!list) return;
+
+    let items = [];
+    try { items = JSON.parse(localStorage.getItem('noa_priorities') || '[]'); } catch(e) {}
+
+    if (!items.length) {
+      list.innerHTML = '<p class="text-sm text-on-surface-variant opacity-40 py-2">Tell Noa what you\'re focusing on today</p>';
+      if (doneCount) doneCount.style.opacity = '0';
+      return;
+    }
+
+    const checks = loadChecks();
+    const done = items.filter(i => checks.includes(i.label)).length;
+
+    if (doneCount) {
+      doneCount.textContent = `${done}/${items.length} done`;
+      doneCount.style.opacity = done > 0 ? '1' : '0';
+      doneCount.style.color = done === items.length ? '#7DD4B0' : '';
+    }
+
+    // Unchecked first, checked sink to bottom
+    const sorted = [...items].sort((a, b) => {
+      const ac = checks.includes(a.label), bc = checks.includes(b.label);
+      return ac === bc ? 0 : ac ? 1 : -1;
+    });
+
     list.innerHTML = '';
-    items.forEach(item => list.appendChild(renderPriorityItem(item)));
-    try { localStorage.setItem('noa_priorities', JSON.stringify(items)); } catch (e) {}
+    sorted.forEach(item => {
+      const c = COLOR_MAP[item.color] || COLOR_MAP.blue;
+      const checked = checks.includes(item.label);
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-3 py-2.5 cursor-pointer select-none rounded-xl px-1 hover:bg-white/5 active:bg-white/10 transition-colors';
+      row.innerHTML = `
+        <button class="w-5 h-5 flex-shrink-0 flex items-center justify-center transition-all" style="color:${c.hex};">
+          <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' ${checked ? 1 : 0};">
+            ${checked ? 'check_circle' : 'radio_button_unchecked'}
+          </span>
+        </button>
+        <div class="flex-grow min-w-0 ${checked ? 'opacity-35' : ''}">
+          <p class="text-sm font-medium text-on-surface truncate ${checked ? 'line-through' : ''}">${item.label}</p>
+          <span class="text-[9px] uppercase tracking-wider font-bold" style="color:${c.hex};">${item.category}</span>
+        </div>
+        ${!checked ? `<div class="w-1 h-6 rounded-full flex-shrink-0" style="background-color:${c.hex};box-shadow:0 0 6px ${c.hex};"></div>` : ''}
+      `;
+      row.addEventListener('click', () => {
+        const arr = loadChecks();
+        const wasChecked = arr.includes(item.label);
+        if (wasChecked) arr.splice(arr.indexOf(item.label), 1);
+        else arr.push(item.label);
+        saveChecks(arr);
+        updateHabitLog(item, !wasChecked);
+        renderPriorities();
+      });
+      list.appendChild(row);
+    });
   }
 
-  // Load saved priorities
-  try {
-    const saved = localStorage.getItem('noa_priorities');
-    if (saved) {
-      const items = JSON.parse(saved);
-      if (Array.isArray(items) && items.length > 0) setPriorities(items);
-    }
-  } catch (e) {}
-
-  // Hook for noa-chat.js to update page elements
+  // Hook for noa-chat.js
   window.onNoaAction = function(a) {
-    if (a.type === 'set_priorities' && a.items) setPriorities(a.items);
+    if (a.type === 'set_priorities' && a.items) {
+      localStorage.setItem('noa_priorities', JSON.stringify(a.items));
+      renderPriorities();
+    }
   };
+
+  renderPriorities();
 
   // Date header
   const headerDate = document.getElementById('header-date');
