@@ -72,6 +72,19 @@
     <p id="greeting-text" class="text-on-surface leading-relaxed opacity-50">Good morning, Brooke...</p>
   </div>
 
+  <!-- Weather -->
+  <div id="weather-card" class="flex items-center gap-4 px-1 opacity-0 transition-opacity duration-500">
+    <span id="weather-icon" class="material-symbols-outlined text-3xl text-on-surface-variant" style="font-variation-settings:'FILL' 1;">wb_sunny</span>
+    <div>
+      <p class="text-2xl font-bold tracking-tight text-on-surface" id="weather-temp">--°</p>
+      <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant" id="weather-desc">Loading...</p>
+    </div>
+    <div class="ml-auto text-right">
+      <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant" id="weather-feels">Feels like --°</p>
+      <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant/60" id="weather-location">Ann Arbor</p>
+    </div>
+  </div>
+
   <!-- Feeling buttons -->
   <div class="flex flex-wrap gap-3">
     <button onclick="noaSend('I\'m feeling sharp today')" class="px-5 py-2.5 rounded-full glass-card border border-outline-variant/20 uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant hover:opacity-80 transition-opacity">Sharp</button>
@@ -291,6 +304,57 @@
     }
   }
   loadGreeting();
+
+  // Weather via Open-Meteo (free, no API key)
+  const WMO = {
+    0: ['Clear', 'wb_sunny'],
+    1: ['Mostly Clear', 'wb_sunny'],
+    2: ['Partly Cloudy', 'partly_cloudy_day'],
+    3: ['Overcast', 'cloud'],
+    45: ['Foggy', 'foggy'],
+    48: ['Foggy', 'foggy'],
+    51: ['Light Drizzle', 'grain'],
+    53: ['Drizzle', 'grain'],
+    55: ['Heavy Drizzle', 'grain'],
+    61: ['Light Rain', 'rainy'],
+    63: ['Rain', 'rainy'],
+    65: ['Heavy Rain', 'rainy'],
+    71: ['Light Snow', 'weather_snowy'],
+    73: ['Snow', 'weather_snowy'],
+    75: ['Heavy Snow', 'weather_snowy'],
+    80: ['Rain Showers', 'rainy'],
+    81: ['Rain Showers', 'rainy'],
+    82: ['Heavy Showers', 'rainy'],
+    95: ['Thunderstorm', 'thunderstorm'],
+    96: ['Thunderstorm', 'thunderstorm'],
+    99: ['Thunderstorm', 'thunderstorm'],
+  };
+
+  async function loadWeather(lat, lon) {
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const cur = data.current;
+      const code = cur.weather_code;
+      const [desc, icon] = WMO[code] || WMO[Math.floor(code / 10) * 10] || ['Clear', 'wb_sunny'];
+
+      document.getElementById('weather-temp').textContent = `${Math.round(cur.temperature_2m)}°`;
+      document.getElementById('weather-feels').textContent = `Feels like ${Math.round(cur.apparent_temperature)}°`;
+      document.getElementById('weather-desc').textContent = desc;
+      document.getElementById('weather-icon').textContent = icon;
+      document.getElementById('weather-card').style.opacity = '1';
+    } catch (e) {}
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => loadWeather(pos.coords.latitude, pos.coords.longitude),
+      () => loadWeather(42.2808, -83.7430) // fallback: Ann Arbor
+    );
+  } else {
+    loadWeather(42.2808, -83.7430);
+  }
 </script>
 <script src="/noa-chat.js"></script>
 </body>
