@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Jarvis — Weekly View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary-container": "#f0607a",
+          "surface-container": "#211f22",
+          "surface-container-highest": "#373437",
+          "on-primary-container": "#5b001c",
+          "secondary-container": "#523787",
+          "secondary": "#d2bbff",
+          "tertiary": "#a7c8ff",
+          "tertiary-container": "#5092eb",
+          "surface-container-low": "#1d1b1e",
+          "surface-container-high": "#2c292c",
+          "surface-dim": "#151316",
+          "on-surface": "#e7e1e5",
+          "on-surface-variant": "#dfbfc1",
+          "background": "#151316",
+          "outline-variant": "#584143",
+          "error": "#ffb4ab",
+        },
+        fontFamily: { "headline": ["Inter"], "body": ["Inter"] },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  .glass-card { background: rgba(55, 52, 55, 0.15); backdrop-filter: blur(20px); border: 1px solid rgba(88, 65, 67, 0.15); }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { background-color: #151316; color: #e7e1e5; font-family: 'Inter', sans-serif; min-height: max(884px, 100dvh); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+</head>
+<body class="bg-surface-dim text-on-surface font-body min-h-screen pb-32">
+<header class="flex justify-between items-center w-full px-6 py-4 max-w-screen-xl mx-auto sticky top-0 z-50 backdrop-blur-md">
+  <div class="flex items-center gap-2 text-xl font-bold text-[#e7e1e5]">
+    <span class="material-symbols-outlined text-[#F0607A]">radio_button_checked</span>
+    <span class="text-2xl font-bold tracking-tighter">Jarvis</span>
+  </div>
+</header>
+<main class="px-6 space-y-10 max-w-screen-xl mx-auto pt-4">
+  <section class="relative group">
+    <div class="absolute -inset-1 bg-gradient-to-r from-primary-container to-secondary-container rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
+    <div class="relative glass-card rounded-2xl p-8">
+      <div class="space-y-2">
+        <p class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Weekly Insight</p>
+        <h1 class="text-3xl font-bold tracking-tighter text-on-surface leading-tight">Heavy week ahead — <span class="text-primary-container">front-load the hard stuff.</span></h1>
+        <p class="text-on-surface-variant max-w-md">Thermo exam Friday and two M Racing deadlines. Monday and Tuesday are your best windows.</p>
+      </div>
+    </div>
+  </section>
+  <section class="space-y-4">
+    <div class="flex justify-between items-end">
+      <h2 class="text-lg font-bold tracking-tight">March 2026</h2>
+      <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Week 13</span>
+    </div>
+    <div class="grid grid-cols-7 gap-2">
+      <div class="flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer">
+        <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold mb-2">Sun</span>
+        <span class="text-lg font-bold mb-3">29</span>
+        <div class="w-1 h-1 rounded-full bg-surface-container-highest"></div>
+      </div>
+      <div class="flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer">
+        <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold mb-2">Mon</span>
+        <span class="text-lg font-bold mb-3">30</span>
+        <div class="flex gap-1">
+          <div class="w-1 h-1 rounded-full bg-tertiary-container"></div>
+          <div class="w-1 h-1 rounded-full bg-[#7DD4B0]"></div>
+        </div>
+      </div>
+      <div class="flex flex-col items-center p-3 rounded-2xl bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(240,96,122,0.3)] scale-105 cursor-pointer">
+        <span class="text-[10px] uppercase tracking-[0.15rem] font-bold mb-2">Tue</span>
+        <span class="text-lg font-bold mb-3">31</span>
+        <div class="flex gap-1">
+          <div class="w-1 h-1 rounded-full bg-on-primary-container"></div>
+          <div class="w-1 h-1 rounded-full bg-on-primary-container"></div>
+          <div class="w-1 h-1 rounded-full bg-on-primary-container"></div>
+        </div>
+      </div>
+      <div class="flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer">
+        <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold mb-2">Wed</span>
+        <span class="text-lg font-bold mb-3">1</span>
+        <div class="flex gap-1">
+          <div class="w-1 h-1 rounded-full bg-[#E87D4A]"></div>
+          <div class="w-1 h-1 rounded-full bg-tertiary-container"></div>
+        </div>
+      </div>
+      <div class="flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer relative">
+        <div class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></div>
+        <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold mb-2">Thu</span>
+        <span class="text-lg font-bold mb-3">2</span>
+        <div class="flex gap-1"><div class="w-1 h-1 rounded-full bg-secondary-container"></div></div>
+      </div>
+      <div class="flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer relative">
+        <div class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></div>
+        <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold mb-2">Fri</span>
+        <span class="text-lg font-bold mb-3">3</span>
+        <div class="flex gap-1">
+          <div class="w-1 h-1 rounded-full bg-primary-container"></div>
+          <div class="w-1 h-1 rounded-full bg-tertiary-container"></div>
+        </div>
+      </div>
+      <div class="flex flex-col items-center p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer">
+        <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold mb-2">Sat</span>
+        <span class="text-lg font-bold mb-3">4</span>
+        <div class="w-1 h-1 rounded-full bg-surface-container-highest"></div>
+      </div>
+    </div>
+  </section>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+    <div class="lg:col-span-2 space-y-6">
+      <div class="flex items-center gap-3">
+        <h3 class="text-xl font-bold tracking-tight">Tuesday's Schedule</h3>
+        <div class="h-[1px] flex-1 bg-outline-variant/10"></div>
+      </div>
+      <div class="space-y-4">
+        <div class="flex items-start gap-6 group">
+          <div class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold pt-1 min-w-[60px]">09:00 AM</div>
+          <div class="flex-1 p-4 rounded-xl bg-surface-container-low border-l-4 border-tertiary-container hover:bg-surface-container-high transition-colors">
+            <h4 class="font-bold">ME 335: Thermodynamics</h4>
+            <p class="text-sm text-on-surface-variant">Dow Building</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-6 group">
+          <div class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold pt-1 min-w-[60px]">01:00 PM</div>
+          <div class="flex-1 p-4 rounded-xl bg-surface-container-low border-l-4 border-primary-container hover:bg-surface-container-high transition-colors">
+            <h4 class="font-bold">Thermo Problem Set — Deep Work</h4>
+            <p class="text-sm text-on-surface-variant">Due Monday</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-6 group">
+          <div class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold pt-1 min-w-[60px]">04:00 PM</div>
+          <div class="flex-1 p-4 rounded-xl glass-card border-l-4 border-[#E87D4A] hover:bg-surface-container-high transition-colors">
+            <h4 class="font-bold">M Racing Meeting</h4>
+            <p class="text-sm text-on-surface-variant">Wilson Center</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="space-y-6">
+      <div class="flex items-center gap-3">
+        <h3 class="text-xl font-bold tracking-tight">Rituals</h3>
+        <div class="h-[1px] flex-1 bg-outline-variant/10"></div>
+      </div>
+      <div class="glass-card rounded-2xl p-6 space-y-8">
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Bible Reading</span>
+            <span class="text-[10px] font-bold text-secondary">5/7</span>
+          </div>
+          <div class="flex gap-2">
+            <div class="w-3 h-3 rounded-full bg-secondary"></div>
+            <div class="w-3 h-3 rounded-full bg-secondary"></div>
+            <div class="w-3 h-3 rounded-full bg-secondary"></div>
+            <div class="w-3 h-3 rounded-full bg-secondary"></div>
+            <div class="w-3 h-3 rounded-full bg-secondary"></div>
+            <div class="w-3 h-3 rounded-full bg-surface-container-highest"></div>
+            <div class="w-3 h-3 rounded-full bg-surface-container-highest"></div>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Gym</span>
+            <span class="text-[10px] font-bold text-[#7DD4B0]">3/5</span>
+          </div>
+          <div class="flex gap-2">
+            <div class="w-3 h-3 rounded-full bg-[#7DD4B0]"></div>
+            <div class="w-3 h-3 rounded-full bg-[#7DD4B0]"></div>
+            <div class="w-3 h-3 rounded-full bg-[#7DD4B0]"></div>
+            <div class="w-3 h-3 rounded-full bg-surface-container-highest"></div>
+            <div class="w-3 h-3 rounded-full bg-surface-container-highest"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <section class="space-y-6">
+    <div class="flex items-center gap-3">
+      <h3 class="text-xl font-bold tracking-tight">Upcoming Deadlines</h3>
+      <div class="h-[1px] flex-1 bg-outline-variant/10"></div>
+    </div>
+    <div class="flex overflow-x-auto pb-4 gap-4 no-scrollbar">
+      <div class="min-w-[280px] p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary-container">assignment</span>
+        </div>
+        <div>
+          <h4 class="font-bold text-sm">Thermo Problem Set</h4>
+          <p class="text-xs text-on-surface-variant">Due Monday · Academic</p>
+        </div>
+      </div>
+      <div class="min-w-[280px] p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-full bg-[#E87D4A]/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-[#E87D4A]">directions_car</span>
+        </div>
+        <div>
+          <h4 class="font-bold text-sm">M Racing: Chassis Review</h4>
+          <p class="text-xs text-on-surface-variant">Due Thursday · Racing</p>
+        </div>
+      </div>
+      <div class="min-w-[280px] p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-full bg-tertiary-container/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-tertiary-container">school</span>
+        </div>
+        <div>
+          <h4 class="font-bold text-sm">Thermo Exam</h4>
+          <p class="text-xs text-on-surface-variant">Friday · Academic</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-16 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
+  <a href="index.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">today</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Today</span>
+  </a>
+  <a href="weekly.html" class="flex flex-col items-center justify-center text-[#F0607A] relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-[#F0607A] after:rounded-full after:shadow-[0_0_8px_#F0607A] scale-110">
+    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">date_range</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Week</span>
+  </a>
+  <a href="goals.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">ads_click</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Goals</span>
+  </a>
+  <a href="metrics.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">equalizer</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Metrics</span>
+  </a>
+</nav>
+</body>
+</html>

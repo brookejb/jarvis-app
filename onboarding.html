@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Jarvis — Welcome</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary-container": "#f0607a",
+          "surface-container": "#211f22",
+          "surface-container-highest": "#373437",
+          "on-primary-container": "#5b001c",
+          "secondary-container": "#523787",
+          "surface-dim": "#151316",
+          "on-surface": "#e7e1e5",
+          "on-surface-variant": "#dfbfc1",
+          "background": "#151316",
+          "outline-variant": "#584143",
+        },
+        fontFamily: { "headline": ["Inter"], "body": ["Inter"] },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .glass-card { background: rgba(55, 52, 55, 0.15); backdrop-filter: blur(20px); border: 1px solid rgba(88, 65, 67, 0.15); }
+  .orb-glow { background: radial-gradient(circle, #f0607a 0%, #523787 100%); filter: blur(40px); }
+  .input-focus-line { height: 1px; background: #f0607a; width: 0; transition: width 0.4s ease; }
+  input:focus + .input-focus-line { width: 100%; }
+  body { background-color: #151316; color: #e7e1e5; font-family: 'Inter', sans-serif; min-height: max(884px, 100dvh); }
+</style>
+</head>
+<body class="bg-surface-dim text-on-surface min-h-screen font-body flex flex-col overflow-hidden">
+<header class="top-0 z-50">
+  <div class="flex justify-between items-center w-full px-6 py-4 max-w-screen-xl mx-auto">
+    <div class="text-xl font-bold text-[#e7e1e5] flex items-center gap-2">
+      <span class="material-symbols-outlined text-[#F0607A]">radio_button_checked</span>
+      <span class="text-2xl font-bold tracking-tighter">Jarvis</span>
+    </div>
+    <div class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Step 01/07</div>
+  </div>
+</header>
+<main class="flex-grow flex items-center justify-center px-6 relative">
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] orb-glow opacity-20 rounded-full pointer-events-none"></div>
+  <div class="w-full max-w-lg z-10 flex flex-col items-center space-y-16">
+    <div class="flex flex-col items-center space-y-6">
+      <div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center shadow-[0_0_40px_rgba(240,96,122,0.2)]">
+        <span class="material-symbols-outlined text-primary-container text-4xl">radio_button_checked</span>
+      </div>
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-center">Before we start — let me get to know you.</h1>
+      <p class="text-on-surface-variant text-center">This takes about 5 minutes. Everything you tell me makes every day better.</p>
+    </div>
+    <div class="w-full group">
+      <div class="relative">
+        <label class="uppercase tracking-[0.15rem] text-[11px] font-bold text-on-surface-variant block mb-2 opacity-60">Your Name</label>
+        <input autofocus class="w-full bg-transparent border-none text-2xl md:text-3xl font-medium text-on-surface placeholder:text-surface-container-highest focus:ring-0 p-0 mb-1" placeholder="What should I call you?" type="text"/>
+        <div class="w-full h-[1px] bg-surface-container-highest absolute bottom-0"></div>
+        <div class="input-focus-line absolute bottom-0 left-1/2 -translate-x-1/2"></div>
+      </div>
+      <p class="mt-4 text-sm text-on-surface-variant/50 italic">This is how I'll address you every morning.</p>
+    </div>
+    <div class="w-full flex justify-center">
+      <a href="index.html" class="group flex items-center gap-3 bg-gradient-to-r from-primary-container to-primary-container/80 text-white px-10 py-4 rounded-full font-bold text-lg hover:scale-105 active:scale-95 transition-all shadow-[0_10px_30px_rgba(240,96,122,0.3)]">
+        Next
+        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</main>
+<div class="absolute bottom-20 -left-10 w-40 h-40 bg-secondary-container/10 blur-[80px] rounded-full"></div>
+<div class="absolute top-20 -right-10 w-60 h-60 bg-primary-container/5 blur-[100px] rounded-full"></div>
+<footer class="p-8 text-center">
+  <div class="uppercase tracking-[0.2rem] text-[9px] font-bold text-on-surface-variant/40">
+    Press <span class="px-1.5 py-0.5 border border-outline-variant/30 rounded mx-1">Enter</span> to continue
+  </div>
+</footer>
+</body>
+</html>
