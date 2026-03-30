@@ -32,9 +32,9 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   .glass-card { background: rgba(55,52,55,0.15); backdrop-filter: blur(20px); border: 1px solid rgba(88,65,67,0.15); }
-  .day-cell { min-height: 88px; transition: background 0.1s; cursor: pointer; }
+  .day-cell { min-height: 120px; transition: background 0.1s; cursor: pointer; }
   .day-cell:active { opacity: 0.8; }
-  .chip { display: block; font-size: 9px; font-weight: 700; padding: 2px 5px; border-radius: 4px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; }
+  .chip { display: block; font-size: 10px; font-weight: 700; padding: 3px 6px; border-radius: 5px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; }
 </style>
 </head>
 <body class="min-h-screen pb-32">
@@ -217,7 +217,7 @@
       const items = itemsByDate[key] || [];
 
       const cell = document.createElement('div');
-      cell.className = `day-cell p-1.5 flex flex-col ${
+      cell.className = `day-cell p-2 flex flex-col ${
         isToday ? 'bg-[#2a1a1e]' : isSelected ? 'bg-[#2c292c]' : 'bg-[#151316] hover:bg-[#1d1b1e]'
       }`;
 
@@ -225,9 +225,9 @@
       const numEl = document.createElement('div');
       numEl.className = 'flex items-center justify-between mb-1';
       const num = document.createElement('span');
-      num.className = `text-xs font-bold leading-none ${
+      num.className = `text-sm font-bold leading-none ${
         isToday
-          ? 'w-5 h-5 rounded-full bg-[#F0607A] text-[#5b001c] flex items-center justify-center text-[10px]'
+          ? 'w-6 h-6 rounded-full bg-[#F0607A] text-[#5b001c] flex items-center justify-center text-xs'
           : isCurrentMonth ? 'text-[#e7e1e5]' : 'text-[#584143]'
       }`;
       num.textContent = cellDate.getDate();
@@ -237,7 +237,7 @@
       // Assignment chips (max 2 visible, then +N)
       const chipsWrap = document.createElement('div');
       chipsWrap.className = 'flex flex-col gap-px flex-1 overflow-hidden';
-      const maxVisible = 2;
+      const maxVisible = 3;
       const visible = items.slice(0, maxVisible);
       const overflow = items.length - maxVisible;
 
