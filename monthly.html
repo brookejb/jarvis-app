@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Noa -- Monthly View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary-container": "#f0607a",
+          "surface-container": "#211f22",
+          "surface-container-highest": "#373437",
+          "on-primary-container": "#5b001c",
+          "on-primary-fixed": "#400011",
+          "secondary-container": "#523787",
+          "surface-container-low": "#1d1b1e",
+          "surface-container-high": "#2c292c",
+          "on-surface": "#e7e1e5",
+          "on-surface-variant": "#dfbfc1",
+          "background": "#151316",
+          "outline-variant": "#584143",
+          "secondary": "#d2bbff",
+        },
+        fontFamily: { "headline": ["Inter"], "body": ["Inter"] },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .glass-card { background: rgba(55, 52, 55, 0.15); backdrop-filter: blur(20px); border: 1px solid rgba(88, 65, 67, 0.15); }
+  body { background-color: #151316; color: #e7e1e5; font-family: 'Inter', sans-serif; min-height: max(884px, 100dvh); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .day-cell { transition: background 0.15s; }
+  .day-cell:active { transform: scale(0.95); }
+</style>
+</head>
+<body class="min-h-screen flex flex-col pb-32">
+
+<header class="sticky top-0 z-50 backdrop-blur-md flex justify-between items-center w-full px-6 py-4">
+  <div class="flex items-center gap-2 text-xl font-bold text-[#e7e1e5]">
+    <span class="material-symbols-outlined text-[#F0607A]" style="font-variation-settings:'FILL' 1;">radio_button_checked</span>
+    <span class="text-2xl font-bold tracking-tighter">Noa</span>
+  </div>
+  <a href="weekly.html" class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant hover:text-on-surface transition-colors">Week View</a>
+</header>
+
+<main class="flex-1 px-4 max-w-lg mx-auto w-full space-y-6 pt-2">
+
+  <!-- Month nav -->
+  <div class="flex items-center justify-between px-2">
+    <button id="prev-month" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors">
+      <span class="material-symbols-outlined text-on-surface-variant">chevron_left</span>
+    </button>
+    <div class="text-center">
+      <h2 id="month-label" class="text-xl font-bold tracking-tight"></h2>
+      <p id="year-label" class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant"></p>
+    </div>
+    <button id="next-month" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors">
+      <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+    </button>
+  </div>
+
+  <!-- Day headers -->
+  <div class="grid grid-cols-7 text-center">
+    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant py-1">S</span>
+    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant py-1">M</span>
+    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant py-1">T</span>
+    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant py-1">W</span>
+    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant py-1">T</span>
+    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant py-1">F</span>
+    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant py-1">S</span>
+  </div>
+
+  <!-- Calendar grid -->
+  <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
+
+  <!-- Selected day panel -->
+  <div id="day-panel" class="hidden glass-card rounded-2xl p-5 space-y-4">
+    <div class="flex justify-between items-center">
+      <h3 id="day-panel-title" class="font-bold text-base"></h3>
+      <a id="day-panel-link" href="weekly.html" class="text-[10px] uppercase tracking-[0.15rem] font-bold text-primary-container">Full schedule</a>
+    </div>
+    <div id="day-panel-content" class="space-y-2"></div>
+  </div>
+
+</main>
+
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-16 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
+  <a href="index.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">today</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Today</span>
+  </a>
+  <a href="weekly.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">date_range</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Week</span>
+  </a>
+  <a href="monthly.html" class="flex flex-col items-center justify-center text-[#F0607A] relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-[#F0607A] after:rounded-full after:shadow-[0_0_8px_#F0607A] scale-110">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">calendar_month</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Month</span>
+  </a>
+  <a href="goals.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">ads_click</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Goals</span>
+  </a>
+  <a href="metrics.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">equalizer</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Metrics</span>
+  </a>
+</nav>
+
+<!-- Noa Side Panel -->
+<div id="noa-overlay" class="fixed inset-0 bg-black/40 z-[90] hidden backdrop-blur-sm"></div>
+<div id="noa-panel" class="fixed right-0 top-0 h-full w-[360px] max-w-[90vw] bg-[#1d1b1e] z-[100] transform translate-x-full transition-transform duration-300 flex flex-col shadow-2xl border-l border-[#584143]/20">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-[#584143]/20">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-[#F0607A]" style="font-variation-settings:'FILL' 1;">radio_button_checked</span>
+      <span class="font-bold tracking-tight">Noa</span>
+    </div>
+    <button id="noa-close" class="text-[#dfbfc1] hover:text-[#e7e1e5] transition-colors">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+  <div id="noa-messages" class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar"></div>
+  <div class="p-4 border-t border-[#584143]/20">
+    <div class="relative">
+      <input id="noa-input" class="w-full h-12 bg-[#211f22] rounded-xl pl-4 pr-12 text-[#e7e1e5] placeholder:text-[#dfbfc1]/50 focus:outline-none focus:ring-1 focus:ring-[#f0607a]/30 text-sm" placeholder="Talk to Noa..." type="text"/>
+      <button id="noa-send" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-[#f0607a] flex items-center justify-center text-[#5b001c] hover:scale-105 active:scale-95 transition-transform">
+        <span class="material-symbols-outlined text-sm">send</span>
+      </button>
+    </div>
+  </div>
+</div>
+<button id="noa-toggle" class="fixed right-0 top-1/2 -translate-y-1/2 z-[89] bg-[#f0607a] text-[#5b001c] py-5 px-2 rounded-l-2xl shadow-lg hover:px-3 transition-all flex flex-col items-center gap-2">
+  <span class="material-symbols-outlined text-lg" style="font-variation-settings:'FILL' 1;">radio_button_checked</span>
+  <span class="text-[8px] font-bold uppercase" style="writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:0.15em">Noa</span>
+</button>
+<script src="/noa-chat.js"></script>
+
+<div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
+  <div class="absolute top-[10%] left-[-10%] w-[50%] h-[50%] bg-[#523787] opacity-10 blur-[120px] rounded-full"></div>
+  <div class="absolute bottom-[20%] right-[-5%] w-[40%] h-[40%] bg-[#F0607A] opacity-5 blur-[100px] rounded-full"></div>
+</div>
+
+<script>
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const COLOR_MAP = { blue: '#5092eb', orange: '#E87D4A', green: '#7DD4B0', pink: '#F0607A', purple: '#c3a6ff' };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let viewYear = today.getFullYear();
+  let viewMonth = today.getMonth();
+  let selectedDate = null;
+
+  // Canvas deadlines indexed by YYYY-MM-DD
+  let deadlinesByDate = {};
+
+  function dateStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  async function loadCanvasDeadlines() {
+    try {
+      const res = await fetch('/api/canvas');
+      const data = await res.json();
+      deadlinesByDate = {};
+      for (const item of (data.deadlines || [])) {
+        const key = item.dueDate ? item.dueDate.split('T')[0] : null;
+        if (!key) continue;
+        if (!deadlinesByDate[key]) deadlinesByDate[key] = [];
+        deadlinesByDate[key].push(item);
+      }
+      renderGrid();
+    } catch (e) {}
+  }
+
+  function renderGrid() {
+    document.getElementById('month-label').textContent = MONTHS[viewMonth];
+    document.getElementById('year-label').textContent = viewYear;
+
+    const grid = document.getElementById('calendar-grid');
+    grid.innerHTML = '';
+
+    const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
+
+    // Total cells: fill to complete weeks
+    const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+
+    for (let i = 0; i < totalCells; i++) {
+      let cellDate, isCurrentMonth;
+      if (i < firstDay) {
+        cellDate = new Date(viewYear, viewMonth - 1, daysInPrevMonth - firstDay + i + 1);
+        isCurrentMonth = false;
+      } else if (i < firstDay + daysInMonth) {
+        cellDate = new Date(viewYear, viewMonth, i - firstDay + 1);
+        isCurrentMonth = true;
+      } else {
+        cellDate = new Date(viewYear, viewMonth + 1, i - firstDay - daysInMonth + 1);
+        isCurrentMonth = false;
+      }
+
+      const key = dateStr(cellDate);
+      const isToday = cellDate.getTime() === today.getTime();
+      const isSelected = selectedDate && dateStr(selectedDate) === key;
+      const deadlines = deadlinesByDate[key] || [];
+      const hasHW = deadlines.some(d => d.type === 'homework' || d.type === 'assignment');
+      const hasMod = deadlines.some(d => d.type === 'modules');
+
+      const cell = document.createElement('div');
+      cell.className = `day-cell flex flex-col items-center py-2 rounded-xl cursor-pointer select-none
+        ${isToday ? 'bg-primary-container' : isSelected ? 'bg-surface-container-high' : 'hover:bg-surface-container-high'}`;
+
+      const numColor = isToday ? 'text-on-primary-container font-extrabold' :
+        isCurrentMonth ? 'text-on-surface font-bold' : 'text-on-surface-variant/30 font-medium';
+
+      let dots = '';
+      if (hasHW) dots += `<div class="w-1.5 h-1.5 rounded-full" style="background:#5092eb"></div>`;
+      if (hasMod) dots += `<div class="w-1.5 h-1.5 rounded-full" style="background:#c3a6ff"></div>`;
+
+      cell.innerHTML = `
+        <span class="text-sm ${numColor}">${cellDate.getDate()}</span>
+        <div class="flex gap-0.5 mt-1 h-1.5">${dots}</div>
+      `;
+
+      cell.addEventListener('click', () => {
+        selectedDate = new Date(cellDate);
+        renderGrid();
+        showDayPanel(cellDate, deadlines);
+      });
+
+      grid.appendChild(cell);
+    }
+  }
+
+  function showDayPanel(date, deadlines) {
+    const panel = document.getElementById('day-panel');
+    const title = document.getElementById('day-panel-title');
+    const content = document.getElementById('day-panel-content');
+    const link = document.getElementById('day-panel-link');
+
+    title.textContent = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    link.href = `weekly.html`;
+
+    if (deadlines.length === 0) {
+      content.innerHTML = '<p class="text-sm text-on-surface-variant opacity-50">Nothing due from Canvas.</p>';
+    } else {
+      content.innerHTML = deadlines.map(d => {
+        const color = COLOR_MAP[d.color] || COLOR_MAP.blue;
+        const icon = d.type === 'homework' ? 'assignment' : d.type === 'modules' ? 'library_books' : 'task_alt';
+        return `
+          <div class="flex items-center gap-3 py-1">
+            <span class="material-symbols-outlined text-base flex-shrink-0" style="color:${color}">${icon}</span>
+            <div>
+              <p class="text-sm font-medium text-on-surface">${d.title}</p>
+              <p class="text-[10px] uppercase tracking-wider font-bold text-on-surface-variant">${d.due}</p>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    panel.classList.remove('hidden');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  document.getElementById('prev-month').addEventListener('click', () => {
+    viewMonth--;
+    if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+    selectedDate = null;
+    document.getElementById('day-panel').classList.add('hidden');
+    renderGrid();
+  });
+
+  document.getElementById('next-month').addEventListener('click', () => {
+    viewMonth++;
+    if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+    selectedDate = null;
+    document.getElementById('day-panel').classList.add('hidden');
+    renderGrid();
+  });
+
+  renderGrid();
+  loadCanvasDeadlines();
+</script>
+</body>
+</html>
