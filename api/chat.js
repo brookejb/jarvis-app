@@ -84,10 +84,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'messages array required' });
   }
 
-  // Today's date - injected so Noa always knows the correct date
-  const now = new Date();
-  const todayISO = now.toISOString().split('T')[0];
-  const todayReadable = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  // Use client's local date — never server UTC, which drifts ahead for US timezones after ~8pm
+  const todayISO = req.body.clientDate || new Date().toISOString().split('T')[0];
+  const todayReadable = new Date(todayISO + 'T12:00:00').toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+  });
 
   // Load Noa's memory
   let memoryFacts = [];
