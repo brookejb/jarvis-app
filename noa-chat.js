@@ -58,7 +58,7 @@ function handleAction(a) {
         gym: a.gym ?? cur.gym ?? 0,
       }));
       if (a.bible_today !== undefined || a.gym_today !== undefined) {
-        const dk = new Date().toISOString().split('T')[0];
+        const dk = new Date().toLocaleDateString('en-CA');
         const log = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
         log[dk] = { bible: a.bible_today ?? log[dk]?.bible ?? false, gym: a.gym_today ?? log[dk]?.gym ?? false };
         localStorage.setItem('noa_habit_log', JSON.stringify(log));
@@ -82,10 +82,12 @@ async function sendMessage(text) {
   saveHistory();
   setLoading(true);
   try {
+    // Send client's local date so server never uses UTC to determine "today"
+    const clientDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: chatHistory }),
+      body: JSON.stringify({ messages: chatHistory, clientDate }),
     });
     const data = await res.json();
     const reply = data.reply || 'Something went wrong, try again.';
