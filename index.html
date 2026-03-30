@@ -458,40 +458,72 @@
     blue: '#5092eb', orange: '#E87D4A', green: '#7DD4B0', pink: '#F0607A', purple: '#c3a6ff',
   };
 
+  let _scheduleItems = [];
+
+  function timeMins(t) {
+    const m = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!m) return -1;
+    let h = parseInt(m[1]), min = parseInt(m[2]);
+    const pm = m[3].toUpperCase() === 'PM';
+    if (pm && h !== 12) h += 12;
+    if (!pm && h === 12) h = 0;
+    return h * 60 + min;
+  }
+
   function renderTodaySchedule(items) {
+    if (items) _scheduleItems = items;
     const list = document.getElementById('today-schedule-list');
     if (!list) return;
-    if (!items || items.length === 0) {
+    if (!_scheduleItems || _scheduleItems.length === 0) {
       list.innerHTML = '<p class="text-sm text-on-surface-variant opacity-40 py-2">Tell Noa your schedule and she\'ll show it here.</p>';
       return;
     }
-    // Find next upcoming item
     const now = new Date();
     const nowMins = now.getHours() * 60 + now.getMinutes();
-    function timeMins(t) {
-      const m = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
-      if (!m) return -1;
-      let h = parseInt(m[1]), min = parseInt(m[2]);
-      const pm = m[3].toUpperCase() === 'PM';
-      if (pm && h !== 12) h += 12;
-      if (!pm && h === 12) h = 0;
-      return h * 60 + min;
-    }
-    list.innerHTML = items.map((item, i) => {
+
+    // Find index of current/next item
+    let nextIdx = _scheduleItems.findIndex(item => timeMins(item.time) >= nowMins);
+
+    list.innerHTML = _scheduleItems.map((item, i) => {
       const color = SCHED_COLOR_MAP[item.color] || SCHED_COLOR_MAP.blue;
       const mins = timeMins(item.time);
-      const isNext = mins >= nowMins && (i === 0 || timeMins(items[i - 1].time) < nowMins);
+      const isPast = mins < nowMins && (nextIdx === -1 || i < nextIdx);
+      const isNext = i === nextIdx;
+
+      if (isPast) {
+        return `
+          <div class="flex items-center gap-4 opacity-25">
+            <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant min-w-[52px] line-through">${item.time}</span>
+            <div class="flex-1 px-4 py-3 rounded-xl bg-surface-container-low" style="border-left:3px solid ${color}40">
+              <p class="text-sm font-medium text-on-surface line-through">${item.title}</p>
+              ${item.note ? `<p class="text-xs text-on-surface-variant mt-0.5">${item.note}</p>` : ''}
+            </div>
+          </div>`;
+      }
+      if (isNext) {
+        return `
+          <div class="flex items-center gap-4">
+            <span class="text-[10px] uppercase tracking-[0.1rem] font-bold min-w-[52px]" style="color:${color}">NOW</span>
+            <div class="flex-1 px-4 py-3 rounded-xl" style="background:${color}18; border-left:3px solid ${color}">
+              <p class="text-sm font-bold text-on-surface">${item.title}</p>
+              ${item.note ? `<p class="text-xs text-on-surface-variant mt-0.5">${item.note}</p>` : ''}
+            </div>
+            <span class="material-symbols-outlined text-sm flex-shrink-0" style="color:${color}">arrow_right</span>
+          </div>`;
+      }
       return `
-        <div class="flex items-center gap-4 ${isNext ? '' : 'opacity-60'}">
+        <div class="flex items-center gap-4 opacity-60">
           <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant min-w-[52px]">${item.time}</span>
           <div class="flex-1 px-4 py-3 rounded-xl bg-surface-container-low" style="border-left:3px solid ${color}">
-            <p class="text-sm font-${isNext ? 'bold' : 'medium'} text-on-surface">${item.title}</p>
+            <p class="text-sm font-medium text-on-surface">${item.title}</p>
             ${item.note ? `<p class="text-xs text-on-surface-variant mt-0.5">${item.note}</p>` : ''}
           </div>
-          ${isNext ? `<span class="material-symbols-outlined text-sm flex-shrink-0" style="color:${color}">arrow_right</span>` : ''}
         </div>`;
     }).join('');
   }
+
+  // Re-render every minute so past/now/future stays accurate
+  setInterval(() => renderTodaySchedule(), 60000);
 
   async function loadTodaySchedule() {
     // Try Redis via API first, fall back to localStorage
