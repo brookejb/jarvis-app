@@ -3,10 +3,10 @@ const kv = Redis.fromEnv();
 const MEMORY_KEY = 'noa_memory';
 
 // Minimal iCal parser to get upcoming deadlines for context
-function parseUpcomingFromIcal(text, days = 7) {
+function parseUpcomingFromIcal(text, days = 7, clientNow = new Date()) {
   const events = [];
   const blocks = text.split('BEGIN:VEVENT');
-  const now = new Date();
+  const now = clientNow;
   const cutoff = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
 
   for (let i = 1; i < blocks.length; i++) {
@@ -48,13 +48,16 @@ export default async function handler(req, res) {
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
 
-  const now = new Date();
-  const todayISO = now.toISOString().split('T')[0];
-  const todayReadable = now.toLocaleDateString('en-US', {
+  // Use client's local date — same fix as chat.js to avoid UTC drift after ~8pm ET
+  const todayISO = req.query.date || new Date().toISOString().split('T')[0];
+  const todayReadable = new Date(todayISO + 'T12:00:00').toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
   });
-  const hour = now.getHours();
-  const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+  // Use client hour if provided, otherwise fall back to server hour
+  const clientHour = req.query.hour ? parseInt(req.query.hour, 10) : new Date().getHours();
+  const timeOfDay = clientHour < 12 ? 'morning' : clientHour < 17 ? 'afternoon' : 'evening';
+  // Treat "now" as midnight of the client's date so iCal day-diff math is correct
+  const clientNow = new Date(todayISO + 'T00:00:00Z');
 
   // Load memory
   let memoryFacts = [];
@@ -72,7 +75,7 @@ export default async function handler(req, res) {
       const icalRes = await fetch(ICAL_URL);
       if (icalRes.ok) {
         const text = await icalRes.text();
-        canvasDeadlines = parseUpcomingFromIcal(text, 7);
+        canvasDeadlines = parseUpcomingFromIcal(text, 7, clientNow);
       }
     }
   } catch (e) {}
