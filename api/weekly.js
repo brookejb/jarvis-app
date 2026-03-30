@@ -1,6 +1,8 @@
 import { Redis } from '@upstash/redis';
 const kv = Redis.fromEnv();
 const MEMORY_KEY = 'noa_memory';
+const RECURRING_KEY = 'noa_recurring_schedule';
+const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -37,11 +39,25 @@ Return a JSON object with this exact structure - no other text, just valid JSON:
 Color options: blue (Academic), orange (Racing), green (Movement), pink (Personal/Faith), purple (Other).
 Include only deadlines you actually know about from memory. Max 5. If you know nothing specific, return an empty deadlines array.`;
 
-  // Load schedule for the requested date from Redis
+  // Load schedule for the requested date from Redis, merged with recurring classes
   const requestedDate = req.query.date || new Date().toISOString().split('T')[0];
   let schedule = [];
   try {
-    schedule = await kv.get(`noa_schedule_${requestedDate}`) || [];
+    const oneOff = await kv.get(`noa_schedule_${requestedDate}`) || [];
+    const recurring = await kv.get(RECURRING_KEY) || {};
+    const dayOfWeek = DAYS[new Date(requestedDate + 'T12:00:00').getDay()];
+    const recurringToday = recurring[dayOfWeek] || [];
+    // Merge: recurring classes as base, one-off events on top, sort by time
+    const all = [...recurringToday, ...oneOff];
+    const toMins = (t) => {
+      const m = (t || '').match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!m) return 9999;
+      let h = parseInt(m[1]), min = parseInt(m[2]);
+      if (m[3].toUpperCase() === 'PM' && h !== 12) h += 12;
+      if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
+      return h * 60 + min;
+    };
+    schedule = all.sort((a, b) => toMins(a.time) - toMins(b.time));
   } catch (e) {}
 
   // Schedule is always returned regardless of whether Claude succeeds
