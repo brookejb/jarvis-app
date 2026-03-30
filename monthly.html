@@ -14,87 +14,85 @@
       extend: {
         colors: {
           "primary-container": "#f0607a",
-          "surface-container": "#211f22",
-          "surface-container-highest": "#373437",
-          "on-primary-container": "#5b001c",
-          "on-primary-fixed": "#400011",
-          "secondary-container": "#523787",
           "surface-container-low": "#1d1b1e",
           "surface-container-high": "#2c292c",
           "on-surface": "#e7e1e5",
           "on-surface-variant": "#dfbfc1",
           "background": "#151316",
           "outline-variant": "#584143",
-          "secondary": "#d2bbff",
         },
-        fontFamily: { "headline": ["Inter"], "body": ["Inter"] },
-        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+        fontFamily: { "body": ["Inter"] },
       },
     },
   }
 </script>
 <style>
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-  .glass-card { background: rgba(55, 52, 55, 0.15); backdrop-filter: blur(20px); border: 1px solid rgba(88, 65, 67, 0.15); }
-  body { background-color: #151316; color: #e7e1e5; font-family: 'Inter', sans-serif; min-height: max(884px, 100dvh); }
+  body { background-color: #151316; color: #e7e1e5; font-family: 'Inter', sans-serif; min-height: 100dvh; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  .day-cell { transition: background 0.15s; }
-  .day-cell:active { transform: scale(0.95); }
+  .glass-card { background: rgba(55,52,55,0.15); backdrop-filter: blur(20px); border: 1px solid rgba(88,65,67,0.15); }
+  .day-cell { min-height: 88px; transition: background 0.1s; cursor: pointer; }
+  .day-cell:active { opacity: 0.8; }
+  .chip { display: block; font-size: 9px; font-weight: 700; padding: 2px 5px; border-radius: 4px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; }
 </style>
 </head>
-<body class="min-h-screen flex flex-col pb-32">
+<body class="min-h-screen pb-32">
 
-<header class="sticky top-0 z-50 backdrop-blur-md flex justify-between items-center w-full px-6 py-4">
-  <div class="flex items-center gap-2 text-xl font-bold text-[#e7e1e5]">
+<header class="sticky top-0 z-50 backdrop-blur-md flex justify-between items-center px-5 py-4">
+  <div class="flex items-center gap-2">
     <span class="material-symbols-outlined text-[#F0607A]" style="font-variation-settings:'FILL' 1;">radio_button_checked</span>
-    <span class="text-2xl font-bold tracking-tighter">Noa</span>
+    <span class="text-xl font-bold tracking-tighter">Noa</span>
   </div>
-  <a href="weekly.html" class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant hover:text-on-surface transition-colors">Week View</a>
 </header>
 
-<main class="flex-1 px-4 max-w-lg mx-auto w-full space-y-6 pt-2">
+<main class="px-3 max-w-2xl mx-auto w-full space-y-4 pt-1">
 
   <!-- Month nav -->
-  <div class="flex items-center justify-between px-2">
-    <button id="prev-month" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors">
-      <span class="material-symbols-outlined text-on-surface-variant">chevron_left</span>
+  <div class="flex items-center justify-between px-1">
+    <button id="prev-month" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#2c292c] transition-colors">
+      <span class="material-symbols-outlined text-[#dfbfc1]">chevron_left</span>
     </button>
     <div class="text-center">
-      <h2 id="month-label" class="text-xl font-bold tracking-tight"></h2>
-      <p id="year-label" class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant"></p>
+      <h2 id="month-label" class="text-2xl font-bold tracking-tight"></h2>
+      <p id="year-label" class="text-[10px] uppercase tracking-[0.15rem] font-bold text-[#dfbfc1]"></p>
     </div>
-    <button id="next-month" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors">
-      <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+    <button id="next-month" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#2c292c] transition-colors">
+      <span class="material-symbols-outlined text-[#dfbfc1]">chevron_right</span>
     </button>
   </div>
 
+  <!-- Course legend -->
+  <div id="course-legend" class="flex flex-wrap gap-2 px-1 min-h-[20px]"></div>
+
   <!-- Day headers -->
-  <div class="grid grid-cols-7 text-center">
-    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant py-1">S</span>
-    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant py-1">M</span>
-    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant py-1">T</span>
-    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant py-1">W</span>
-    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant py-1">T</span>
-    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant py-1">F</span>
-    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant py-1">S</span>
+  <div class="grid grid-cols-7 text-center border-b border-[#373437] pb-2">
+    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-[#584143]">Sun</span>
+    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-[#584143]">Mon</span>
+    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-[#584143]">Tue</span>
+    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-[#584143]">Wed</span>
+    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-[#584143]">Thu</span>
+    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-[#584143]">Fri</span>
+    <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-[#584143]">Sat</span>
   </div>
 
   <!-- Calendar grid -->
-  <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
+  <div id="calendar-grid" class="grid grid-cols-7 gap-px bg-[#2c292c] rounded-xl overflow-hidden border border-[#2c292c]"></div>
 
   <!-- Selected day panel -->
-  <div id="day-panel" class="hidden glass-card rounded-2xl p-5 space-y-4">
+  <div id="day-panel" class="hidden glass-card rounded-2xl p-5 space-y-3">
     <div class="flex justify-between items-center">
-      <h3 id="day-panel-title" class="font-bold text-base"></h3>
-      <a id="day-panel-link" href="weekly.html" class="text-[10px] uppercase tracking-[0.15rem] font-bold text-primary-container">Full schedule</a>
+      <h3 id="day-panel-title" class="font-bold"></h3>
+      <button id="day-panel-close" class="text-[#dfbfc1]">
+        <span class="material-symbols-outlined text-base">close</span>
+      </button>
     </div>
-    <div id="day-panel-content" class="space-y-2"></div>
+    <div id="day-panel-content" class="space-y-3"></div>
   </div>
 
 </main>
 
-<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-16 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-16">
   <a href="index.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
     <span class="material-symbols-outlined">today</span>
     <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Today</span>
@@ -145,41 +143,47 @@
 </button>
 <script src="/noa-chat.js"></script>
 
-<div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
-  <div class="absolute top-[10%] left-[-10%] w-[50%] h-[50%] bg-[#523787] opacity-10 blur-[120px] rounded-full"></div>
-  <div class="absolute bottom-[20%] right-[-5%] w-[40%] h-[40%] bg-[#F0607A] opacity-5 blur-[100px] rounded-full"></div>
-</div>
-
 <script>
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const COLOR_MAP = { blue: '#5092eb', orange: '#E87D4A', green: '#7DD4B0', pink: '#F0607A', purple: '#c3a6ff' };
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   let viewYear = today.getFullYear();
   let viewMonth = today.getMonth();
   let selectedDate = null;
-
-  // Canvas deadlines indexed by YYYY-MM-DD
-  let deadlinesByDate = {};
+  let itemsByDate = {};
+  let courses = [];
 
   function dateStr(d) {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
 
-  async function loadCanvasDeadlines() {
+  async function loadCanvas() {
     try {
       const res = await fetch('/api/canvas');
       const data = await res.json();
-      deadlinesByDate = {};
-      for (const item of (data.deadlines || [])) {
+      itemsByDate = {};
+      for (const item of (data.allItems || [])) {
         const key = item.dueDate ? item.dueDate.split('T')[0] : null;
         if (!key) continue;
-        if (!deadlinesByDate[key]) deadlinesByDate[key] = [];
-        deadlinesByDate[key].push(item);
+        if (!itemsByDate[key]) itemsByDate[key] = [];
+        itemsByDate[key].push(item);
       }
+      courses = data.courses || [];
+      renderLegend();
       renderGrid();
     } catch (e) {}
+  }
+
+  function renderLegend() {
+    const legend = document.getElementById('course-legend');
+    if (!courses.length) { legend.innerHTML = ''; return; }
+    legend.innerHTML = courses.map(c => `
+      <div class="flex items-center gap-1.5">
+        <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${c.color}"></div>
+        <span class="text-[10px] font-bold text-[#dfbfc1] uppercase tracking-wider">${c.name || 'Course'}</span>
+      </div>
+    `).join('');
   }
 
   function renderGrid() {
@@ -192,8 +196,6 @@
     const firstDay = new Date(viewYear, viewMonth, 1).getDay();
     const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
     const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
-
-    // Total cells: fill to complete weeks
     const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
 
     for (let i = 0; i < totalCells; i++) {
@@ -212,84 +214,106 @@
       const key = dateStr(cellDate);
       const isToday = cellDate.getTime() === today.getTime();
       const isSelected = selectedDate && dateStr(selectedDate) === key;
-      const deadlines = deadlinesByDate[key] || [];
-      const hasHW = deadlines.some(d => d.type === 'homework' || d.type === 'assignment');
-      const hasMod = deadlines.some(d => d.type === 'modules');
+      const items = itemsByDate[key] || [];
 
       const cell = document.createElement('div');
-      cell.className = `day-cell flex flex-col items-center py-2 rounded-xl cursor-pointer select-none
-        ${isToday ? 'bg-primary-container' : isSelected ? 'bg-surface-container-high' : 'hover:bg-surface-container-high'}`;
+      cell.className = `day-cell p-1.5 flex flex-col ${
+        isToday ? 'bg-[#2a1a1e]' : isSelected ? 'bg-[#2c292c]' : 'bg-[#151316] hover:bg-[#1d1b1e]'
+      }`;
 
-      const numColor = isToday ? 'text-on-primary-container font-extrabold' :
-        isCurrentMonth ? 'text-on-surface font-bold' : 'text-on-surface-variant/30 font-medium';
+      // Date number
+      const numEl = document.createElement('div');
+      numEl.className = 'flex items-center justify-between mb-1';
+      const num = document.createElement('span');
+      num.className = `text-xs font-bold leading-none ${
+        isToday
+          ? 'w-5 h-5 rounded-full bg-[#F0607A] text-[#5b001c] flex items-center justify-center text-[10px]'
+          : isCurrentMonth ? 'text-[#e7e1e5]' : 'text-[#584143]'
+      }`;
+      num.textContent = cellDate.getDate();
+      numEl.appendChild(num);
+      cell.appendChild(numEl);
 
-      let dots = '';
-      if (hasHW) dots += `<div class="w-1.5 h-1.5 rounded-full" style="background:#5092eb"></div>`;
-      if (hasMod) dots += `<div class="w-1.5 h-1.5 rounded-full" style="background:#c3a6ff"></div>`;
+      // Assignment chips (max 2 visible, then +N)
+      const chipsWrap = document.createElement('div');
+      chipsWrap.className = 'flex flex-col gap-px flex-1 overflow-hidden';
+      const maxVisible = 2;
+      const visible = items.slice(0, maxVisible);
+      const overflow = items.length - maxVisible;
 
-      cell.innerHTML = `
-        <span class="text-sm ${numColor}">${cellDate.getDate()}</span>
-        <div class="flex gap-0.5 mt-1 h-1.5">${dots}</div>
-      `;
+      for (const item of visible) {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.style.background = item.courseColor + '22';
+        chip.style.color = item.courseColor;
+        chip.style.borderLeft = `2px solid ${item.courseColor}`;
+        // Strip leading type prefix for readability
+        const label = item.title.replace(/^[LMP][\d_\s]+/i, '').trim() || item.title;
+        chip.textContent = label;
+        chipsWrap.appendChild(chip);
+      }
+      if (overflow > 0) {
+        const more = document.createElement('span');
+        more.className = 'text-[9px] font-bold text-[#584143] pl-1';
+        more.textContent = `+${overflow} more`;
+        chipsWrap.appendChild(more);
+      }
+      cell.appendChild(chipsWrap);
 
       cell.addEventListener('click', () => {
         selectedDate = new Date(cellDate);
         renderGrid();
-        showDayPanel(cellDate, deadlines);
+        showPanel(cellDate, items);
       });
 
       grid.appendChild(cell);
     }
   }
 
-  function showDayPanel(date, deadlines) {
+  function showPanel(date, items) {
     const panel = document.getElementById('day-panel');
     const title = document.getElementById('day-panel-title');
     const content = document.getElementById('day-panel-content');
-    const link = document.getElementById('day-panel-link');
-
     title.textContent = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-    link.href = `weekly.html`;
 
-    if (deadlines.length === 0) {
-      content.innerHTML = '<p class="text-sm text-on-surface-variant opacity-50">Nothing due from Canvas.</p>';
+    if (!items.length) {
+      content.innerHTML = '<p class="text-sm text-[#dfbfc1] opacity-50">Nothing due from Canvas.</p>';
     } else {
-      content.innerHTML = deadlines.map(d => {
-        const color = COLOR_MAP[d.color] || COLOR_MAP.blue;
-        const icon = d.type === 'homework' ? 'assignment' : d.type === 'modules' ? 'library_books' : 'task_alt';
-        return `
-          <div class="flex items-center gap-3 py-1">
-            <span class="material-symbols-outlined text-base flex-shrink-0" style="color:${color}">${icon}</span>
-            <div>
-              <p class="text-sm font-medium text-on-surface">${d.title}</p>
-              <p class="text-[10px] uppercase tracking-wider font-bold text-on-surface-variant">${d.due}</p>
-            </div>
-          </div>`;
-      }).join('');
+      content.innerHTML = items.map(item => `
+        <div class="flex items-start gap-3 py-1">
+          <div class="w-0.5 h-full self-stretch rounded-full mt-1 flex-shrink-0" style="background:${item.courseColor};min-height:32px"></div>
+          <div>
+            <p class="text-sm font-semibold text-[#e7e1e5] leading-snug">${item.title}</p>
+            <p class="text-[10px] uppercase tracking-wider font-bold mt-0.5" style="color:${item.courseColor}">${item.courseName || item.type}</p>
+          </div>
+        </div>
+      `).join('');
     }
-
     panel.classList.remove('hidden');
-    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
   }
 
+  document.getElementById('day-panel-close').addEventListener('click', () => {
+    document.getElementById('day-panel').classList.add('hidden');
+    selectedDate = null;
+    renderGrid();
+  });
+
   document.getElementById('prev-month').addEventListener('click', () => {
-    viewMonth--;
-    if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+    if (--viewMonth < 0) { viewMonth = 11; viewYear--; }
     selectedDate = null;
     document.getElementById('day-panel').classList.add('hidden');
     renderGrid();
   });
-
   document.getElementById('next-month').addEventListener('click', () => {
-    viewMonth++;
-    if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+    if (++viewMonth > 11) { viewMonth = 0; viewYear++; }
     selectedDate = null;
     document.getElementById('day-panel').classList.add('hidden');
     renderGrid();
   });
 
   renderGrid();
-  loadCanvasDeadlines();
+  loadCanvas();
 </script>
 </body>
 </html>
