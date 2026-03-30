@@ -3,6 +3,83 @@ const kv = Redis.fromEnv();
 
 const MEMORY_KEY = 'noa_memory';
 
+// Load live Canvas deadlines from iCal for Noa's chat context
+async function loadCanvasForChat(todayISO) {
+  try {
+    const ICAL_URL = process.env.CANVAS_ICAL_URL;
+    if (!ICAL_URL) return { block: '', courses: [] };
+
+    const res = await fetch(ICAL_URL);
+    if (!res.ok) return { block: '', courses: [] };
+    const text = await res.text();
+
+    const now = new Date(todayISO + 'T00:00:00Z');
+    const cutoff = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+    const events = [];
+    const blocks = text.split('BEGIN:VEVENT');
+    for (let i = 1; i < blocks.length; i++) {
+      const block = blocks[i];
+      const get = (key) => {
+        const m = block.match(new RegExp(`(?:^|\\n)${key}[^:]*:([^\\n]+(?:\\n[ \\t][^\\n]+)*)`, 'm'));
+        return m ? m[1].replace(/\r?\n[ \t]/g, '').trim() : '';
+      };
+      const summary = get('SUMMARY').replace(/\\,/g, ',').trim();
+      const dtstart = get('DTSTART');
+      const url = get('URL');
+      if (!summary || !dtstart) continue;
+      if (/^L[\d\s_]/i.test(summary)) continue; // skip lectures
+
+      let date;
+      try {
+        const s = dtstart.includes('T')
+          ? dtstart.replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z?)/, '$1-$2-$3T$4:$5:$6$7')
+          : dtstart.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') + 'T00:00:00Z';
+        date = new Date(s);
+        if (isNaN(date)) continue;
+      } catch(e) { continue; }
+
+      if (date < now || date > cutoff) continue;
+
+      // Try to extract course code from summary (e.g. "EECS 314", "ME 335")
+      const codeMatch = summary.match(/\b([A-Z]{2,8}\s*\d{3,4})\b/);
+      const courseCode = codeMatch ? codeMatch[1].replace(/\s+/, ' ') : null;
+
+      // Stable course grouping via Canvas URL course ID
+      const urlMatch = url.match(/\/courses\/(\d+)\//);
+      const canvasCourseId = urlMatch ? urlMatch[1] : 'other';
+
+      const diffDays = Math.round((date - now) / (1000 * 60 * 60 * 24));
+      const dueStr = diffDays === 0 ? 'today' : diffDays === 1 ? 'tomorrow'
+        : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+      events.push({ summary, dueStr, courseCode, canvasCourseId });
+    }
+
+    if (!events.length) return { block: '', courses: [] };
+
+    // Group by canvas course
+    const byCourse = {};
+    for (const e of events) {
+      if (!byCourse[e.canvasCourseId]) byCourse[e.canvasCourseId] = { code: e.courseCode, items: [] };
+      else if (!byCourse[e.canvasCourseId].code && e.courseCode) byCourse[e.canvasCourseId].code = e.courseCode;
+      byCourse[e.canvasCourseId].items.push(`${e.summary} (due ${e.dueStr})`);
+    }
+
+    const courses = Object.values(byCourse).filter(c => c.code).map(c => c.code);
+    const lines = Object.values(byCourse).map(c =>
+      `- ${c.code || 'Other'}: ${c.items.slice(0, 4).join(' | ')}`
+    );
+
+    return {
+      block: `\n\nLive Canvas deadlines (next 14 days):\n${lines.join('\n')}`,
+      courses,
+    };
+  } catch(e) {
+    return { block: '', courses: [] };
+  }
+}
+
 const BASE_SYSTEM = `You are Noa, Brooke's personal AI planning partner. You are warm, direct, and sharp - never generic, never fluffy.
 
 About Brooke:
@@ -12,8 +89,6 @@ About Brooke:
 - Recovering from a car crash - energy management matters
 - Peak focus: late night (11PM). Morning energy varies.
 - Five-year vision: Sydney, Australia. Every daily decision connects to that.
-- Ross application due March 31 (imminent)
-- Current classes: ME 335 Thermodynamics, EECS 314, and others
 - Gym sessions and Bible reading are tracked habits she cares about
 
 Your role:
@@ -117,7 +192,13 @@ export default async function handler(req, res) {
   const mode = req.body.mode || 'student';
   const modeBlock = MODE_CONTEXT[mode] || MODE_CONTEXT.student;
 
-  const systemPrompt = BASE_SYSTEM + dateBlock + modeBlock + memoryBlock;
+  // Load live Canvas data so Noa actually knows what's on Canvas during chat
+  const { block: canvasBlock, courses } = await loadCanvasForChat(todayISO);
+  const coursesLine = courses.length > 0
+    ? `\n\nCourses detected from Canvas this semester: ${courses.join(', ')}`
+    : '';
+
+  const systemPrompt = BASE_SYSTEM + dateBlock + coursesLine + modeBlock + canvasBlock + memoryBlock;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
