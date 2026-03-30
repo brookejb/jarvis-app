@@ -1,81 +1,144 @@
+// Canvas iCal feed parser
+// Fetches from CANVAS_ICAL_URL env var, groups by assignment type, returns next 14 days
+
+function parseIcal(text) {
+  const events = [];
+  const blocks = text.split('BEGIN:VEVENT');
+  for (let i = 1; i < blocks.length; i++) {
+    const block = blocks[i];
+    const get = (key) => {
+      const re = new RegExp(`(?:^|\\n)${key}[^:]*:([^\\n]+(?:\\n[ \\t][^\\n]+)*)`, 'm');
+      const m = block.match(re);
+      return m ? m[1].replace(/\r?\n[ \t]/g, '').trim() : '';
+    };
+
+    const summary = get('SUMMARY').replace(/\\,/g, ',').replace(/\\n/g, ' ').trim();
+    const dtstart = get('DTSTART');
+    const url = get('URL');
+    if (!summary || !dtstart) continue;
+
+    // Parse iCal datetime: 20260401T040000Z or 20260401
+    let date;
+    try {
+      if (dtstart.includes('T')) {
+        const s = dtstart.replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z?)/, '$1-$2-$3T$4:$5:$6$7');
+        date = new Date(s);
+      } else {
+        const s = dtstart.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+        date = new Date(s + 'T00:00:00');
+      }
+      if (isNaN(date)) continue;
+    } catch (e) { continue; }
+
+    events.push({ summary, date, url });
+  }
+  return events.sort((a, b) => a.date - b.date);
+}
+
+function formatDue(date) {
+  const now = new Date();
+  const diffDays = Math.round((date - now) / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return 'Due today';
+  if (diffDays === 1) return 'Due tomorrow';
+  if (diffDays < 7) return `Due ${date.toLocaleDateString('en-US', { weekday: 'short' })}`;
+  return `Due ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+}
+
+function classify(summary) {
+  const s = summary.trim();
+  if (/^L[\d\s_]/i.test(s)) return 'lecture';
+  if (/^M[\d\s_]/i.test(s)) return 'module';
+  if (/^P[\d\s_]/i.test(s)) return 'homework';
+  return 'other';
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const CANVAS_TOKEN = process.env.CANVAS_TOKEN;
-  const BASE_URL = 'https://umich.instructure.com/api/v1';
-
-  if (!CANVAS_TOKEN) {
-    return res.status(500).json({ error: 'Canvas token not configured' });
-  }
-
-  const headers = {
-    'Authorization': `Bearer ${CANVAS_TOKEN}`,
-    'Content-Type': 'application/json',
-  };
+  const ICAL_URL = process.env.CANVAS_ICAL_URL;
+  if (!ICAL_URL) return res.status(500).json({ error: 'CANVAS_ICAL_URL not set' });
 
   try {
-    // Fetch active courses with grade data
-    const coursesRes = await fetch(
-      `${BASE_URL}/courses?enrollment_state=active&include[]=total_scores&include[]=current_grading_period_scores&per_page=20`,
-      { headers }
-    );
-    const courses = await coursesRes.json();
+    const response = await fetch(ICAL_URL);
+    if (!response.ok) return res.status(502).json({ error: 'Canvas feed unavailable' });
+    const text = await response.text();
 
-    if (!Array.isArray(courses)) {
-      return res.status(500).json({ error: 'Failed to fetch courses', detail: courses });
+    const all = parseIcal(text);
+
+    // Filter to next 14 days, skip past events
+    const now = new Date();
+    const cutoff = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+    const upcoming = all.filter(e => e.date >= now && e.date <= cutoff);
+
+    const lectures  = upcoming.filter(e => classify(e.summary) === 'lecture');
+    const modules   = upcoming.filter(e => classify(e.summary) === 'module');
+    const homeworks = upcoming.filter(e => classify(e.summary) === 'homework');
+    const other     = upcoming.filter(e => classify(e.summary) === 'other');
+
+    const deadlines = [];
+
+    // Individual homework/problem set items — most important
+    for (const hw of homeworks) {
+      deadlines.push({
+        title: hw.summary,
+        due: formatDue(hw.date),
+        dueDate: hw.date.toISOString(),
+        category: 'Academic',
+        color: 'blue',
+        type: 'homework',
+        url: hw.url,
+      });
     }
 
-    // Fetch upcoming assignments across all courses
-    const assignmentPromises = courses.map(course =>
-      fetch(
-        `${BASE_URL}/courses/${course.id}/assignments?order_by=due_at&bucket=upcoming&per_page=10`,
-        { headers }
-      )
-        .then(r => r.json())
-        .then(assignments =>
-          Array.isArray(assignments)
-            ? assignments.map(a => ({
-                id: a.id,
-                name: a.name,
-                due_at: a.due_at,
-                points_possible: a.points_possible,
-                course_name: course.name,
-                course_id: course.id,
-                html_url: a.html_url,
-              }))
-            : []
-        )
-        .catch(() => [])
-    );
+    // Other individual assignments
+    for (const item of other) {
+      deadlines.push({
+        title: item.summary,
+        due: formatDue(item.date),
+        dueDate: item.date.toISOString(),
+        category: 'Academic',
+        color: 'blue',
+        type: 'assignment',
+        url: item.url,
+      });
+    }
 
-    const assignmentArrays = await Promise.all(assignmentPromises);
-    const assignments = assignmentArrays
-      .flat()
-      .filter(a => a.due_at)
-      .sort((a, b) => new Date(a.due_at) - new Date(b.due_at));
+    // Modules — group into one card with count + next due
+    if (modules.length > 0) {
+      deadlines.push({
+        title: `${modules.length} module${modules.length > 1 ? 's' : ''} due`,
+        due: formatDue(modules[0].date),
+        dueDate: modules[0].date.toISOString(),
+        category: 'Academic',
+        color: 'purple',
+        type: 'modules',
+        items: modules.map(m => ({ title: m.summary, due: formatDue(m.date) })),
+      });
+    }
 
-    // Fetch announcements
-    const contextCodes = courses.map(c => `course_${c.id}`);
-    const announcementsUrl = `${BASE_URL}/announcements?${contextCodes.map(c => `context_codes[]=${c}`).join('&')}&per_page=10`;
-    const announcementsRes = await fetch(announcementsUrl, { headers });
-    const announcements = await announcementsRes.json();
+    // Lectures — grouped, low priority
+    if (lectures.length > 0) {
+      deadlines.push({
+        title: `${lectures.length} lecture${lectures.length > 1 ? 's' : ''} this week`,
+        due: formatDue(lectures[0].date),
+        dueDate: lectures[0].date.toISOString(),
+        category: 'Academic',
+        color: 'purple',
+        type: 'lectures',
+        items: lectures.map(l => ({ title: l.summary, due: formatDue(l.date) })),
+      });
+    }
 
-    // Build grades summary
-    const grades = courses.map(course => ({
-      id: course.id,
-      name: course.name,
-      score: course.enrollments?.[0]?.computed_current_score ?? null,
-      grade: course.enrollments?.[0]?.computed_current_grade ?? null,
-    }));
+    // Sort everything by due date
+    deadlines.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
     res.json({
-      courses: courses.map(c => ({ id: c.id, name: c.name })),
-      assignments,
-      announcements: Array.isArray(announcements) ? announcements.slice(0, 10) : [],
-      grades,
+      deadlines,
+      counts: { homeworks: homeworks.length, modules: modules.length, lectures: lectures.length, other: other.length },
     });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 }

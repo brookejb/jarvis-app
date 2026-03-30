@@ -115,6 +115,15 @@
     </a>
   </div>
 
+  <!-- Canvas: Upcoming -->
+  <div id="canvas-section" class="w-full space-y-4 hidden">
+    <div class="flex justify-between items-center">
+      <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Due Soon</h3>
+      <a href="weekly.html" class="uppercase tracking-[0.15rem] text-[10px] font-bold text-primary-container hover:opacity-70 transition-opacity">All</a>
+    </div>
+    <div id="canvas-list" class="flex gap-3 overflow-x-auto no-scrollbar pb-1"></div>
+  </div>
+
   <!-- Quick replies -->
   <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
     <button onclick="noaSend('Help me reschedule something')" class="whitespace-nowrap px-4 py-2 rounded-full glass-card border border-outline-variant/10 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant hover:opacity-80 transition-opacity">Reschedule something</button>
@@ -423,6 +432,35 @@
   } else {
     loadWeather(42.2808, -83.7430);
   }
+
+  // Canvas deadlines
+  async function loadCanvasItems() {
+    try {
+      const res = await fetch('/api/canvas');
+      const data = await res.json();
+      if (!data.deadlines || data.deadlines.length === 0) return;
+      const section = document.getElementById('canvas-section');
+      const list = document.getElementById('canvas-list');
+      if (!section || !list) return;
+      const colors = { blue: '#5092eb', purple: '#c3a6ff', orange: '#E87D4A' };
+      const icons = { homework: 'assignment', modules: 'library_books', lectures: 'school', assignment: 'task_alt' };
+      list.innerHTML = data.deadlines.slice(0, 6).map(d => {
+        const color = colors[d.color] || colors.blue;
+        const icon = icons[d.type] || 'task_alt';
+        return `
+          <div class="flex-shrink-0 w-44 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/10 space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-base" style="color:${color}">${icon}</span>
+              <span class="text-[9px] uppercase tracking-wider font-bold" style="color:${color}">${d.type}</span>
+            </div>
+            <p class="text-xs font-bold text-on-surface leading-snug line-clamp-2">${d.title}</p>
+            <p class="text-[10px] text-on-surface-variant font-bold">${d.due}</p>
+          </div>`;
+      }).join('');
+      section.classList.remove('hidden');
+    } catch (e) {}
+  }
+  loadCanvasItems();
 </script>
 <script src="/noa-chat.js"></script>
 </body>

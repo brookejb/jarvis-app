@@ -331,7 +331,32 @@
     }).join('');
   }
 
-  // --- Weekly Insight + Deadlines + Schedule from API ---
+  // --- Canvas deadlines ---
+  async function loadCanvasDeadlines() {
+    try {
+      const res = await fetch('/api/canvas');
+      const data = await res.json();
+      if (!data.deadlines || data.deadlines.length === 0) return;
+      const deadlinesList = document.getElementById('deadlines-list');
+      if (!deadlinesList) return;
+      deadlinesList.innerHTML = data.deadlines.map(d => {
+        const color = (COLOR_MAP[d.color] || COLOR_MAP.blue).hex;
+        const icon = d.type === 'homework' ? 'assignment' : d.type === 'modules' ? 'library_books' : d.type === 'lectures' ? 'school' : 'task_alt';
+        return `
+          <div class="min-w-[260px] p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-center gap-4 flex-shrink-0">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background-color:${color}18">
+              <span class="material-symbols-outlined text-sm" style="color:${color}">${icon}</span>
+            </div>
+            <div class="min-w-0">
+              <h4 class="font-bold text-sm truncate">${d.title}</h4>
+              <p class="text-xs text-on-surface-variant">${d.due}</p>
+            </div>
+          </div>`;
+      }).join('');
+    } catch (e) {}
+  }
+
+  // --- Weekly Insight + Schedule from API ---
   async function loadWeeklyData() {
     try {
       const res = await fetch(`/api/weekly?date=${dateKey(selectedDate)}`);
@@ -349,29 +374,6 @@
         detailEl.classList.remove('opacity-40');
       }
 
-      const deadlinesList = document.getElementById('deadlines-list');
-      if (deadlinesList && Array.isArray(data.deadlines) && data.deadlines.length > 0) {
-        deadlinesList.innerHTML = data.deadlines.map(d => {
-          const color = (COLOR_MAP[d.color] || COLOR_MAP.blue).hex;
-          const icon = ICON_MAP[d.category] || 'task_alt';
-          return `
-            <div class="min-w-[280px] p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-center gap-4">
-              <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: ${color}18">
-                <span class="material-symbols-outlined" style="color: ${color}">${icon}</span>
-              </div>
-              <div>
-                <h4 class="font-bold text-sm">${d.title}</h4>
-                <p class="text-xs text-on-surface-variant">${d.due} - ${d.category}</p>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } else if (deadlinesList && data.deadlines?.length === 0) {
-        deadlinesList.innerHTML = `
-          <div class="min-w-[280px] p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10 text-sm text-on-surface-variant">
-            No upcoming deadlines found. Tell Noa about them on the Today tab.
-          </div>`;
-      }
     } catch (e) {
       const insightEl = document.getElementById('weekly-insight');
       if (insightEl) {
@@ -384,6 +386,7 @@
   renderWeekGrid();
   renderRituals();
   loadWeeklyData();
+  loadCanvasDeadlines();
 </script>
 </body>
 </html>
