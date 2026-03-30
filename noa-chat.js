@@ -68,7 +68,10 @@ function handleAction(a) {
     } else if (a.type === 'update_racing_checklist') {
       localStorage.setItem('noa_racing_checklist', JSON.stringify(a.items));
     }
+    // start_deep_work is handled by the page via window.onNoaAction below
   } catch (e) {}
+  // Notify page-level handlers (UI re-renders, deep work trigger, etc.)
+  try { if (typeof window.onNoaAction === 'function') window.onNoaAction(a); } catch(e) {}
 }
 
 async function sendMessage(text) {

@@ -118,6 +118,18 @@
     </div>
   </div>
 
+  <!-- Deep Work Entry -->
+  <button onclick="openDeepWorkPrompt()" class="w-full py-4 rounded-2xl border border-outline-variant/20 glass-card flex items-center justify-between px-5 hover:border-outline-variant/40 active:scale-[0.99] transition-all group">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface transition-colors" style="font-variation-settings:'FILL' 1;">timer</span>
+      <div class="text-left">
+        <p class="text-sm font-bold text-on-surface">Deep Work</p>
+        <p class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant opacity-60" id="dw-sessions-label">Start a focused session</p>
+      </div>
+    </div>
+    <span class="material-symbols-outlined text-on-surface-variant opacity-40 group-hover:opacity-70 transition-opacity">chevron_right</span>
+  </button>
+
   <!-- Morning Routine -->
   <div class="flex flex-col items-start space-y-6">
     <a href="morning-routine.html" class="w-full py-5 rounded-full bg-gradient-to-r from-primary-container to-[#ad2d4a] text-on-primary-fixed font-bold text-sm tracking-tight flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(240,96,122,0.15)]">
@@ -168,6 +180,32 @@
 
 <div class="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary-container/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
 <div class="fixed bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-secondary-container/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
+
+<!-- Deep Work Overlay -->
+<div id="deep-work-overlay" class="fixed inset-0 z-[150] hidden flex-col items-center justify-center px-8" style="background:#0f0d10;">
+  <!-- Active session -->
+  <div id="dw-active" class="flex flex-col items-center gap-10 w-full max-w-xs">
+    <div class="text-center space-y-2">
+      <p class="text-[10px] uppercase tracking-[0.2rem] font-bold text-on-surface-variant opacity-50">Deep Work</p>
+      <p id="dw-task-label" class="text-xl font-bold text-on-surface leading-tight"></p>
+    </div>
+    <div id="dw-timer" class="font-bold tabular-nums text-on-surface tracking-tighter leading-none" style="font-size:clamp(64px,20vw,96px);">00:00</div>
+    <div class="w-full bg-surface-container-high rounded-full h-[3px]">
+      <div id="dw-progress" class="h-[3px] rounded-full transition-all duration-1000" style="background:#F0607A;width:100%;"></div>
+    </div>
+    <button onclick="exitDeepWork(false)" class="mt-4 text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant opacity-30 hover:opacity-60 transition-opacity">Exit session</button>
+  </div>
+  <!-- Done state -->
+  <div id="dw-done" class="hidden flex-col items-center gap-8 w-full max-w-xs text-center">
+    <span class="material-symbols-outlined text-[72px]" style="color:#7DD4B0;font-variation-settings:'FILL' 1;">check_circle</span>
+    <div class="space-y-2">
+      <p class="text-2xl font-bold text-on-surface">Session complete.</p>
+      <p class="text-sm text-on-surface-variant" id="dw-done-sub"></p>
+    </div>
+    <button onclick="exitDeepWork(true)" class="w-full py-4 rounded-full font-bold text-sm tracking-tight" style="background:#F0607A;color:#5b001c;">What's next?</button>
+    <button onclick="exitDeepWork(false)" class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant opacity-40 hover:opacity-70 transition-opacity">Back to home</button>
+  </div>
+</div>
 
 <!-- Noa Side Panel -->
 <div id="noa-overlay" class="fixed inset-0 bg-black/40 z-[90] hidden backdrop-blur-sm"></div>
@@ -503,6 +541,130 @@
     } catch (e) {}
   }
   loadCanvasItems();
+
+  // ---- Deep Work ----
+  const DW_LOG_KEY = 'noa_deep_work_log';
+  let dwTimerInterval = null;
+  let dwRemainingSeconds = 0;
+  let dwTotalSeconds = 0;
+  let dwTask = '';
+  let dwDuration = 0;
+
+  function formatDWTime(secs) {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+
+  function getDWSessionsToday() {
+    try {
+      const log = JSON.parse(localStorage.getItem(DW_LOG_KEY) || '[]');
+      return log.filter(s => s.date === TODAY && s.completed).length;
+    } catch(e) { return 0; }
+  }
+
+  function updateDWLabel() {
+    const n = getDWSessionsToday();
+    const el = document.getElementById('dw-sessions-label');
+    if (!el) return;
+    el.textContent = n > 0 ? `${n} session${n > 1 ? 's' : ''} today` : 'Start a focused session';
+  }
+  updateDWLabel();
+
+  function openDeepWorkPrompt() {
+    // Open Noa panel and send a triggering message so she knows to ask for task + duration
+    if (typeof openPanel === 'function') openPanel();
+    // Small delay so panel is open before we send
+    setTimeout(() => {
+      window.noaSend && window.noaSend('I want to start a deep work session.');
+    }, 150);
+  }
+  window.openDeepWorkPrompt = openDeepWorkPrompt;
+
+  window.startDeepWork = function({ task, duration }) {
+    dwTask = task;
+    dwDuration = duration;
+    dwTotalSeconds = duration * 60;
+    dwRemainingSeconds = dwTotalSeconds;
+
+    // Reset UI to active state
+    document.getElementById('dw-task-label').textContent = task;
+    document.getElementById('dw-timer').textContent = formatDWTime(dwRemainingSeconds);
+    document.getElementById('dw-progress').style.width = '100%';
+    document.getElementById('dw-active').classList.remove('hidden');
+    document.getElementById('dw-active').style.display = 'flex';
+    document.getElementById('dw-done').classList.add('hidden');
+    document.getElementById('dw-done').style.display = 'none';
+
+    // Show overlay
+    const overlay = document.getElementById('deep-work-overlay');
+    overlay.style.display = 'flex';
+    overlay.classList.remove('hidden');
+
+    // Close Noa panel so screen is clear
+    if (typeof closePanel === 'function') closePanel();
+
+    // Log session start
+    try {
+      const log = JSON.parse(localStorage.getItem(DW_LOG_KEY) || '[]');
+      log.push({ task, duration, date: TODAY, started: new Date().toISOString(), completed: false });
+      localStorage.setItem(DW_LOG_KEY, JSON.stringify(log.slice(-200)));
+    } catch(e) {}
+
+    // Start countdown
+    if (dwTimerInterval) clearInterval(dwTimerInterval);
+    dwTimerInterval = setInterval(() => {
+      dwRemainingSeconds--;
+      document.getElementById('dw-timer').textContent = formatDWTime(dwRemainingSeconds);
+      const pct = dwRemainingSeconds / dwTotalSeconds * 100;
+      document.getElementById('dw-progress').style.width = pct + '%';
+      if (dwRemainingSeconds <= 0) {
+        clearInterval(dwTimerInterval);
+        dwTimerInterval = null;
+        onDeepWorkComplete();
+      }
+    }, 1000);
+  };
+
+  function onDeepWorkComplete() {
+    // Mark completed in log
+    try {
+      const log = JSON.parse(localStorage.getItem(DW_LOG_KEY) || '[]');
+      const last = log[log.length - 1];
+      if (last && !last.completed) { last.completed = true; last.ended = new Date().toISOString(); }
+      localStorage.setItem(DW_LOG_KEY, JSON.stringify(log));
+    } catch(e) {}
+
+    // Switch to done UI
+    document.getElementById('dw-active').style.display = 'none';
+    document.getElementById('dw-done').style.display = 'flex';
+    document.getElementById('dw-done-sub').textContent = `${dwDuration} min on ${dwTask}.`;
+    updateDWLabel();
+  }
+
+  window.exitDeepWork = function(sendToNoa) {
+    if (dwTimerInterval) { clearInterval(dwTimerInterval); dwTimerInterval = null; }
+    const overlay = document.getElementById('deep-work-overlay');
+    overlay.style.display = 'none';
+    overlay.classList.add('hidden');
+
+    if (sendToNoa) {
+      // Brief pause so overlay closes first, then open Noa with completion context
+      setTimeout(() => {
+        window.noaSend && window.noaSend(`Just finished ${dwDuration} min of deep work on "${dwTask}". What should I focus on next?`);
+      }, 300);
+    }
+  };
+
+  // Handle start_deep_work action from Noa
+  const _dwOrigOnNoaAction = window.onNoaAction;
+  window.onNoaAction = function(a) {
+    if (_dwOrigOnNoaAction) _dwOrigOnNoaAction(a);
+    if (a.type === 'start_deep_work' && a.task && a.duration) {
+      // Small delay so Noa's reply renders first
+      setTimeout(() => window.startDeepWork({ task: a.task, duration: parseInt(a.duration, 10) }), 800);
+    }
+  };
 </script>
 <script src="/noa-chat.js"></script>
 </body>
