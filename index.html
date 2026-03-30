@@ -72,6 +72,14 @@
     <p id="greeting-text" class="text-on-surface leading-relaxed opacity-50">Good morning, Brooke...</p>
   </div>
 
+  <!-- Mode Switcher -->
+  <div class="flex gap-2 overflow-x-auto no-scrollbar -mt-2 pb-1">
+    <button data-mode="student" onclick="setMode('student')" class="mode-chip whitespace-nowrap px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.12rem] transition-all border border-outline-variant/20 text-on-surface-variant glass-card">Student</button>
+    <button data-mode="racing" onclick="setMode('racing')" class="mode-chip whitespace-nowrap px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.12rem] transition-all border border-outline-variant/20 text-on-surface-variant glass-card">M Racing</button>
+    <button data-mode="builder" onclick="setMode('builder')" class="mode-chip whitespace-nowrap px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.12rem] transition-all border border-outline-variant/20 text-on-surface-variant glass-card">Builder</button>
+    <button data-mode="personal" onclick="setMode('personal')" class="mode-chip whitespace-nowrap px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.12rem] transition-all border border-outline-variant/20 text-on-surface-variant glass-card">Personal</button>
+  </div>
+
   <!-- Energy check-in -->
   <div id="energy-section" class="space-y-3">
     <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant">How's your energy right now?</p>
@@ -97,9 +105,9 @@
   </div>
 
   <!-- Priority Matrix -->
-  <div class="w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-6">
+  <div data-modes="student,racing,builder" class="mode-section w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-6">
     <div class="flex justify-between items-center">
-      <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Priority Matrix</h3>
+      <h3 id="priorities-label" class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Today's Focus</h3>
       <span id="priorities-done-count" class="text-[10px] font-bold text-on-surface-variant opacity-0"></span>
     </div>
     <div id="priority-list" class="space-y-1">
@@ -108,7 +116,7 @@
   </div>
 
   <!-- Today's Schedule -->
-  <div class="w-full space-y-4">
+  <div data-modes="student,racing" class="mode-section w-full space-y-4">
     <div class="flex justify-between items-center">
       <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Today's Schedule</h3>
       <a href="weekly.html" class="uppercase tracking-[0.15rem] text-[10px] font-bold text-primary-container hover:opacity-70 transition-opacity">Edit</a>
@@ -119,7 +127,7 @@
   </div>
 
   <!-- Deep Work Entry -->
-  <button onclick="openDeepWorkPrompt()" class="w-full py-4 rounded-2xl border border-outline-variant/20 glass-card flex items-center justify-between px-5 hover:border-outline-variant/40 active:scale-[0.99] transition-all group">
+  <button data-modes="student,racing" onclick="openDeepWorkPrompt()" class="mode-section w-full py-4 rounded-2xl border border-outline-variant/20 glass-card flex items-center justify-between px-5 hover:border-outline-variant/40 active:scale-[0.99] transition-all group">
     <div class="flex items-center gap-3">
       <span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface transition-colors" style="font-variation-settings:'FILL' 1;">timer</span>
       <div class="text-left">
@@ -131,7 +139,7 @@
   </button>
 
   <!-- Morning Routine -->
-  <div class="flex flex-col items-start space-y-6">
+  <div data-modes="personal" class="mode-section flex flex-col items-start space-y-6">
     <a href="morning-routine.html" class="w-full py-5 rounded-full bg-gradient-to-r from-primary-container to-[#ad2d4a] text-on-primary-fixed font-bold text-sm tracking-tight flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(240,96,122,0.15)]">
       Begin Morning Routine
       <span class="material-symbols-outlined">arrow_forward</span>
@@ -139,7 +147,7 @@
   </div>
 
   <!-- Canvas: Upcoming -->
-  <div id="canvas-section" class="w-full space-y-4 hidden">
+  <div data-modes="student" id="canvas-section" class="mode-section w-full space-y-4 hidden">
     <div class="flex justify-between items-center">
       <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Due Soon</h3>
       <a href="weekly.html" class="uppercase tracking-[0.15rem] text-[10px] font-bold text-primary-container hover:opacity-70 transition-opacity">All</a>
@@ -147,12 +155,50 @@
     <div id="canvas-list" class="flex gap-3 overflow-x-auto no-scrollbar pb-1"></div>
   </div>
 
-  <!-- Quick replies -->
-  <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-    <button onclick="noaSend('Help me reschedule something')" class="whitespace-nowrap px-4 py-2 rounded-full glass-card border border-outline-variant/10 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant hover:opacity-80 transition-opacity">Reschedule something</button>
-    <button onclick="noaSend('What\'s due this week?')" class="whitespace-nowrap px-4 py-2 rounded-full glass-card border border-outline-variant/10 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant hover:opacity-80 transition-opacity">What's due this week?</button>
-    <button onclick="noaSend('Update my priorities for today')" class="whitespace-nowrap px-4 py-2 rounded-full glass-card border border-outline-variant/10 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant hover:opacity-80 transition-opacity">Update priorities</button>
+  <!-- Racing Checklist (Racing mode) -->
+  <div data-modes="racing" class="mode-section hidden w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-4">
+    <div class="flex justify-between items-center">
+      <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">M Racing Checklist</h3>
+      <span id="racing-done-count" class="text-[10px] font-bold text-on-surface-variant opacity-0"></span>
+    </div>
+    <div id="racing-checklist-list" class="space-y-1">
+      <p class="text-sm text-on-surface-variant opacity-40 py-2">Tell Noa what's on deck for M Racing</p>
+    </div>
   </div>
+
+  <!-- Sydney Vision - Hero (Personal mode) -->
+  <div data-modes="personal" class="mode-section hidden w-full rounded-3xl p-8 space-y-5 border border-[#F0607A]/15" style="background:linear-gradient(135deg,rgba(240,96,122,0.07),rgba(82,55,135,0.12));">
+    <p class="text-[10px] uppercase tracking-[0.2rem] font-bold" style="color:rgba(240,96,122,0.7)">Five-Year Vision</p>
+    <div class="space-y-2">
+      <p class="text-4xl font-bold text-on-surface tracking-tight leading-none">Sydney.</p>
+      <p class="text-base text-on-surface-variant leading-relaxed">Building something real, on your own terms, across the world.</p>
+    </div>
+    <p class="text-xs text-on-surface-variant/40 italic">Every decision today is a brick in that wall.</p>
+  </div>
+
+  <!-- Sydney Vision - Brief (Builder mode) -->
+  <div data-modes="builder" class="mode-section hidden w-full rounded-2xl p-5 border border-[#c3a6ff]/20" style="background:rgba(195,166,255,0.06);">
+    <p class="text-[10px] uppercase tracking-[0.15rem] font-bold mb-2" style="color:rgba(195,166,255,0.7)">Vision</p>
+    <p class="text-sm font-bold text-on-surface">Sydney in five years. Everything you build now is the foundation.</p>
+  </div>
+
+  <!-- Bible & Habits (Personal mode) -->
+  <div data-modes="personal" class="mode-section hidden w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-5">
+    <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">This Week</h3>
+    <div class="space-y-3">
+      <div>
+        <p class="text-xs font-bold text-on-surface mb-2">Bible</p>
+        <div id="bible-dots" class="flex gap-2"></div>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-on-surface mb-2">Gym</p>
+        <div id="gym-dots" class="flex gap-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick replies (dynamic by mode) -->
+  <div id="quick-replies" class="flex gap-2 overflow-x-auto no-scrollbar pb-2"></div>
 </main>
 
 <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-16 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
@@ -178,8 +224,8 @@
   </a>
 </nav>
 
-<div class="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary-container/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
-<div class="fixed bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-secondary-container/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
+<div id="bg-orb-1" class="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none z-0 transition-colors duration-700" style="background:rgba(240,96,122,0.05)"></div>
+<div id="bg-orb-2" class="fixed bottom-[-5%] left-[-5%] w-[400px] h-[400px] rounded-full blur-[100px] pointer-events-none z-0 transition-colors duration-700" style="background:rgba(82,55,135,0.10)"></div>
 
 <!-- Deep Work Overlay -->
 <div id="deep-work-overlay" class="fixed inset-0 z-[150] hidden flex-col items-center justify-center px-8" style="background:#0f0d10;">
@@ -340,6 +386,13 @@
     if (a.type === 'set_priorities' && a.items) {
       localStorage.setItem('noa_priorities', JSON.stringify(a.items));
       renderPriorities();
+    }
+    if (a.type === 'update_racing_checklist' && a.items) {
+      localStorage.setItem('noa_racing_checklist', JSON.stringify(a.items));
+      if (window.getCurrentMode && window.getCurrentMode() === 'racing') renderRacingChecklist();
+    }
+    if (a.type === 'update_rituals') {
+      if (window.getCurrentMode && window.getCurrentMode() === 'personal') renderPersonalAnchors();
     }
   };
 
@@ -541,6 +594,190 @@
     } catch (e) {}
   }
   loadCanvasItems();
+
+  // ---- Role-Based Modes ----
+  const MODE_CONFIG = {
+    student: {
+      color: '#5092eb',
+      orb1: 'rgba(80,146,235,0.06)',
+      orb2: 'rgba(80,146,235,0.09)',
+      prioritiesLabel: "Today's Focus",
+      chips: [
+        ["What's due this week?", "What's due this week?"],
+        ["Set a study block", "Help me set a deep work block for today"],
+        ["Update priorities", "Update my priorities for today"],
+      ],
+    },
+    racing: {
+      color: '#E87D4A',
+      orb1: 'rgba(232,125,74,0.06)',
+      orb2: 'rgba(232,125,74,0.09)',
+      prioritiesLabel: "Racing Focus",
+      chips: [
+        ["What's on deck?", "What's on deck for M Racing today?"],
+        ["Update checklist", "Update my M Racing checklist"],
+        ["Prep for meeting", "Help me prep for my next team meeting"],
+      ],
+    },
+    builder: {
+      color: '#c3a6ff',
+      orb1: 'rgba(195,166,255,0.06)',
+      orb2: 'rgba(195,166,255,0.09)',
+      prioritiesLabel: "Building Toward",
+      chips: [
+        ["Ross progress", "Where am I on the Ross application?"],
+        ["5-year check-in", "Check in on my five-year Sydney vision"],
+        ["What should I build?", "What should I be working toward as a builder this week?"],
+      ],
+    },
+    personal: {
+      color: '#F0607A',
+      orb1: 'rgba(240,96,122,0.06)',
+      orb2: 'rgba(82,55,135,0.12)',
+      prioritiesLabel: "Anchors",
+      chips: [
+        ["Log Bible reading", "I did my Bible reading today"],
+        ["Week check-in", "How am I tracking on my personal anchors this week?"],
+        ["Reflect", "I want to reflect on how this week is going"],
+      ],
+    },
+  };
+
+  function renderRacingChecklist() {
+    const list = document.getElementById('racing-checklist-list');
+    const doneCount = document.getElementById('racing-done-count');
+    if (!list) return;
+    let items = [];
+    try { items = JSON.parse(localStorage.getItem('noa_racing_checklist') || '[]'); } catch(e) {}
+    if (!items.length) {
+      list.innerHTML = '<p class="text-sm text-on-surface-variant opacity-40 py-2">Tell Noa what\'s on deck for M Racing</p>';
+      if (doneCount) doneCount.style.opacity = '0';
+      return;
+    }
+    const done = items.filter(i => i.done).length;
+    if (doneCount) {
+      doneCount.textContent = `${done}/${items.length} done`;
+      doneCount.style.opacity = done > 0 ? '1' : '0';
+      doneCount.style.color = done === items.length ? '#7DD4B0' : '';
+    }
+    list.innerHTML = items.map(item => `
+      <div class="flex items-center gap-3 py-2.5 px-1 rounded-xl hover:bg-white/5 transition-colors cursor-pointer select-none" onclick="toggleRacingItem(${JSON.stringify(item.label).replace(/"/g, '&quot;')})">
+        <span class="material-symbols-outlined text-[20px] flex-shrink-0" style="color:#E87D4A;font-variation-settings:'FILL' ${item.done ? 1 : 0};">${item.done ? 'check_circle' : 'radio_button_unchecked'}</span>
+        <p class="text-sm font-medium text-on-surface ${item.done ? 'line-through opacity-35' : ''}">${item.label}</p>
+      </div>`).join('');
+  }
+
+  window.toggleRacingItem = function(label) {
+    try {
+      const items = JSON.parse(localStorage.getItem('noa_racing_checklist') || '[]');
+      const item = items.find(i => i.label === label);
+      if (item) item.done = !item.done;
+      localStorage.setItem('noa_racing_checklist', JSON.stringify(items));
+      renderRacingChecklist();
+    } catch(e) {}
+  };
+
+  function renderPersonalAnchors() {
+    try {
+      const log = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
+      // Get dates for this week (Sun-Sat)
+      const today = new Date();
+      const sun = new Date(today);
+      sun.setDate(today.getDate() - today.getDay());
+      const DAYS = ['S','M','T','W','T','F','S'];
+      const bibleDots = document.getElementById('bible-dots');
+      const gymDots = document.getElementById('gym-dots');
+      if (bibleDots) {
+        bibleDots.innerHTML = DAYS.map((d, i) => {
+          const dt = new Date(sun); dt.setDate(sun.getDate() + i);
+          const key = dt.toLocaleDateString('en-CA');
+          const done = log[key]?.bible;
+          const isPast = dt <= today;
+          return `<div class="flex flex-col items-center gap-1">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center" style="background:${done ? '#F0607A' : isPast ? 'rgba(240,96,122,0.12)' : 'rgba(255,255,255,0.05)'};">
+              ${done ? '<span class="material-symbols-outlined text-[14px] text-white" style="font-variation-settings:\'FILL\' 1;">check</span>' : ''}
+            </div>
+            <span class="text-[9px] font-bold text-on-surface-variant opacity-40">${d}</span>
+          </div>`;
+        }).join('');
+      }
+      if (gymDots) {
+        const gymDays = [1,2,3,4,5]; // Mon-Fri
+        const GYM_LABELS = ['M','T','W','T','F'];
+        gymDots.innerHTML = gymDays.map((di, i) => {
+          const dt = new Date(sun); dt.setDate(sun.getDate() + di);
+          const key = dt.toLocaleDateString('en-CA');
+          const done = log[key]?.gym;
+          const isPast = dt <= today;
+          return `<div class="flex flex-col items-center gap-1">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center" style="background:${done ? '#7DD4B0' : isPast ? 'rgba(125,212,176,0.12)' : 'rgba(255,255,255,0.05)'};">
+              ${done ? '<span class="material-symbols-outlined text-[14px] text-white" style="font-variation-settings:\'FILL\' 1;">check</span>' : ''}
+            </div>
+            <span class="text-[9px] font-bold text-on-surface-variant opacity-40">${GYM_LABELS[i]}</span>
+          </div>`;
+        }).join('');
+      }
+    } catch(e) {}
+  }
+
+  function renderQuickReplies(mode) {
+    const el = document.getElementById('quick-replies');
+    if (!el) return;
+    const cfg = MODE_CONFIG[mode];
+    el.innerHTML = (cfg?.chips || []).map(([label, msg]) =>
+      `<button onclick="noaSend(${JSON.stringify(msg)})" class="whitespace-nowrap px-4 py-2 rounded-full glass-card border border-outline-variant/10 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant hover:opacity-80 transition-opacity">${label}</button>`
+    ).join('');
+  }
+
+  function setMode(mode) {
+    if (!MODE_CONFIG[mode]) return;
+    localStorage.setItem('noa_mode', mode);
+    const cfg = MODE_CONFIG[mode];
+
+    // Update mode chip styles
+    document.querySelectorAll('.mode-chip').forEach(chip => {
+      const active = chip.dataset.mode === mode;
+      chip.style.background = active ? `${cfg.color}22` : '';
+      chip.style.borderColor = active ? `${cfg.color}55` : '';
+      chip.style.color = active ? cfg.color : '';
+    });
+
+    // Update background orbs
+    const orb1 = document.getElementById('bg-orb-1');
+    const orb2 = document.getElementById('bg-orb-2');
+    if (orb1) orb1.style.background = cfg.orb1;
+    if (orb2) orb2.style.background = cfg.orb2;
+
+    // Show/hide mode sections
+    document.querySelectorAll('[data-modes]').forEach(el => {
+      const modes = el.dataset.modes.split(',');
+      el.style.display = modes.includes(mode) ? '' : 'none';
+    });
+
+    // Update priorities label
+    const lbl = document.getElementById('priorities-label');
+    if (lbl) lbl.textContent = cfg.prioritiesLabel;
+
+    // Mode-specific data
+    if (mode === 'racing') renderRacingChecklist();
+    if (mode === 'personal') renderPersonalAnchors();
+
+    // Canvas: only reload display logic in student mode
+    if (mode !== 'student') {
+      const cs = document.getElementById('canvas-section');
+      if (cs) cs.style.display = 'none';
+    }
+
+    // Quick replies
+    renderQuickReplies(mode);
+  }
+
+  window.getCurrentMode = function() {
+    return localStorage.getItem('noa_mode') || 'student';
+  };
+
+  // Init mode
+  setMode(localStorage.getItem('noa_mode') || 'student');
 
   // ---- Deep Work ----
   const DW_LOG_KEY = 'noa_deep_work_log';
