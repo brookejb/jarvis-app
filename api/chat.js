@@ -66,6 +66,10 @@ Update semester goal progress (when Brooke reports a grade, finishes an assignme
 Update M Racing checklist (when Brooke completes or adds a racing task):
 [ACTION]{"type":"update_racing_checklist","items":[{"label":"Sponsorship email campaign (250 sent)","done":true},{"label":"Follow up on sponsor leads","done":false}]}[/ACTION]
 
+Start a deep work session (when Brooke explicitly asks to start a focused/deep work block - she will tell you what she's working on and for how long):
+[ACTION]{"type":"start_deep_work","task":"Thermodynamics problem set","duration":90}[/ACTION]
+task is the specific thing she's working on. duration is in minutes (integer). Only emit this when you have BOTH the task and duration confirmed. If she says "deep work" without specifying, ask what she's working on and for how long before emitting. Confirm the session warmly and briefly - then emit the action. She's committing to a focused block.
+
 Only one [ACTION] block per response. If multiple actions are needed, pick the most important one.`;
 
 export default async function handler(req, res) {
