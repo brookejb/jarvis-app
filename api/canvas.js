@@ -1,5 +1,27 @@
 // Canvas iCal feed parser
-// Fetches from CANVAS_ICAL_URL env var, groups by assignment type, returns next 14 days
+// Extracts course info per event, assigns stable colors per course
+
+const COURSE_PALETTE = [
+  '#5092eb', // blue
+  '#F0607A', // pink
+  '#7DD4B0', // green
+  '#E87D4A', // orange
+  '#c3a6ff', // purple
+  '#FFB347', // amber
+  '#87CEEB', // sky
+  '#DDA0DD', // plum
+];
+
+const courseColorMap = {};
+let colorIdx = 0;
+
+function courseColor(courseId) {
+  if (!courseColorMap[courseId]) {
+    courseColorMap[courseId] = COURSE_PALETTE[colorIdx % COURSE_PALETTE.length];
+    colorIdx++;
+  }
+  return courseColorMap[courseId];
+}
 
 function parseIcal(text) {
   const events = [];
@@ -15,9 +37,25 @@ function parseIcal(text) {
     const summary = get('SUMMARY').replace(/\\,/g, ',').replace(/\\n/g, ' ').trim();
     const dtstart = get('DTSTART');
     const url = get('URL');
+    const description = get('DESCRIPTION').replace(/\\n/g, '\n').replace(/\\,/g, ',');
     if (!summary || !dtstart) continue;
 
-    // Parse iCal datetime: 20260401T040000Z or 20260401
+    // Extract course ID from URL: /courses/123456/
+    const courseIdMatch = url.match(/\/courses\/(\d+)\//);
+    const courseId = courseIdMatch ? courseIdMatch[1] : 'other';
+
+    // Try to get course name from description
+    let courseName = '';
+    const courseNameMatch = description.match(/(?:Course:|class:)\s*([^\n\\]+)/i);
+    if (courseNameMatch) {
+      courseName = courseNameMatch[1].trim();
+    }
+    // Fallback: infer from URL structure or leave blank
+    if (!courseName && courseId !== 'other') {
+      courseName = `Course ${courseId}`;
+    }
+
+    // Parse iCal datetime
     let date;
     try {
       if (dtstart.includes('T')) {
@@ -30,7 +68,7 @@ function parseIcal(text) {
       if (isNaN(date)) continue;
     } catch (e) { continue; }
 
-    events.push({ summary, date, url });
+    events.push({ summary, date, url, courseId, courseName });
   }
   return events.sort((a, b) => a.date - b.date);
 }
@@ -67,77 +105,62 @@ export default async function handler(req, res) {
 
     const all = parseIcal(text);
 
-    // Filter to next 14 days, skip past events
+    // Filter to next 30 days for calendar view
     const now = new Date();
-    const cutoff = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+    const cutoff = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     const upcoming = all.filter(e => e.date >= now && e.date <= cutoff);
+
+    // Assign stable colors per course
+    const courseMeta = {};
+    for (const e of upcoming) {
+      if (!courseMeta[e.courseId]) {
+        courseMeta[e.courseId] = {
+          color: courseColor(e.courseId),
+          name: e.courseName,
+        };
+      }
+    }
 
     const lectures  = upcoming.filter(e => classify(e.summary) === 'lecture');
     const modules   = upcoming.filter(e => classify(e.summary) === 'module');
     const homeworks = upcoming.filter(e => classify(e.summary) === 'homework');
     const other     = upcoming.filter(e => classify(e.summary) === 'other');
 
+    // Build full item list (for calendar, include all individual items with course color)
+    const allItems = upcoming.map(e => ({
+      title: e.summary,
+      due: formatDue(e.date),
+      dueDate: e.date.toISOString(),
+      courseId: e.courseId,
+      courseName: e.courseName,
+      courseColor: courseMeta[e.courseId]?.color || '#5092eb',
+      type: classify(e.summary),
+      url: e.url,
+    }));
+
+    // Build grouped deadlines (for weekly page strip)
     const deadlines = [];
 
-    // Individual homework/problem set items — most important
     for (const hw of homeworks) {
-      deadlines.push({
-        title: hw.summary,
-        due: formatDue(hw.date),
-        dueDate: hw.date.toISOString(),
-        category: 'Academic',
-        color: 'blue',
-        type: 'homework',
-        url: hw.url,
-      });
+      const color = courseMeta[hw.courseId]?.color || '#5092eb';
+      deadlines.push({ title: hw.summary, due: formatDue(hw.date), dueDate: hw.date.toISOString(), courseColor: color, courseName: hw.courseName, type: 'homework', url: hw.url });
     }
-
-    // Other individual assignments
     for (const item of other) {
-      deadlines.push({
-        title: item.summary,
-        due: formatDue(item.date),
-        dueDate: item.date.toISOString(),
-        category: 'Academic',
-        color: 'blue',
-        type: 'assignment',
-        url: item.url,
-      });
+      const color = courseMeta[item.courseId]?.color || '#5092eb';
+      deadlines.push({ title: item.summary, due: formatDue(item.date), dueDate: item.date.toISOString(), courseColor: color, courseName: item.courseName, type: 'assignment', url: item.url });
     }
-
-    // Modules — group into one card with count + next due
     if (modules.length > 0) {
-      deadlines.push({
-        title: `${modules.length} module${modules.length > 1 ? 's' : ''} due`,
-        due: formatDue(modules[0].date),
-        dueDate: modules[0].date.toISOString(),
-        category: 'Academic',
-        color: 'purple',
-        type: 'modules',
-        items: modules.map(m => ({ title: m.summary, due: formatDue(m.date) })),
-      });
+      const color = courseMeta[modules[0].courseId]?.color || '#c3a6ff';
+      deadlines.push({ title: `${modules.length} module${modules.length > 1 ? 's' : ''} due`, due: formatDue(modules[0].date), dueDate: modules[0].date.toISOString(), courseColor: color, type: 'modules', items: modules.map(m => ({ title: m.summary, due: formatDue(m.date) })) });
     }
-
-    // Lectures — grouped, low priority
     if (lectures.length > 0) {
-      deadlines.push({
-        title: `${lectures.length} lecture${lectures.length > 1 ? 's' : ''} this week`,
-        due: formatDue(lectures[0].date),
-        dueDate: lectures[0].date.toISOString(),
-        category: 'Academic',
-        color: 'purple',
-        type: 'lectures',
-        items: lectures.map(l => ({ title: l.summary, due: formatDue(l.date) })),
-      });
+      const color = courseMeta[lectures[0].courseId]?.color || '#c3a6ff';
+      deadlines.push({ title: `${lectures.length} lecture${lectures.length > 1 ? 's' : ''}`, due: formatDue(lectures[0].date), dueDate: lectures[0].date.toISOString(), courseColor: color, type: 'lectures' });
     }
 
-    // Sort everything by due date
     deadlines.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
-    res.json({
-      deadlines,
-      counts: { homeworks: homeworks.length, modules: modules.length, lectures: lectures.length, other: other.length },
-    });
+    res.json({ deadlines, allItems, courses: Object.entries(courseMeta).map(([id, m]) => ({ id, ...m })) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
