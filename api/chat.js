@@ -188,7 +188,8 @@ export default async function handler(req, res) {
     ? `\n\nWhat you've learned about Brooke from past conversations:\n${memoryFacts.map(f => `- ${f}`).join('\n')}`
     : '';
 
-  const dateBlock = `\n\nToday is ${todayReadable} (${todayISO}). Use this exact date when generating any action blocks that require a date field.`;
+  const correctYear = todayISO.split('-')[0]; // e.g. "2026"
+  const dateBlock = `\n\nCRITICAL: Today is ${todayReadable} (${todayISO}). The year is ${correctYear}. You MUST use ${todayISO} (or a future date in ${correctYear}) in all action blocks that require a date field. Never use a past year.`;
 
   const MODE_CONTEXT = {
     student: `\n\nACTIVE MODE: Student. Brooke is in heads-down academic mode. Focus on classes, Canvas deadlines, problem sets, exam prep, and deep work blocks. Keep suggestions academic. Don't bring up M Racing unless she asks.`,
@@ -270,8 +271,9 @@ export default async function handler(req, res) {
           actions = parsed;
           // Persist one-off schedule to Redis
           if (parsed.type === 'set_schedule' && Array.isArray(parsed.items)) {
-            const today = new Date().toISOString().split('T')[0];
-            const scheduleDate = parsed.date || today;
+            let scheduleDate = parsed.date || todayISO;
+            // Correct year if model hallucinated the wrong year (e.g. 2025 instead of 2026)
+            scheduleDate = scheduleDate.replace(/^\d{4}/, correctYear);
             await kv.set(`noa_schedule_${scheduleDate}`, parsed.items);
           }
           // Persist recurring class schedule to Redis
