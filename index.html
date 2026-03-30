@@ -72,6 +72,17 @@
     <p id="greeting-text" class="text-on-surface leading-relaxed opacity-50">Good morning, Brooke...</p>
   </div>
 
+  <!-- Energy check-in -->
+  <div id="energy-section" class="space-y-3">
+    <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant">How's your energy right now?</p>
+    <div class="flex gap-2 flex-wrap">
+      <button onclick="setEnergy('locked in')" id="energy-locked" class="energy-btn px-4 py-2 rounded-full glass-card border border-outline-variant/20 text-[11px] font-bold text-on-surface-variant hover:opacity-80 transition-all">Locked in</button>
+      <button onclick="setEnergy('steady')" id="energy-steady" class="energy-btn px-4 py-2 rounded-full glass-card border border-outline-variant/20 text-[11px] font-bold text-on-surface-variant hover:opacity-80 transition-all">Steady</button>
+      <button onclick="setEnergy('slow start')" id="energy-slow" class="energy-btn px-4 py-2 rounded-full glass-card border border-outline-variant/20 text-[11px] font-bold text-on-surface-variant hover:opacity-80 transition-all">Slow start</button>
+      <button onclick="setEnergy('running low')" id="energy-low" class="energy-btn px-4 py-2 rounded-full glass-card border border-outline-variant/20 text-[11px] font-bold text-on-surface-variant hover:opacity-80 transition-all">Running low</button>
+    </div>
+  </div>
+
   <!-- Weather -->
   <div id="weather-card" class="flex items-center gap-4 px-1 opacity-0 transition-opacity duration-500">
     <span id="weather-icon" class="material-symbols-outlined text-3xl text-on-surface-variant" style="font-variation-settings:'FILL' 1;">wb_sunny</span>
@@ -320,6 +331,31 @@
     }
   }
   loadGreeting();
+
+  // Energy check-in
+  const ENERGY_KEY = `noa_energy_${TODAY}`;
+  const savedEnergy = localStorage.getItem(ENERGY_KEY);
+  if (savedEnergy) applyEnergy(savedEnergy, false);
+
+  function applyEnergy(level, sendToNoa = true) {
+    // Highlight selected button
+    document.querySelectorAll('.energy-btn').forEach(btn => {
+      const isMatch = btn.id === `energy-${level.split(' ')[0]}`;
+      btn.style.background = isMatch ? 'rgba(240,96,122,0.2)' : '';
+      btn.style.borderColor = isMatch ? 'rgba(240,96,122,0.5)' : '';
+      btn.style.color = isMatch ? '#F0607A' : '';
+    });
+    // Hide the prompt label once selected
+    const section = document.getElementById('energy-section');
+    if (section) section.querySelector('p').style.opacity = '0.4';
+
+    if (sendToNoa) {
+      localStorage.setItem(ENERGY_KEY, level);
+      window.noaSend && window.noaSend(`My energy is ${level} today — what should I prioritize?`);
+    }
+  }
+
+  window.setEnergy = function(level) { applyEnergy(level, true); };
 
   // Today's schedule
   const SCHED_COLOR_MAP = {
