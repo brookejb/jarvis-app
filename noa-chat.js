@@ -67,6 +67,13 @@ function handleAction(a) {
       localStorage.setItem('noa_semester_goals', JSON.stringify(a.goals));
     } else if (a.type === 'update_racing_checklist') {
       localStorage.setItem('noa_racing_checklist', JSON.stringify(a.items));
+    } else if (a.type === 'set_recurring_schedule' && a.schedule) {
+      const existing = JSON.parse(localStorage.getItem('noa_recurring_schedule') || '{}');
+      const merged = { ...existing };
+      for (const [day, items] of Object.entries(a.schedule)) {
+        if (Array.isArray(items)) merged[day.toLowerCase()] = items;
+      }
+      localStorage.setItem('noa_recurring_schedule', JSON.stringify(merged));
     }
     // start_deep_work is handled by the page via window.onNoaAction below
   } catch (e) {}

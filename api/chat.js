@@ -2,6 +2,7 @@ import { Redis } from '@upstash/redis';
 const kv = Redis.fromEnv();
 
 const MEMORY_KEY = 'noa_memory';
+const RECURRING_KEY = 'noa_recurring_schedule';
 
 // Load live Canvas deadlines from iCal for Noa's chat context
 async function loadCanvasForChat(todayISO) {
@@ -145,6 +146,12 @@ Start a deep work session (when Brooke explicitly asks to start a focused/deep w
 [ACTION]{"type":"start_deep_work","task":"Thermodynamics problem set","duration":90}[/ACTION]
 task is the specific thing she's working on. duration is in minutes (integer). Only emit this when you have BOTH the task and duration confirmed. If she says "deep work" without specifying, ask what she's working on and for how long before emitting. Confirm the session warmly and briefly - then emit the action. She's committing to a focused block.
 
+Save recurring weekly class schedule (when Brooke tells you her class schedule that repeats weekly - e.g. "Thermo is MWF 10-11am"):
+[ACTION]{"type":"set_recurring_schedule","schedule":{"monday":[{"time":"10:00 AM","title":"ME 335 Thermodynamics","color":"blue"}],"wednesday":[{"time":"10:00 AM","title":"ME 335 Thermodynamics","color":"blue"}],"friday":[{"time":"10:00 AM","title":"ME 335 Thermodynamics","color":"blue"}]}}[/ACTION]
+Keys are lowercase day names (monday-sunday). Each item needs time (12-hour AM/PM), title, and color (blue/orange/green/pink/purple).
+This saves permanently - it auto-populates every future occurrence of that day for the rest of the semester.
+If a class meets MWF, write it under monday, wednesday, AND friday separately. Confirm warmly once saved.
+
 Only one [ACTION] block per response. If multiple actions are needed, pick the most important one.`;
 
 export default async function handler(req, res) {
@@ -198,7 +205,17 @@ export default async function handler(req, res) {
     ? `\n\nCourses detected from Canvas this semester: ${courses.join(', ')}`
     : '';
 
-  const systemPrompt = BASE_SYSTEM + dateBlock + coursesLine + modeBlock + canvasBlock + memoryBlock;
+  // Load recurring class schedule so Noa knows what's already saved
+  let recurringSchedule = {};
+  try { recurringSchedule = await kv.get(RECURRING_KEY) || {}; } catch(e) {}
+  const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  const recurringBlock = Object.keys(recurringSchedule).length > 0
+    ? `\n\nSaved recurring class schedule:\n${DAYS.filter(d => recurringSchedule[d]?.length).map(d =>
+        `- ${d.charAt(0).toUpperCase()+d.slice(1)}: ${recurringSchedule[d].map(e => `${e.time} ${e.title}`).join(', ')}`
+      ).join('\n')}`
+    : '\n\nNo recurring class schedule saved yet.';
+
+  const systemPrompt = BASE_SYSTEM + dateBlock + coursesLine + modeBlock + canvasBlock + recurringBlock + memoryBlock;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -251,11 +268,20 @@ export default async function handler(req, res) {
         const parsed = JSON.parse(actionMatch[1]);
         if (parsed.type) {
           actions = parsed;
-          // Persist schedule to Redis so it survives page refreshes
+          // Persist one-off schedule to Redis
           if (parsed.type === 'set_schedule' && Array.isArray(parsed.items)) {
             const today = new Date().toISOString().split('T')[0];
             const scheduleDate = parsed.date || today;
             await kv.set(`noa_schedule_${scheduleDate}`, parsed.items);
+          }
+          // Persist recurring class schedule to Redis
+          if (parsed.type === 'set_recurring_schedule' && parsed.schedule) {
+            const existing = await kv.get(RECURRING_KEY) || {};
+            const merged = { ...existing };
+            for (const [day, items] of Object.entries(parsed.schedule)) {
+              if (Array.isArray(items)) merged[day.toLowerCase()] = items;
+            }
+            await kv.set(RECURRING_KEY, merged);
           }
         }
       } catch (e) {
