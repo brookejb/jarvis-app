@@ -318,7 +318,9 @@
   // Personalized greeting
   async function loadGreeting() {
     try {
-      const res = await fetch('/api/greeting');
+      const clientDate = new Date().toLocaleDateString('en-CA');
+      const clientHour = new Date().getHours();
+      const res = await fetch(`/api/greeting?date=${clientDate}&hour=${clientHour}`);
       const data = await res.json();
       const el = document.getElementById('greeting-text');
       if (el && data.greeting) {
