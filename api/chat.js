@@ -108,7 +108,16 @@ export default async function handler(req, res) {
 
   const dateBlock = `\n\nToday is ${todayReadable} (${todayISO}). Use this exact date when generating any action blocks that require a date field.`;
 
-  const systemPrompt = BASE_SYSTEM + dateBlock + memoryBlock;
+  const MODE_CONTEXT = {
+    student: `\n\nACTIVE MODE: Student. Brooke is in heads-down academic mode. Focus on classes, Canvas deadlines, problem sets, exam prep, and deep work blocks. Keep suggestions academic. Don't bring up M Racing unless she asks.`,
+    racing: `\n\nACTIVE MODE: M Racing. Brooke is in racing/team mode. Focus on M Racing tasks, team meetings, Wilson Center schedule, business subteam responsibilities, Director role progress. Don't bring up academic assignments unless she asks.`,
+    builder: `\n\nACTIVE MODE: Builder. Brooke is thinking long-horizon. Focus on the Ross application, the team website, anything she's constructing toward her future. The Sydney vision is the north star here. Think in months and years, not just today.`,
+    personal: `\n\nACTIVE MODE: Personal. This is Brooke's quieter, grounding mode. Focus on her anchors - Bible reading streak, gym sessions, morning routine, the Sydney vision. Keep the tone calm and reflective. No task lists, no deadlines. This is about who she is, not what she has to do.`,
+  };
+  const mode = req.body.mode || 'student';
+  const modeBlock = MODE_CONTEXT[mode] || MODE_CONTEXT.student;
+
+  const systemPrompt = BASE_SYSTEM + dateBlock + modeBlock + memoryBlock;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
