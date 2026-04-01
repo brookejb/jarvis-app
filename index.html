@@ -1350,10 +1350,12 @@
       localStorage.setItem(DW_LOG_KEY, JSON.stringify(log.slice(-200)));
     } catch(e) {}
 
-    // Start countdown
+    // Start countdown — anchored to wall clock so drift is impossible
+    const dwStartTime = Date.now();
     if (dwTimerInterval) clearInterval(dwTimerInterval);
     dwTimerInterval = setInterval(() => {
-      dwRemainingSeconds--;
+      const elapsed = Math.floor((Date.now() - dwStartTime) / 1000);
+      dwRemainingSeconds = Math.max(0, dwTotalSeconds - elapsed);
       document.getElementById('dw-timer').textContent = formatDWTime(dwRemainingSeconds);
       const pct = dwRemainingSeconds / dwTotalSeconds * 100;
       document.getElementById('dw-progress').style.width = pct + '%';
@@ -1362,7 +1364,7 @@
         dwTimerInterval = null;
         onDeepWorkComplete();
       }
-    }, 1000);
+    }, 500); // tick every 500ms so display never lags more than half a second
   };
 
   function onDeepWorkComplete() {
