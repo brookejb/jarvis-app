@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sydney Deep Work — POC</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #06080f; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: system-ui, sans-serif; }
+
+  #scene-wrap {
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 2/1;
+    position: relative;
+  }
+
+  svg { width: 100%; height: 100%; }
+
+  /* Stroke-draw animation */
+  .loc-path {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    fill: none;
+  }
+  .loc-path.drawing {
+    animation: draw-in 8s ease-out forwards;
+  }
+  @keyframes draw-in {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* Soft fill reveals after draw completes */
+  .loc-fill {
+    opacity: 0;
+    transition: opacity 3s ease 7s;
+  }
+  .loc-fill.lit {
+    opacity: 1;
+  }
+
+  /* Location group — starts invisible, fades in as it draws */
+  .sydney-loc {
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  .sydney-loc.active {
+    opacity: 1;
+  }
+
+  /* Location label */
+  #loc-label {
+    position: absolute;
+    bottom: 18%;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    opacity: 0;
+    transition: opacity 1s ease;
+    pointer-events: none;
+  }
+  #loc-label.visible { opacity: 1; }
+  #loc-label p {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(200,223,240,0.6);
+  }
+
+  /* Timer / HUD */
+  #hud {
+    position: absolute;
+    top: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    pointer-events: none;
+  }
+  #hud .elapsed {
+    font-size: 28px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  #hud .task {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    margin-top: 4px;
+  }
+
+  /* Controls (POC only) */
+  #controls {
+    margin-top: 32px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  button {
+    padding: 10px 20px;
+    border-radius: 24px;
+    border: 1px solid rgba(200,223,240,0.2);
+    background: rgba(200,223,240,0.05);
+    color: rgba(200,223,240,0.7);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  button:hover { background: rgba(200,223,240,0.1); border-color: rgba(200,223,240,0.4); }
+  button.primary { background: rgba(200,223,240,0.12); border-color: rgba(200,223,240,0.5); color: #c8dff0; }
+
+  #note {
+    margin-top: 20px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.05em;
+    text-align: center;
+    max-width: 340px;
+  }
+</style>
+</head>
+<body>
+
+<div id="scene-wrap">
+  <svg id="sydney-svg" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <!-- Night sky gradient -->
+      <linearGradient id="sky-g" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#03050a"/>
+        <stop offset="100%" stop-color="#0b1624"/>
+      </linearGradient>
+      <!-- Harbour water -->
+      <linearGradient id="water-g" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#0d1e2e"/>
+        <stop offset="100%" stop-color="#040709"/>
+      </linearGradient>
+      <!-- Warm glow for the Opera House sails (subtle, revealed after draw) -->
+      <radialGradient id="oh-glow" cx="50%" cy="80%" r="60%">
+        <stop offset="0%" stop-color="#d4a96a" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#d4a96a" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <!-- Sky -->
+    <rect width="800" height="260" fill="url(#sky-g)"/>
+    <!-- Water -->
+    <rect y="260" width="800" height="140" fill="url(#water-g)"/>
+    <!-- Horizon glow -->
+    <rect y="254" width="800" height="12" fill="#0d1e2e" opacity="0.9"/>
+
+    <!-- Stars (static scattered dots) -->
+    <g id="stars" fill="#ffffff">
+      <circle cx="42"  cy="28"  r="0.8" opacity="0.6"/>
+      <circle cx="115" cy="14"  r="0.6" opacity="0.5"/>
+      <circle cx="178" cy="42"  r="0.9" opacity="0.7"/>
+      <circle cx="234" cy="19"  r="0.5" opacity="0.4"/>
+      <circle cx="289" cy="55"  r="0.7" opacity="0.6"/>
+      <circle cx="340" cy="8"   r="0.6" opacity="0.5"/>
+      <circle cx="395" cy="32"  r="0.8" opacity="0.7"/>
+      <circle cx="448" cy="18"  r="0.5" opacity="0.4"/>
+      <circle cx="502" cy="44"  r="0.9" opacity="0.6"/>
+      <circle cx="558" cy="11"  r="0.6" opacity="0.5"/>
+      <circle cx="612" cy="38"  r="0.7" opacity="0.7"/>
+      <circle cx="668" cy="22"  r="0.5" opacity="0.4"/>
+      <circle cx="724" cy="48"  r="0.8" opacity="0.6"/>
+      <circle cx="776" cy="15"  r="0.6" opacity="0.5"/>
+      <circle cx="76"  cy="72"  r="0.6" opacity="0.45"/>
+      <circle cx="152" cy="88"  r="0.7" opacity="0.5"/>
+      <circle cx="208" cy="64"  r="0.5" opacity="0.4"/>
+      <circle cx="265" cy="95"  r="0.8" opacity="0.55"/>
+      <circle cx="318" cy="78"  r="0.6" opacity="0.45"/>
+      <circle cx="372" cy="105" r="0.5" opacity="0.4"/>
+      <circle cx="425" cy="68"  r="0.7" opacity="0.5"/>
+      <circle cx="480" cy="92"  r="0.6" opacity="0.55"/>
+      <circle cx="535" cy="75"  r="0.8" opacity="0.5"/>
+      <circle cx="590" cy="110" r="0.5" opacity="0.4"/>
+      <circle cx="645" cy="82"  r="0.7" opacity="0.6"/>
+      <circle cx="700" cy="58"  r="0.6" opacity="0.45"/>
+      <circle cx="752" cy="98"  r="0.5" opacity="0.4"/>
+      <circle cx="60"  cy="130" r="0.5" opacity="0.3"/>
+      <circle cx="190" cy="145" r="0.6" opacity="0.35"/>
+      <circle cx="350" cy="122" r="0.5" opacity="0.3"/>
+      <circle cx="520" cy="138" r="0.6" opacity="0.35"/>
+      <circle cx="690" cy="118" r="0.5" opacity="0.3"/>
+    </g>
+
+    <!-- Subtle water shimmer lines -->
+    <g stroke="#1e3a52" stroke-width="0.5" opacity="0.5">
+      <path d="M0,272 Q200,268 400,272 Q600,276 800,272"/>
+      <path d="M0,285 Q150,282 300,285 Q500,288 700,285 Q750,283 800,285"/>
+      <path d="M0,300 Q250,297 500,300 Q650,302 800,300"/>
+      <path d="M0,320 Q300,317 600,320 Q700,321 800,320"/>
+      <path d="M100,338 Q350,335 600,338 Q700,340 750,338"/>
+    </g>
+
+    <!-- =====================================================
+         LOCATION 1: SYDNEY OPERA HOUSE
+         Iconic three-shell silhouette on Bennelong Point
+         The shells are drawn left-to-right: small, medium, large
+         ===================================================== -->
+    <g id="loc-1" class="sydney-loc">
+
+      <!-- Warm glow fill (reveals after draw) -->
+      <ellipse class="loc-fill" cx="400" cy="240" rx="120" ry="40" fill="url(#oh-glow)"/>
+
+      <!-- The podium / platform base -->
+      <path class="loc-path" pathLength="1000"
+            stroke="#b8d4ec" stroke-width="1.2"
+            d="M330,262 L330,255 L480,255 L480,262"/>
+
+      <!-- Shell 1 — smallest, leftmost, ~145° arc shape -->
+      <path class="loc-path" pathLength="1000"
+            stroke="#c8dff0" stroke-width="1.4"
+            d="M342,255
+               C342,240 348,218 358,202
+               C368,186 380,178 390,175
+               C400,178 407,190 407,205
+               C407,222 400,240 395,255"/>
+
+      <!-- Inner rib of shell 1 -->
+      <path class="loc-path" pathLength="1000"
+            stroke="#c8dff0" stroke-width="0.7" opacity="0.55"
+            d="M366,255 C366,243 370,225 378,210 C383,200 390,195 390,195"/>
+
+      <!-- Shell 2 — medium, slightly taller and wider -->
+      <path class="loc-path" pathLength="1000"
+            stroke="#c8dff0" stroke-width="1.5"
+            d="M372,255
+               C372,238 380,208 392,186
+               C403,166 418,155 428,152
+               C438,155 447,168 447,186
+               C447,208 440,238 435,255"/>
+
+      <!-- Inner rib of shell 2 -->
+      <path class="loc-path" pathLength="1000"
+            stroke="#c8dff0" stroke-width="0.7" opacity="0.55"
+            d="M398,255 C398,240 402,215 412,196 C419,183 428,177 428,177"/>
+
+      <!-- Shell 3 — largest, most prominent, farthest right -->
+      <path class="loc-path" pathLength="1000"
+            stroke="#c8dff0" stroke-width="1.6"
+            d="M410,255
+               C410,235 420,198 435,170
+               C448,145 465,132 476,128
+               C488,132 497,148 497,170
+               C497,198 487,235 482,255"/>
+
+      <!-- Inner rib of shell 3 -->
+      <path class="loc-path" pathLength="1000"
+            stroke="#c8dff0" stroke-width="0.8" opacity="0.55"
+            d="M442,255 C442,238 448,208 460,183 C468,166 476,160 476,160"/>
+
+      <!-- Outer edge detail shell 3 -->
+      <path class="loc-path" pathLength="1000"
+            stroke="#c8dff0" stroke-width="0.5" opacity="0.35"
+            d="M476,128 C490,135 500,152 503,175 C506,195 502,230 496,255"/>
+
+      <!-- Steps at base -->
+      <path class="loc-path" pathLength="1000"
+            stroke="#b8d4ec" stroke-width="1"
+            d="M318,268 L492,268"/>
+      <path class="loc-path" pathLength="1000"
+            stroke="#b8d4ec" stroke-width="0.8" opacity="0.6"
+            d="M310,275 L500,275"/>
+
+      <!-- Water reflection of Opera House (subtle, inverted, wavy) -->
+      <path class="loc-path" pathLength="1000"
+            stroke="#1e4060" stroke-width="0.8" opacity="0.45"
+            d="M342,280 C342,292 350,305 360,312 C368,318 376,316 390,310 C394,308 398,308 404,310"/>
+      <path class="loc-path" pathLength="1000"
+            stroke="#1e4060" stroke-width="0.6" opacity="0.3"
+            d="M372,280 C378,296 388,315 400,322 C410,328 422,325 435,318"/>
+      <path class="loc-path" pathLength="1000"
+            stroke="#1e4060" stroke-width="0.5" opacity="0.25"
+            d="M415,280 C422,300 432,325 446,335 C458,344 470,340 482,330"/>
+
+    </g>
+    <!-- End Opera House -->
+
+    <!-- Faint dark landscape silhouette (always visible, gives depth) -->
+    <path d="M0,262 L80,255 L160,258 L240,252 L320,255 L400,250 L520,255 L600,252 L680,258 L760,255 L800,260 L800,262 Z"
+          fill="#0a1520" opacity="0.8"/>
+
+  </svg>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="elapsed" id="elapsed-display">0:00</div>
+    <div class="task">Thermodynamics problem set</div>
+  </div>
+
+  <!-- Location label -->
+  <div id="loc-label">
+    <p id="loc-label-text"></p>
+  </div>
+</div>
+
+<div id="controls">
+  <button class="primary" onclick="triggerDraw()">Draw Opera House</button>
+  <button onclick="resetScene()">Reset</button>
+</div>
+
+<p id="note">POC — does this feel right? Check: does the sketch animation give you a little feeling before we build all 25 locations.</p>
+
+<script>
+  // ---- Elapsed timer (for feel) ----
+  let timerInterval = null;
+  let elapsedSecs = 0;
+  function startTimer() {
+    if (timerInterval) return;
+    timerInterval = setInterval(() => {
+      elapsedSecs++;
+      const m = Math.floor(elapsedSecs / 60);
+      const s = elapsedSecs % 60;
+      document.getElementById('elapsed-display').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    }, 1000);
+  }
+
+  // ---- Draw trigger ----
+  function triggerDraw() {
+    startTimer();
+
+    // Show group
+    const g = document.getElementById('loc-1');
+    g.classList.add('active');
+
+    // Trigger path animation on each path with a small stagger
+    const paths = g.querySelectorAll('.loc-path');
+    paths.forEach((p, i) => {
+      setTimeout(() => p.classList.add('drawing'), i * 400);
+    });
+
+    // Reveal fill glow after paths draw
+    setTimeout(() => {
+      g.querySelectorAll('.loc-fill').forEach(f => f.classList.add('lit'));
+    }, 9000);
+
+    // Show + fade label
+    showLabel('Sydney Opera House');
+  }
+
+  function showLabel(name) {
+    const label = document.getElementById('loc-label');
+    const text = document.getElementById('loc-label-text');
+    text.textContent = name;
+    label.classList.add('visible');
+    setTimeout(() => label.classList.remove('visible'), 3500);
+  }
+
+  function resetScene() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    elapsedSecs = 0;
+    document.getElementById('elapsed-display').textContent = '0:00';
+
+    const g = document.getElementById('loc-1');
+    g.classList.remove('active');
+    g.querySelectorAll('.loc-path').forEach(p => {
+      p.classList.remove('drawing');
+      // Force reflow to reset animation
+      void p.offsetWidth;
+    });
+    g.querySelectorAll('.loc-fill').forEach(f => f.classList.remove('lit'));
+    document.getElementById('loc-label').classList.remove('visible');
+  }
+</script>
+</body>
+</html>
