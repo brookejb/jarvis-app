@@ -96,10 +96,11 @@ async function sendMessage(text) {
     // Send client's local date so server never uses UTC to determine "today"
     const clientDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
     const mode = (typeof window.getCurrentMode === 'function') ? window.getCurrentMode() : 'student';
+    const priorities = JSON.parse(localStorage.getItem('noa_priorities') || '[]');
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: chatHistory, clientDate, mode }),
+      body: JSON.stringify({ messages: chatHistory, clientDate, mode, priorities }),
     });
     const data = await res.json();
     const reply = data.reply || 'Something went wrong, try again.';

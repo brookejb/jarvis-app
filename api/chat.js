@@ -193,7 +193,7 @@ export default async function handler(req, res) {
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
 
-  const { messages } = req.body;
+  const { messages, priorities } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'messages array required' });
   }
@@ -244,7 +244,11 @@ export default async function handler(req, res) {
       ).join('\n')}`
     : '\n\nNo recurring class schedule saved yet.';
 
-  const systemPrompt = BASE_SYSTEM + dateBlock + coursesLine + modeBlock + canvasBlock + recurringBlock + memoryBlock;
+  const prioritiesBlock = priorities && priorities.length > 0
+    ? `\n\nBrooke's current focus list (Today's Focus on her dashboard):\n${priorities.map(p => `- ${p.label} (${p.category})`).join('\n')}\nYou can remove items by re-emitting set_priorities without them, or update the full list.`
+    : '\n\nBrooke has no items on her focus list right now.';
+
+  const systemPrompt = BASE_SYSTEM + dateBlock + coursesLine + modeBlock + canvasBlock + recurringBlock + prioritiesBlock + memoryBlock;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
