@@ -73,7 +73,10 @@ function handleAction(a) {
         // Always trust the date Noa specifies — she figures out the right date from context
         const dk = a.date || new Date().toLocaleDateString('en-CA');
         const log = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
-        log[dk] = { bible: a.bible_today ?? log[dk]?.bible ?? false, gym: a.gym_today ?? log[dk]?.gym ?? false };
+        log[dk] = {
+          bible: a.bible_today !== undefined ? a.bible_today : (log[dk]?.bible ?? false),
+          gym:   a.gym_today   !== undefined ? a.gym_today   : (log[dk]?.gym   ?? false),
+        };
         localStorage.setItem('noa_habit_log', JSON.stringify(log));
       }
     } else if (a.type === 'set_goal_progress') {

@@ -142,9 +142,9 @@ When adding a new event to an existing day, fetch the current schedule from your
 IMPORTANT: The set_schedule action takes priority over all other action types when a concrete event is mentioned. Use it immediately.
 
 Update ritual streaks (when Brooke logs a completed habit - Bible reading or gym):
-[ACTION]{"type":"update_rituals","bible":5,"gym":3,"bible_today":true,"gym_today":false,"date":"YYYY-MM-DD"}[/ACTION]
-bible and gym are the current week totals (0-7 and 0-5). bible_today and gym_today are booleans for whether she did each one. Include all four fields.
-CRITICAL: Always include the "date" field. Use the date she actually means - not always today. Examples:
+[ACTION]{"type":"update_rituals","bible":5,"gym":3,"bible_today":true,"date":"YYYY-MM-DD"}[/ACTION]
+bible and gym are the current week totals (0-7 and 0-5). CRITICAL: Only include bible_today if she mentioned Bible, only include gym_today if she mentioned gym. Never include both unless she explicitly mentioned both - omitting a field leaves the existing value untouched and prevents accidental overwrites.
+Always include the "date" field. Use the date she actually means - not always today. Examples:
 - She says "I did my Tuesday workout" on Wednesday at 12am → use Tuesday's date
 - She says "log my Bible for this morning" at 1am Wednesday → use Tuesday's date (she hasn't slept yet)
 - She says "mark my workout for Saturday" → use Saturday's date
