@@ -95,6 +95,10 @@ function handleAction(a) {
       localStorage.setItem('noa_countdown_list', JSON.stringify(a.items));
     } else if (a.type === 'set_future_states' && Array.isArray(a.items)) {
       localStorage.setItem('noa_future_states', JSON.stringify(a.items));
+    } else if (a.type === 'set_ross_status' && a.status) {
+      localStorage.setItem('noa_ross_status', a.status);
+    } else if (a.type === 'set_rotating_stats' && Array.isArray(a.items)) {
+      localStorage.setItem('noa_rotating_stats', JSON.stringify(a.items));
     // start_deep_work is handled by the page via window.onNoaAction below
   } catch (e) {}
   // Notify page-level handlers (UI re-renders, deep work trigger, etc.)

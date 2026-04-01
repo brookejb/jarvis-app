@@ -1519,6 +1519,105 @@
       }
     },
     {
+      name: 'data',
+      // Mission control display — real numbers ticking in real time while she works
+      render({ container, task, duration }) {
+        const SEMESTER_START = new Date('2026-01-01T00:00:00');
+
+        // Deep work log — sum completed sessions this semester
+        const dwLog = JSON.parse(localStorage.getItem('noa_deep_work_log') || '[]');
+        const semSessions = dwLog.filter(s => s.completed && new Date(s.started) >= SEMESTER_START);
+        const baseMinutes = semSessions.reduce((sum, s) => sum + (s.duration || 0), 0);
+        const sessionCount = semSessions.length + 1; // +1 for current session in progress
+
+        // Ross status
+        const rossStatus = localStorage.getItem('noa_ross_status') || 'Submitted. Decision pending.';
+
+        // Next countdown (soonest from list)
+        let countdowns = [{ label: 'Paris', date: '2026-05-11' }];
+        try {
+          const raw = localStorage.getItem('noa_countdown_list');
+          if (raw) { const p = JSON.parse(raw); if (p.length) countdowns = p; }
+        } catch(e) {}
+        const nextCD = countdowns.slice().sort((a,b) => new Date(a.date)-new Date(b.date))[0];
+
+        // Rotating stat — one per session, pulled from curated list
+        const ROTATING = JSON.parse(localStorage.getItem('noa_rotating_stats') || 'null') || [
+          { label: 'Ann Arbor → Paris',                        value: '4,134 mi'  },
+          { label: 'Avg. starting salary · Ross + Engineering', value: '$95,000+'  },
+          { label: 'M Racing team members',                    value: '300+'      },
+          { label: 'Ross acceptance rate',                     value: '~25%'      },
+          { label: 'UMich Engineering programs ranked top 10', value: '12'        },
+        ];
+        const rot = ROTATING[Math.floor(Math.random() * ROTATING.length)];
+
+        // ---- Styles ----
+        const NUM  = 'rgba(255,225,155,0.86)';
+        const NUM2 = 'rgba(255,225,155,0.55)';
+        const LBL  = 'rgba(255,255,255,0.20)';
+        const SUB  = 'rgba(255,200,130,0.28)';
+        const DIV  = 'rgba(255,255,255,0.06)';
+
+        const cell = (label, id, value, sub='') => `
+          <div>
+            <p style="font-size:7.5px;letter-spacing:0.38em;font-weight:700;text-transform:uppercase;color:${LBL};margin-bottom:5px;">${label}</p>
+            <p ${id ? `id="${id}"` : ''} style="font-size:clamp(26px,5.5vw,42px);font-weight:800;letter-spacing:-0.03em;color:${NUM};line-height:1;font-variant-numeric:tabular-nums;">${value}</p>
+            ${sub ? `<p ${id ? `id="${id}-sub"` : ''} style="font-size:clamp(10px,1.8vw,13px);font-weight:500;letter-spacing:0.06em;color:${SUB};margin-top:3px;font-variant-numeric:tabular-nums;">${sub}</p>` : ''}
+          </div>`;
+
+        container.innerHTML = `
+          <div style="width:100%;height:100%;background:#060509;display:flex;flex-direction:column;justify-content:center;padding:5vh 8vw;gap:clamp(14px,2.8vh,26px);font-family:system-ui,sans-serif;">
+
+            <!-- Headline -->
+            <div style="border-bottom:1px solid ${DIV};padding-bottom:clamp(10px,2vh,18px);">
+              <p style="font-size:7.5px;letter-spacing:0.4em;font-weight:700;text-transform:uppercase;color:${LBL};margin-bottom:5px;">Ann Arbor → Sydney</p>
+              <p style="font-size:clamp(38px,9vw,60px);font-weight:900;letter-spacing:-0.04em;color:${NUM};line-height:1;">9,847 <span style="font-size:0.38em;font-weight:500;letter-spacing:0.12em;color:${NUM2};vertical-align:middle;">mi</span></p>
+            </div>
+
+            <!-- 2×2 grid -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,3vw,28px);">
+              ${cell(`Days to ${nextCD.label}`, 'dd-cd-days', '--', '--:--:--')}
+              ${cell('Deep work this semester', 'dd-dw', '--', 'hours')}
+              ${cell('Sessions this semester', '', sessionCount)}
+              <div>
+                <p style="font-size:7.5px;letter-spacing:0.38em;font-weight:700;text-transform:uppercase;color:${LBL};margin-bottom:5px;">Ross application</p>
+                <p style="font-size:clamp(12px,2.4vw,16px);font-weight:600;color:${NUM2};line-height:1.4;">${rossStatus}</p>
+              </div>
+            </div>
+
+            <!-- Rotating stat -->
+            <div style="border-top:1px solid ${DIV};padding-top:clamp(10px,2vh,18px);">
+              <p style="font-size:7.5px;letter-spacing:0.38em;font-weight:700;text-transform:uppercase;color:${LBL};margin-bottom:5px;">${rot.label}</p>
+              <p style="font-size:clamp(22px,4.5vw,34px);font-weight:800;letter-spacing:-0.02em;color:${NUM2};line-height:1;">${rot.value}</p>
+            </div>
+
+          </div>`;
+
+        // Live ticking
+        const t0 = Date.now();
+        function tick() {
+          const elapsed = (Date.now() - t0) / 60000; // minutes elapsed in session
+          const totalHrs = (baseMinutes + elapsed) / 60;
+          const dwEl = document.getElementById('dd-dw');
+          if (dwEl) dwEl.textContent = totalHrs.toFixed(2);
+
+          const diff = new Date(nextCD.date + 'T00:00:00') - new Date();
+          const dEl = document.getElementById('dd-cd-days');
+          const sEl = document.getElementById('dd-cd-days-sub');
+          if (dEl && diff > 0) {
+            dEl.textContent = Math.floor(diff / 864e5);
+            const h = Math.floor((diff % 864e5) / 36e5);
+            const m = Math.floor((diff % 36e5)  / 6e4);
+            const s = Math.floor((diff % 6e4)   / 1000);
+            if (sEl) sEl.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+          }
+        }
+        tick();
+        const timer = setInterval(tick, 1000);
+        return { cleanup() { clearInterval(timer); container.innerHTML = ''; } };
+      }
+    },
+    {
       name: 'star-map',
       // Life goals constellation — past (gold) → present (bright) → future (faint)
       render({ container }) {

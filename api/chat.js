@@ -320,6 +320,14 @@ Add item to backlog (any time Brooke mentions something she needs to do that doe
 id: lowercase-hyphenated unique slug. color: blue=academic, orange=racing, green=movement, pink=faith, purple=chore/other.
 Noa will find the right time to place these when planning.
 
+Update Ross application status shown during Deep Work (when Brooke mentions any update to her Ross application — decision received, timeline change, anything):
+[ACTION]{"type":"set_ross_status","status":"Submitted. Decision pending."}[/ACTION]
+Keep it short — one or two sentences max. Current: "Submitted. Decision pending."
+
+Update rotating stats in the Data focus experience (when Brooke wants to add or change the personal stats that rotate each session):
+[ACTION]{"type":"set_rotating_stats","items":[{"label":"Ann Arbor → Paris","value":"4,134 mi"},{"label":"Avg. starting salary · Ross + Engineering","value":"$95,000+"}]}[/ACTION]
+items: array of {label, value} pairs. Short label, punchy value. Always send the full list.
+
 Update the "future states" display shown during Deep Work (when Brooke adds, removes, or changes the places and things she's building toward):
 [ACTION]{"type":"set_future_states","items":["Sydney.","Build something that lasts.","Paris.","The engineer who understands the full system.","Ross.","Make it real."]}[/ACTION]
 items: array of short strings — places, goals, things to build. Keep them short and punchy. Sentence fragments are fine. Include a period at the end of single words for weight. Current defaults: Sydney, Paris, Ross, "Build something that lasts.", "The engineer who understands the full system.", "Make it real."
