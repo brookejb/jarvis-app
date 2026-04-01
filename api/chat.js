@@ -3,6 +3,8 @@ const kv = Redis.fromEnv();
 
 const MEMORY_KEY = 'noa_memory';
 const RECURRING_KEY = 'noa_recurring_schedule';
+const BACKLOG_KEY = 'noa_backlog';
+const RECURRING_TASKS_KEY = 'noa_recurring_tasks';
 
 // Load live Canvas deadlines from iCal for Noa's chat context
 async function loadCanvasForChat(todayISO) {
@@ -124,13 +126,16 @@ Max 5 items. Only emit this when you have a concrete, actionable list to set. No
 
 You can also emit these action types when appropriate:
 
-Set or update a day's schedule (when Brooke tells you what her day looks like, adds events, removes events, or clears a day):
+Set or update a day's schedule (AUTOMATICALLY any time Brooke mentions a concrete event with a time and/or date - exam, meeting, class, lab, appointment, deadline, commute, deep work block, anything. Do NOT wait for her to ask. If she says "my thermo exam is Friday at noon", immediately add it. If she says "I have lab tonight at 6:30", add it. This is non-negotiable - every concrete event goes on the calendar):
 [ACTION]{"type":"set_schedule","date":"YYYY-MM-DD","items":[{"time":"9:00 AM","title":"Event name","note":"optional note","color":"blue"}]}[/ACTION]
 Always include the date field as YYYY-MM-DD for the specific day. Use the exact date you were given at the top of this prompt.
 To CLEAR a day entirely, send items as an empty array: "items":[]
 To REMOVE one event, re-send the full day's schedule with that event omitted.
 To ADD an event, re-send the full schedule with the new event included in the right time order.
 This action always replaces the full schedule for that date - so always include all events you want to keep.
+When adding a new event to an existing day, fetch the current schedule from your context/memory and include all existing events plus the new one. If you don't know the existing events, add just the new one and note that she may want to confirm the rest.
+
+IMPORTANT: The set_schedule action takes priority over all other action types when a concrete event is mentioned. Use it immediately.
 
 Update ritual streaks (when Brooke logs a completed habit - Bible reading or gym):
 [ACTION]{"type":"update_rituals","bible":5,"gym":3,"bible_today":true,"gym_today":false}[/ACTION]
@@ -152,7 +157,24 @@ Keys are lowercase day names (monday-sunday). Each item needs time (12-hour AM/P
 This saves permanently - it auto-populates every future occurrence of that day for the rest of the semester.
 If a class meets MWF, write it under monday, wednesday, AND friday separately. Confirm warmly once saved.
 
-Only one [ACTION] block per response. If multiple actions are needed, pick the most important one.`;
+Add item to backlog (when Brooke mentions something she needs to do eventually but doesn't have a date yet - one-off tasks, errands, things to figure out the timing for later):
+[ACTION]{"type":"add_to_backlog","items":[{"id":"unique-slug","title":"What needs to happen","note":"any context or constraints","color":"blue"}]}[/ACTION]
+id: lowercase-hyphenated unique slug. color: blue=academic, orange=racing, green=movement, pink=faith, purple=chore/other.
+Noa will find the right time to place these when planning.
+
+Set up a recurring task (when Brooke tells you something she does on a regular cadence - laundry, groceries, cleaning, etc.):
+[ACTION]{"type":"set_recurring_task","task":{"id":"laundry","title":"Laundry","frequencyDays":14,"flexDays":3,"color":"purple","lastDone":"2026-03-22","note":"~1 hour"}}[/ACTION]
+id: lowercase-hyphenated slug. frequencyDays: how often it repeats (7=weekly, 14=biweekly). flexDays: how many days early or late is acceptable. lastDone: ISO date of last completion (null if never). note: duration/details.
+Noa picks the optimal day each cycle - never back-to-back, never within 3 days of lastDone, avoids packed days.
+
+Mark a recurring task as done (when Brooke says she did her laundry, groceries, cleaning, etc.):
+[ACTION]{"type":"complete_recurring_task","id":"laundry","date":"2026-03-30"}[/ACTION]
+Updates lastDone so Noa calculates the next optimal occurrence. Use today's date unless she specifies otherwise.
+
+Remove from backlog (when a backlog item gets placed on the calendar or is no longer needed):
+[ACTION]{"type":"remove_from_backlog","id":"item-slug"}[/ACTION]
+
+Only one [ACTION] block per response. If multiple actions are needed, pick the most important one. When in doubt between set_schedule and any other action type, always pick set_schedule if a concrete event was mentioned.`;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -284,6 +306,38 @@ export default async function handler(req, res) {
               if (Array.isArray(items)) merged[day.toLowerCase()] = items;
             }
             await kv.set(RECURRING_KEY, merged);
+          }
+          // Add items to backlog
+          if (parsed.type === 'add_to_backlog' && Array.isArray(parsed.items)) {
+            const existing = await kv.get(BACKLOG_KEY) || [];
+            const newItems = parsed.items.map(item => ({
+              ...item,
+              id: item.id || Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+              addedAt: todayISO,
+            }));
+            await kv.set(BACKLOG_KEY, [...existing, ...newItems]);
+          }
+          // Remove from backlog
+          if (parsed.type === 'remove_from_backlog' && parsed.id) {
+            const existing = await kv.get(BACKLOG_KEY) || [];
+            await kv.set(BACKLOG_KEY, existing.filter(i => i.id !== parsed.id));
+          }
+          // Set up or update a recurring task
+          if (parsed.type === 'set_recurring_task' && parsed.task) {
+            const existing = await kv.get(RECURRING_TASKS_KEY) || [];
+            const idx = existing.findIndex(t => t.id === parsed.task.id);
+            if (idx >= 0) existing[idx] = parsed.task;
+            else existing.push(parsed.task);
+            await kv.set(RECURRING_TASKS_KEY, existing);
+          }
+          // Mark recurring task complete
+          if (parsed.type === 'complete_recurring_task' && parsed.id) {
+            const existing = await kv.get(RECURRING_TASKS_KEY) || [];
+            const idx = existing.findIndex(t => t.id === parsed.id);
+            if (idx >= 0) {
+              existing[idx].lastDone = parsed.date || todayISO;
+              await kv.set(RECURRING_TASKS_KEY, existing);
+            }
           }
         }
       } catch (e) {

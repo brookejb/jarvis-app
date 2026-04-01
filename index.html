@@ -157,6 +157,16 @@
     <div id="canvas-list" class="flex gap-3 overflow-x-auto no-scrollbar pb-1"></div>
   </div>
 
+  <!-- Backlog + Recurring tasks -->
+  <div id="backlog-section" class="w-full space-y-4 hidden">
+    <div class="flex justify-between items-center">
+      <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Holding</h3>
+      <span class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant opacity-40">Noa will find the right time</span>
+    </div>
+    <div id="backlog-list" class="space-y-2"></div>
+    <div id="recurring-tasks-list" class="space-y-2"></div>
+  </div>
+
   <!-- Racing Checklist (Racing mode) -->
   <div data-modes="racing" class="mode-section hidden w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-4">
     <div class="flex justify-between items-center">
@@ -629,6 +639,73 @@
     } catch (e) {}
   }
   loadCanvasItems();
+
+  // Backlog + Recurring tasks
+  async function loadBacklog() {
+    try {
+      const res = await fetch('/api/backlog');
+      const data = await res.json();
+      const section = document.getElementById('backlog-section');
+      const backlogList = document.getElementById('backlog-list');
+      const recurringList = document.getElementById('recurring-tasks-list');
+      if (!section || !backlogList || !recurringList) return;
+
+      const COLOR_HEX = { blue:'#5092eb', orange:'#E87D4A', green:'#7DD4B0', pink:'#F0607A', purple:'#c3a6ff' };
+      const hasBacklog = data.backlog && data.backlog.length > 0;
+      const hasRecurring = data.recurringTasks && data.recurringTasks.length > 0;
+
+      if (!hasBacklog && !hasRecurring) return;
+
+      if (hasBacklog) {
+        backlogList.innerHTML = data.backlog.map(item => {
+          const color = COLOR_HEX[item.color] || COLOR_HEX.blue;
+          return `
+            <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/10">
+              <div class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:${color}"></div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-on-surface truncate">${item.title}</p>
+                ${item.note ? `<p class="text-[10px] text-on-surface-variant mt-0.5">${item.note}</p>` : ''}
+              </div>
+              <span class="text-[9px] uppercase tracking-wider font-bold text-on-surface-variant opacity-40">someday</span>
+            </div>`;
+        }).join('');
+      }
+
+      if (hasRecurring) {
+        const today = new Date();
+        recurringList.innerHTML = data.recurringTasks.map(task => {
+          const color = COLOR_HEX[task.color] || COLOR_HEX.purple;
+          let dueLabel = 'soon';
+          if (task.nextDue) {
+            const diff = Math.round((new Date(task.nextDue + 'T12:00:00') - today) / (1000 * 60 * 60 * 24));
+            dueLabel = diff <= 0 ? 'due now' : diff === 1 ? 'tomorrow' : `in ${diff}d`;
+          }
+          const urgent = task.nextDue && Math.round((new Date(task.nextDue + 'T12:00:00') - today) / (1000 * 60 * 60 * 24)) <= 1;
+          return `
+            <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/10">
+              <span class="material-symbols-outlined text-base flex-shrink-0" style="color:${color}">autorenew</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-on-surface truncate">${task.title}</p>
+                ${task.note ? `<p class="text-[10px] text-on-surface-variant mt-0.5">${task.note}</p>` : ''}
+              </div>
+              <span class="text-[9px] uppercase tracking-wider font-bold ${urgent ? '' : 'opacity-40'}" style="color:${urgent ? color : ''}">${dueLabel}</span>
+            </div>`;
+        }).join('');
+      }
+
+      section.classList.remove('hidden');
+    } catch(e) {}
+  }
+  loadBacklog();
+
+  // Refresh backlog when Noa updates it
+  const _origOnNoaActionBacklog = window.onNoaAction;
+  window.onNoaAction = function(a) {
+    if (_origOnNoaActionBacklog) _origOnNoaActionBacklog(a);
+    if (['add_to_backlog','remove_from_backlog','set_recurring_task','complete_recurring_task'].includes(a.type)) {
+      loadBacklog();
+    }
+  };
 
   // ---- Role-Based Modes ----
   const MODE_CONFIG = {

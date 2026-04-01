@@ -4,6 +4,8 @@ const kv = Redis.fromEnv();
 const RECURRING_KEY = 'noa_recurring_schedule';
 const MEMORY_KEY = 'noa_memory';
 const PLAN_META_KEY = 'noa_plan_meta';
+const BACKLOG_KEY = 'noa_backlog';
+const RECURRING_TASKS_KEY = 'noa_recurring_tasks';
 const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 
 function localDateStr(date) {
@@ -71,11 +73,13 @@ export default async function handler(req, res) {
   }
 
   // Load inputs in parallel
-  let recurring = {}, memoryFacts = [], canvasDeadlines = [];
+  let recurring = {}, memoryFacts = [], canvasDeadlines = [], backlog = [], recurringTasks = [];
   try {
-    [recurring, memoryFacts] = await Promise.all([
+    [recurring, memoryFacts, backlog, recurringTasks] = await Promise.all([
       kv.get(RECURRING_KEY).then(v => v || {}).catch(() => ({})),
       kv.get(MEMORY_KEY).then(v => v || []).catch(() => []),
+      kv.get(BACKLOG_KEY).then(v => v || []).catch(() => []),
+      kv.get(RECURRING_TASKS_KEY).then(v => v || []).catch(() => []),
     ]);
   } catch(e) {}
 
@@ -103,6 +107,28 @@ export default async function handler(req, res) {
   const deadlinesList = canvasDeadlines.length > 0
     ? canvasDeadlines.slice(0, 20).map(d => `  - "${d.title}"${d.courseCode ? ` (${d.courseCode})` : ''} due ${d.dueDate} — ${d.daysUntil} days away`).join('\n')
     : '  (No upcoming Canvas deadlines found)';
+
+  // Build recurring tasks context with smart scheduling hints
+  const recurringTasksBlock = recurringTasks.length > 0 ? recurringTasks.map(task => {
+    let hint = '';
+    if (task.lastDone) {
+      const last = new Date(task.lastDone + 'T12:00:00');
+      const target = new Date(last.getTime() + task.frequencyDays * 24 * 60 * 60 * 1000);
+      const earliest = new Date(Math.max(fromDate.getTime(), last.getTime() + 3 * 24 * 60 * 60 * 1000));
+      const latest = new Date(target.getTime() + (task.flexDays || 3) * 24 * 60 * 60 * 1000);
+      const targetStr = target.toISOString().split('T')[0];
+      const earliestStr = earliest.toISOString().split('T')[0];
+      const latestStr = latest.toISOString().split('T')[0];
+      hint = `last done ${task.lastDone}, target around ${targetStr}, schedule between ${earliestStr} and ${latestStr}`;
+    } else {
+      hint = 'never done - schedule in next 3-5 days';
+    }
+    return `  - "${task.title}": every ${task.frequencyDays} days (±${task.flexDays || 3} flex). ${hint}. ${task.note || ''} Color: ${task.color || 'purple'}.`;
+  }).join('\n') : '  (No recurring tasks set up yet)';
+
+  const backlogBlock = backlog.length > 0
+    ? backlog.map(item => `  - "${item.title}"${item.note ? `: ${item.note}` : ''} (${item.color || 'blue'})`).join('\n')
+    : '  (No backlog items)';
 
   const systemPrompt = `You are Noa, Brooke's AI planning engine. Generate an optimized 14-day schedule as JSON.
 
@@ -133,7 +159,13 @@ PLANNING RULES:
 7. Max 5-6 items per day total. Don't fill every slot — margin matters.
 8. Use "note" field to briefly explain why a block is there: "Problem set due Wed", "Exam Friday"
 
-COLORS: blue=class/academic, orange=racing, green=gym, pink=Bible/faith, purple=other
+RECURRING TASKS (schedule each one on the best day within its window - never within 3 days of lastDone, avoid back-to-back, prefer days with lighter academic loads):
+${recurringTasksBlock}
+
+BACKLOG (one-off tasks with no date yet - place them when a good open slot exists, don't force them onto packed days):
+${backlogBlock}
+
+COLORS: blue=class/academic, orange=racing, green=gym, pink=Bible/faith, purple=chore/errand/other
 
 Return ONLY valid JSON. No explanation, no markdown fences. Just the JSON object:
 {
