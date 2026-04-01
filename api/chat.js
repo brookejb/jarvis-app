@@ -320,6 +320,10 @@ Add item to backlog (any time Brooke mentions something she needs to do that doe
 id: lowercase-hyphenated unique slug. color: blue=academic, orange=racing, green=movement, pink=faith, purple=chore/other.
 Noa will find the right time to place these when planning.
 
+Update the "future states" display shown during Deep Work (when Brooke adds, removes, or changes the places and things she's building toward):
+[ACTION]{"type":"set_future_states","items":["Sydney.","Build something that lasts.","Paris.","The engineer who understands the full system.","Ross.","Make it real."]}[/ACTION]
+items: array of short strings — places, goals, things to build. Keep them short and punchy. Sentence fragments are fine. Include a period at the end of single words for weight. Current defaults: Sydney, Paris, Ross, "Build something that lasts.", "The engineer who understands the full system.", "Make it real."
+
 Update the Deep Work countdown (when Brooke tells you what she's counting down to, or changes the target - a trip, a deadline, an event, a decision date):
 [ACTION]{"type":"set_countdown","label":"Paris","date":"2026-05-11"}[/ACTION]
 label: the name of the thing (short, like "Paris" or "Ross decision" or "graduation"). date: ISO date YYYY-MM-DD. Current countdown: Paris, May 11 2026. Update it any time she mentions changing the target or setting a new one.

@@ -1564,6 +1564,115 @@
         return { cleanup() { clearInterval(timer); container.innerHTML = ''; } };
       }
     },
+    {
+      name: 'future-states',
+      // Rotating typographic display of places to go and things to build
+      render({ container }) {
+        const defaults = [
+          { text: 'Sydney.',        size: 'xl',  align: 'left'   },
+          { text: 'Build something that lasts.', size: 'md', align: 'center' },
+          { text: 'Paris.',         size: 'xl',  align: 'right'  },
+          { text: 'The engineer who understands the full system.', size: 'sm', align: 'left' },
+          { text: 'Ross.',          size: 'xl',  align: 'center' },
+          { text: 'Make it real.', size: 'md',  align: 'right'  },
+        ];
+
+        const raw = localStorage.getItem('noa_future_states');
+        let states = defaults;
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              // User-supplied items come in as strings — assign layout styles round-robin
+              const aligns = ['left','center','right'];
+              const sizes  = ['xl','md','sm','md'];
+              states = parsed.map((item, i) => ({
+                text:  typeof item === 'string' ? item : (item.text || ''),
+                size:  item.size  || sizes[i  % sizes.length],
+                align: item.align || aligns[i % aligns.length],
+              }));
+            }
+          } catch(e) {}
+        }
+
+        const FONT_SIZES = {
+          xl: 'clamp(52px,14vw,96px)',
+          md: 'clamp(26px,6.5vw,48px)',
+          sm: 'clamp(16px,3.5vw,26px)',
+        };
+        const HOLD_MS    = 5800;
+        const FADE_MS    = 900;
+
+        container.innerHTML = `
+          <div id="fs-stage" style="
+            width:100%;height:100%;
+            background:#080810;
+            display:flex;align-items:center;justify-content:center;
+            padding:10vw;
+            position:relative;overflow:hidden;
+          ">
+            <p id="fs-text" style="
+              position:absolute;
+              font-weight:800;
+              letter-spacing:-0.025em;
+              line-height:1.08;
+              color:rgba(235,230,222,0.82);
+              transition:opacity ${FADE_MS}ms ease, transform ${FADE_MS}ms ease;
+              max-width:88%;
+              word-break:break-word;
+            "></p>
+          </div>
+          <style>
+            #fs-text.fs-hidden { opacity:0 !important; transform:translateY(10px) !important; }
+          </style>`;
+
+        const el = document.getElementById('fs-text');
+        let idx = 0;
+        let holdTimer = null;
+        let dead = false;
+
+        function show(i) {
+          if (dead) return;
+          const s = states[i % states.length];
+          // Apply typography
+          el.style.fontSize    = FONT_SIZES[s.size] || FONT_SIZES.md;
+          el.style.textAlign   = s.align;
+          el.style.left        = s.align === 'right'  ? 'auto' : '10vw';
+          el.style.right       = s.align === 'right'  ? '10vw' : 'auto';
+          el.style.width       = s.align === 'center' ? '80%'  : '70%';
+          if (s.align === 'center') { el.style.left = '50%'; el.style.transform = 'translateX(-50%)'; el.style.right = 'auto'; }
+          else                      { el.style.transform = ''; }
+
+          el.textContent = s.text;
+
+          // Fade in
+          el.classList.remove('fs-hidden');
+
+          // Hold then fade out
+          holdTimer = setTimeout(() => {
+            if (dead) return;
+            el.classList.add('fs-hidden');
+            // After fade, show next
+            holdTimer = setTimeout(() => {
+              if (dead) return;
+              show((i + 1) % states.length);
+            }, FADE_MS + 80);
+          }, HOLD_MS);
+        }
+
+        // Start hidden, then reveal first item after a breath
+        el.classList.add('fs-hidden');
+        holdTimer = setTimeout(() => show(0), 400);
+
+        return {
+          cleanup() {
+            dead = true;
+            clearTimeout(holdTimer);
+            container.innerHTML = '';
+          }
+        };
+      }
+    },
   ];
 
   const LAST_EXP_KEY = 'noa_last_dw_experience';
