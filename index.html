@@ -93,14 +93,51 @@
     </div>
   </div>
 
-  <!-- What should I do right now -->
-  <button onclick="askRightNow()" class="w-full py-3.5 rounded-2xl border border-[#F0607A]/20 flex items-center justify-between px-5 hover:border-[#F0607A]/40 active:scale-[0.99] transition-all group" style="background:rgba(240,96,122,0.04);">
-    <div class="flex items-center gap-3">
-      <span class="material-symbols-outlined text-[#F0607A] opacity-70 group-hover:opacity-100 transition-opacity" style="font-variation-settings:'FILL' 1;">bolt</span>
-      <span class="text-sm font-bold text-on-surface">What should I do right now?</span>
+  <!-- Quick action row -->
+  <div class="flex gap-3">
+    <!-- What should I do right now -->
+    <button onclick="askRightNow()" class="flex-1 py-3.5 rounded-2xl border border-[#F0607A]/20 flex items-center justify-between px-4 hover:border-[#F0607A]/40 active:scale-[0.99] transition-all group" style="background:rgba(240,96,122,0.04);">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[#F0607A] opacity-70 group-hover:opacity-100 transition-opacity text-base" style="font-variation-settings:'FILL' 1;">bolt</span>
+        <span class="text-sm font-bold text-on-surface">Right now?</span>
+      </div>
+      <span class="material-symbols-outlined text-on-surface-variant opacity-30 group-hover:opacity-60 transition-opacity text-sm">arrow_forward</span>
+    </button>
+    <!-- Start Deep Work -->
+    <button onclick="openDWLauncher()" class="py-3.5 px-4 rounded-2xl border border-[#5092eb]/20 flex items-center gap-2 hover:border-[#5092eb]/40 active:scale-[0.99] transition-all group" style="background:rgba(80,146,235,0.04);">
+      <span class="material-symbols-outlined text-[#5092eb] opacity-70 group-hover:opacity-100 transition-opacity text-base" style="font-variation-settings:'FILL' 1;">target</span>
+      <span class="text-sm font-bold text-on-surface whitespace-nowrap">Deep work</span>
+    </button>
+  </div>
+
+  <!-- Deep Work Launcher Sheet -->
+  <div id="dw-launcher" class="fixed inset-0 z-[140] hidden items-end justify-center" style="background:rgba(0,0,0,0.5);">
+    <div class="w-full max-w-lg bg-[#1d1b1e] rounded-t-3xl px-6 pt-6 pb-10 flex flex-col gap-5 border-t border-[#584143]/20">
+      <div class="flex items-center justify-between">
+        <p class="text-base font-bold text-on-surface">Start deep work</p>
+        <button onclick="closeDWLauncher()" class="text-on-surface-variant opacity-50 hover:opacity-80 transition-opacity">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <input id="dw-launcher-task" type="text" placeholder="What are you working on?" maxlength="80"
+        class="w-full h-12 bg-[#2a2730] rounded-xl px-4 text-[#e7e1e5] placeholder:text-[#dfbfc1]/40 focus:outline-none focus:ring-1 focus:ring-[#5092eb]/40 text-sm"/>
+      <div>
+        <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant opacity-50 mb-3">Duration</p>
+        <div class="flex flex-wrap gap-2" id="dw-duration-chips">
+          <button onclick="selectDWDuration(25)"  class="dw-dur-chip px-4 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">25 min</button>
+          <button onclick="selectDWDuration(45)"  class="dw-dur-chip px-4 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">45 min</button>
+          <button onclick="selectDWDuration(60)"  class="dw-dur-chip px-4 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">1 hr</button>
+          <button onclick="selectDWDuration(90)"  class="dw-dur-chip px-4 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">90 min</button>
+          <button onclick="selectDWDuration(120)" class="dw-dur-chip px-4 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">2 hr</button>
+        </div>
+      </div>
+      <button onclick="launchDWSession()" id="dw-launcher-go"
+        class="w-full py-4 rounded-full font-bold text-sm tracking-tight opacity-40 pointer-events-none transition-all"
+        style="background:#5092eb;color:#0a1a30;">
+        Start session
+      </button>
     </div>
-    <span class="material-symbols-outlined text-on-surface-variant opacity-30 group-hover:opacity-60 transition-opacity text-sm">arrow_forward</span>
-  </button>
+  </div>
 
   <!-- Mode Switcher -->
   <div class="flex gap-2 overflow-x-auto no-scrollbar -mt-2 pb-1">
@@ -950,6 +987,70 @@
   function askRightNow() {
     window.noaSend && window.noaSend('What should I do right now?');
   }
+
+  // ---- Deep Work Launcher (no Noa required) ----
+  let dwLauncherDuration = null;
+
+  window.openDWLauncher = function() {
+    dwLauncherDuration = null;
+    document.getElementById('dw-launcher-task').value = '';
+    document.querySelectorAll('.dw-dur-chip').forEach(c => {
+      c.style.background = '';
+      c.style.color = '';
+      c.style.borderColor = '';
+    });
+    document.getElementById('dw-launcher-go').classList.add('opacity-40','pointer-events-none');
+    document.getElementById('dw-launcher-go').classList.remove('opacity-100');
+    const el = document.getElementById('dw-launcher');
+    el.classList.remove('hidden');
+    el.style.display = 'flex';
+    setTimeout(() => document.getElementById('dw-launcher-task').focus(), 100);
+  };
+
+  window.closeDWLauncher = function() {
+    const el = document.getElementById('dw-launcher');
+    el.style.display = 'none';
+    el.classList.add('hidden');
+  };
+
+  window.selectDWDuration = function(mins) {
+    dwLauncherDuration = mins;
+    document.querySelectorAll('.dw-dur-chip').forEach(c => {
+      c.style.background = '';
+      c.style.color = '';
+      c.style.borderColor = '';
+    });
+    event.currentTarget.style.background = '#5092eb';
+    event.currentTarget.style.color = '#0a1a30';
+    event.currentTarget.style.borderColor = '#5092eb';
+    checkDWLauncherReady();
+  };
+
+  document.getElementById('dw-launcher-task').addEventListener('input', checkDWLauncherReady);
+
+  function checkDWLauncherReady() {
+    const task = document.getElementById('dw-launcher-task').value.trim();
+    const btn = document.getElementById('dw-launcher-go');
+    if (task && dwLauncherDuration) {
+      btn.classList.remove('opacity-40','pointer-events-none');
+      btn.classList.add('opacity-100');
+    } else {
+      btn.classList.add('opacity-40','pointer-events-none');
+      btn.classList.remove('opacity-100');
+    }
+  }
+
+  window.launchDWSession = function() {
+    const task = document.getElementById('dw-launcher-task').value.trim();
+    if (!task || !dwLauncherDuration) return;
+    closeDWLauncher();
+    window.startDeepWork({ task, duration: dwLauncherDuration });
+  };
+
+  // Also allow Enter key to launch
+  document.getElementById('dw-launcher-task').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') window.launchDWSession();
+  });
 
   // Refresh backlog when Noa updates it
   const _origOnNoaActionBacklog = window.onNoaAction;
