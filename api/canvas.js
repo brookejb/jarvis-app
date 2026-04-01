@@ -109,28 +109,40 @@ export default async function handler(req, res) {
     // ?all=1 returns full semester grouped by course for goal task population
     if (req.query.all === '1') {
       const byCourse = {};
+
       for (const e of all) {
-        // Extract course code from summary brackets e.g. [EECS 314 001 WN 2026]
-        const bracketMatch = e.summary.match(/\[([A-Z]+\s*\d{3}[A-Z]?\s+\d{3}[^\]]*)\]/);
-        const codeMatch = e.summary.match(/\b([A-Z]{2,8}\s*\d{3,4})\b/);
-        const courseCode = bracketMatch
-          ? bracketMatch[1].match(/([A-Z]+\s*\d{3}[A-Z]?)/)?.[1]?.trim()
-          : codeMatch?.[1]?.trim();
-        const key = courseCode || e.courseId;
-        if (!byCourse[key]) byCourse[key] = { code: courseCode || key, courseId: e.courseId, assignments: [] };
-        // Skip pure lecture entries
-        if (/^L[\d\s_]/i.test(e.summary)) continue;
+        // Always group by Canvas course ID from URL — it's stable and always present
+        const key = e.courseId;
+        if (!byCourse[key]) byCourse[key] = { code: null, courseId: e.courseId, assignments: [] };
+
+        // Extract best course code from summary for display name
+        // Canvas format: "Assignment name [DEPT 314 001 WN 2026]"
+        if (!byCourse[key].code) {
+          const bracketMatch = e.summary.match(/\[([A-Z]{2,10}\s+\d{3}[A-Z]?)\s/);
+          const inlineMatch = e.summary.match(/\b([A-Z]{2,10}\s+\d{3}[A-Z]?)\b/);
+          byCourse[key].code = bracketMatch?.[1]?.trim() || inlineMatch?.[1]?.trim() || null;
+        }
+
+        // Skip pure lecture/section entries
+        if (/^(L|Lec|Lecture)[\d\s_]/i.test(e.summary)) continue;
+
+        const label = e.summary.replace(/\s*\[[^\]]*\]\s*/g, '').trim() || e.summary;
         byCourse[key].assignments.push({
-          label: e.summary.replace(/\s*\[[^\]]*\]\s*/g, '').trim() || e.summary,
+          label,
           dueDate: e.date.toISOString(),
           done: e.date < now,
         });
       }
-      // Sort assignments within each course by due date
-      for (const c of Object.values(byCourse)) {
-        c.assignments.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-      }
-      return res.json({ courses: Object.values(byCourse).filter(c => c.assignments.length > 0) });
+
+      // Sort assignments within each course by due date, set fallback name
+      const courses = Object.values(byCourse)
+        .filter(c => c.assignments.length > 0)
+        .map(c => ({ ...c, code: c.code || `Course ${c.courseId}` }))
+        .sort((a, b) => a.code.localeCompare(b.code));
+
+      courses.forEach(c => c.assignments.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate)));
+
+      return res.json({ courses });
     }
 
     // Filter to next 30 days for calendar view

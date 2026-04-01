@@ -60,6 +60,9 @@
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-sm uppercase tracking-[0.15rem] font-bold text-on-surface-variant">Semester Goals</h2>
       <div class="h-[1px] flex-grow ml-6 bg-outline-variant/20"></div>
+      <button onclick="autoSyncGoalsFromCanvas(true)" id="canvas-refresh-btn" class="ml-4 flex items-center gap-1 text-[10px] uppercase tracking-[0.12rem] font-bold text-on-surface-variant opacity-40 hover:opacity-80 transition-opacity flex-shrink-0">
+        <span class="material-symbols-outlined text-sm">sync</span>Sync Canvas
+      </button>
     </div>
     <div id="semester-goals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </section>
@@ -267,7 +270,6 @@
   function renderSemesterGoals() {
     const saved = JSON.parse(localStorage.getItem('noa_semester_goals') || 'null');
     _goals = saved || DEFAULT_SEMESTER_GOALS;
-    // Ensure all goals have tasks array
     _goals = _goals.map(g => ({ ...g, tasks: g.tasks || [], progress: g.tasks?.length ? computeProgress(g.tasks) : g.progress }));
     const container = document.getElementById('semester-goals');
     container.innerHTML = _goals.map((g, i) => `
@@ -485,9 +487,39 @@
     openGoalDetail(_syncGoalIdx);
   }
 
+  // Auto-populate goals from Canvas if no saved goals, or if existing goals have no Canvas tasks
+  async function autoSyncGoalsFromCanvas(force = false) {
+    const saved = JSON.parse(localStorage.getItem('noa_semester_goals') || 'null');
+    const hasRealTasks = saved && saved.some(g => g.tasks && g.tasks.length > 0 && g.tasks.some(t => t.dueDate));
+    if (!force && hasRealTasks) return; // real Canvas tasks already exist
+    const btn = document.getElementById('canvas-refresh-btn');
+    if (btn) btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">refresh</span>Syncing...';
+    try {
+      const res = await fetch('/api/canvas?all=1');
+      const data = await res.json();
+      if (!data.courses || data.courses.length === 0) return;
+
+      const GOAL_COLORS = ['#5092eb','#c3a6ff','#E87D4A','#7DD4B0','#F0607A'];
+      const generated = data.courses.map((c, i) => ({
+        title: c.code,
+        desc: `Stay on top of ${c.code} through the end of semester.`,
+        progress: c.assignments.length ? computeProgress(c.assignments) : 0,
+        color: GOAL_COLORS[i % GOAL_COLORS.length],
+        tasks: c.assignments,
+      }));
+
+      localStorage.setItem('noa_semester_goals', JSON.stringify(generated));
+      renderSemesterGoals();
+    } catch(e) {}
+    finally {
+      if (btn) btn.innerHTML = '<span class="material-symbols-outlined text-sm">sync</span>Sync Canvas';
+    }
+  }
+
   renderSemesterGoals();
   renderChecklist();
   loadGoalsInsight();
+  autoSyncGoalsFromCanvas();
 </script>
 </body>
 </html>
