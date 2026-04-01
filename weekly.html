@@ -291,49 +291,53 @@
     }
   }
 
-  // --- Rituals (computed from noa_habit_log, same source as daily checklist) ---
+  // --- Rituals (tappable dots, computed from noa_habit_log) ---
+  function toggleHabit(dateKey, habit) {
+    const log = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
+    if (!log[dateKey]) log[dateKey] = {};
+    log[dateKey][habit] = !log[dateKey][habit];
+    localStorage.setItem('noa_habit_log', JSON.stringify(log));
+    renderRituals();
+  }
+
   function renderRituals() {
     const log = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
 
-    // Get this week's Sunday-Saturday range
+    // Get this week's Sunday-Saturday range using local dates
     const dayOfWeek = today.getDay();
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - dayOfWeek);
     weekStart.setHours(0, 0, 0, 0);
 
-    // Build per-day booleans for the week (Sun=0 through Sat=6)
-    const bibleDays = [];
-    const gymDays = [];
+    // Build per-day data with local date keys (matching how noa-chat.js stores)
+    const bibleData = [], gymData = [];
     for (let i = 0; i < 7; i++) {
       const d = new Date(weekStart);
       d.setDate(weekStart.getDate() + i);
-      const key = d.toISOString().split('T')[0];
-      bibleDays.push(!!log[key]?.bible);
-      gymDays.push(!!log[key]?.gym);
+      const key = d.toLocaleDateString('en-CA'); // YYYY-MM-DD local, never UTC-shifted
+      bibleData.push({ done: !!log[key]?.bible, key });
+      gymData.push({ done: !!log[key]?.gym, key });
     }
 
-    // Gym: Mon-Fri only (indices 1-5), max 5
-    const gymWeekDays = gymDays.slice(1, 6);
-    const bibleCount = bibleDays.filter(Boolean).length;
-    const gymCount = gymWeekDays.filter(Boolean).length;
+    const gymWeekData = gymData.slice(1, 6); // Mon-Fri only
+    const bibleCount = bibleData.filter(d => d.done).length;
+    const gymCount = gymWeekData.filter(d => d.done).length;
 
     document.getElementById('bible-count').textContent = `${bibleCount}/7`;
     document.getElementById('gym-count').textContent = `${gymCount}/5`;
 
-    // Bible dots: one per day of week, lit if done
     const DAY_ABBR = ['S','M','T','W','T','F','S'];
-    document.getElementById('bible-dots').innerHTML = bibleDays.map((done, i) => `
-      <div class="flex flex-col items-center gap-1">
-        <div class="w-3 h-3 rounded-full" style="background-color:${done ? '#d2bbff' : '#373437'}"></div>
+    document.getElementById('bible-dots').innerHTML = bibleData.map(({ done, key }, i) => `
+      <div class="flex flex-col items-center gap-1 cursor-pointer active:scale-90 transition-transform" onclick="toggleHabit('${key}','bible')">
+        <div class="w-4 h-4 rounded-full transition-colors" style="background-color:${done ? '#d2bbff' : '#373437'}"></div>
         <span class="text-[8px] font-bold" style="color:${done ? '#d2bbff' : '#584143'}">${DAY_ABBR[i]}</span>
       </div>`
     ).join('');
 
-    // Gym dots: Mon-Fri only
     const GYM_ABBR = ['M','T','W','T','F'];
-    document.getElementById('gym-dots').innerHTML = gymWeekDays.map((done, i) => `
-      <div class="flex flex-col items-center gap-1">
-        <div class="w-3 h-3 rounded-full" style="background-color:${done ? '#7DD4B0' : '#373437'}"></div>
+    document.getElementById('gym-dots').innerHTML = gymWeekData.map(({ done, key }, i) => `
+      <div class="flex flex-col items-center gap-1 cursor-pointer active:scale-90 transition-transform" onclick="toggleHabit('${key}','gym')">
+        <div class="w-4 h-4 rounded-full transition-colors" style="background-color:${done ? '#7DD4B0' : '#373437'}"></div>
         <span class="text-[8px] font-bold" style="color:${done ? '#7DD4B0' : '#584143'}">${GYM_ABBR[i]}</span>
       </div>`
     ).join('');
