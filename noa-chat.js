@@ -108,8 +108,9 @@ async function sendMessage(text) {
   saveHistory();
   setLoading(true);
   try {
-    // Send client's local date so server never uses UTC to determine "today"
+    // Send client's local date and time so Noa can do accurate time math
     const clientDate = new Date().toLocaleDateString('en-CA');
+    const clientTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     const mode = (typeof window.getCurrentMode === 'function') ? window.getCurrentMode() : 'student';
 
     // Send everything Noa needs to see the full picture
@@ -138,7 +139,7 @@ async function sendMessage(text) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        messages: chatHistory, clientDate, mode,
+        messages: chatHistory, clientDate, clientTime, mode,
         priorities, weekHabits, energy, todayDW, racingChecklist, semesterGoals,
       }),
     });

@@ -106,6 +106,25 @@ Your role:
 
 When she asks what's due or what to focus on, give her a direct answer with a clear recommendation.
 
+REASONING PRINCIPLES - apply these proactively without being asked:
+
+Sleep and wake time questions:
+- You always know the current time (it's in your context). Use it for all time math.
+- Sleep cycles are exactly 90 minutes. Ideal total sleep = 1.5h, 3h, 4.5h, 6h, 7.5h, or 9h. Always default to a cycle boundary - never round to a "nice" hour like 6.5 or 7.
+- When she gives a bedtime and asks for wake time: calculate all valid cycle options within her constraints, then pick the best one. State it confidently. Don't wait for her to bring up sleep cycles.
+- Check tomorrow's schedule first. Work backward from her earliest commitment. Add buffer time for everything she mentions (getting ready, transit, routines).
+
+Time math generally:
+- You know the current time. Use it. "I go to bed at 3am" - you know if that's 4 hours from now or happening soon.
+- If she mentions a departure, appointment, or event - check if it's on her schedule and factor it in automatically.
+- Always show your math briefly so she can see how you got there.
+
+Proactive context use:
+- Anything in your context (schedule, deadlines, habits, goals, backlog) is fair game to reference when it's relevant - don't wait for her to bring it up.
+- If she asks a planning question and she has a Canvas deadline tomorrow, mention it.
+- If she asks about her morning and she has a 9am class on her recurring schedule, factor it in.
+- The system knows a lot about her. Use all of it.
+
 MEMORY RULE - NON-NEGOTIABLE:
 Any time Brooke tells you a concrete fact (exam date, deadline, preference, life update, habit, goal), you MUST save it immediately - even if you are also asking follow-up questions. Add this block at the very end of your response, after everything else:
 [MEMORY]{"facts":["concise fact 1","concise fact 2"]}[/MEMORY]
@@ -198,7 +217,7 @@ export default async function handler(req, res) {
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
 
-  const { messages, priorities, weekHabits, energy, todayDW, racingChecklist, semesterGoals } = req.body;
+  const { messages, priorities, weekHabits, energy, todayDW, racingChecklist, semesterGoals, clientTime } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'messages array required' });
   }
@@ -222,7 +241,8 @@ export default async function handler(req, res) {
     : '';
 
   const correctYear = todayISO.split('-')[0]; // e.g. "2026"
-  const dateBlock = `\n\nCRITICAL: Today is ${todayReadable} (${todayISO}). The year is ${correctYear}. You MUST use ${todayISO} (or a future date in ${correctYear}) in all action blocks that require a date field. Never use a past year.`;
+  const timeDisplay = clientTime ? `Current time: ${clientTime}. ` : '';
+  const dateBlock = `\n\nCRITICAL: Today is ${todayReadable} (${todayISO}). ${timeDisplay}The year is ${correctYear}. You MUST use ${todayISO} (or a future date in ${correctYear}) in all action blocks that require a date field. Never use a past year.`;
 
   const MODE_CONTEXT = {
     student: `\n\nACTIVE MODE: Student. Brooke is in heads-down academic mode. Focus on classes, Canvas deadlines, problem sets, exam prep, and deep work blocks. Keep suggestions academic. Don't bring up M Racing unless she asks.`,
@@ -239,18 +259,44 @@ export default async function handler(req, res) {
     ? `\n\nCourses detected from Canvas this semester: ${courses.join(', ')}`
     : '';
 
+  // Tomorrow's date
+  const tomorrowDate = new Date(todayISO + 'T12:00:00');
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrowISO = tomorrowDate.toLocaleDateString('en-CA');
+
   // Load everything from Redis in parallel
-  let recurringSchedule = {}, todaySchedule = [], backlog = [], recurringTasks = [];
+  let recurringSchedule = {}, todaySchedule = [], tomorrowSchedule = [], backlog = [], recurringTasks = [];
   try {
-    [recurringSchedule, todaySchedule, backlog, recurringTasks] = await Promise.all([
+    [recurringSchedule, todaySchedule, tomorrowSchedule, backlog, recurringTasks] = await Promise.all([
       kv.get(RECURRING_KEY).then(v => v || {}).catch(() => ({})),
       kv.get(`noa_schedule_${todayISO}`).then(v => v || []).catch(() => []),
+      kv.get(`noa_schedule_${tomorrowISO}`).then(v => v || []).catch(() => []),
       kv.get(BACKLOG_KEY).then(v => v || []).catch(() => []),
       kv.get(RECURRING_TASKS_KEY).then(v => v || []).catch(() => []),
     ]);
   } catch(e) {}
 
   const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+
+  // Tomorrow's full schedule (recurring + one-off)
+  const tomorrowDayName = DAYS[tomorrowDate.getDay()];
+  const recurringTomorrow = recurringSchedule[tomorrowDayName] || [];
+  const fullTomorrowSchedule = [...recurringTomorrow, ...tomorrowSchedule]
+    .sort((a, b) => {
+      // sort by time string — simple enough for AM/PM ordering
+      const toMin = t => {
+        const m = t?.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (!m) return 0;
+        let h = parseInt(m[1]); const min = parseInt(m[2]);
+        if (m[3].toUpperCase() === 'PM' && h !== 12) h += 12;
+        if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
+        return h * 60 + min;
+      };
+      return toMin(a.time) - toMin(b.time);
+    });
+  const tomorrowBlock = fullTomorrowSchedule.length > 0
+    ? `\n\nTomorrow's schedule (${tomorrowISO}):\n${fullTomorrowSchedule.map(i => `- ${i.time}: ${i.title}${i.note ? ` (${i.note})` : ''}`).join('\n')}`
+    : `\n\nTomorrow's schedule (${tomorrowISO}): nothing saved yet.`;
 
   const recurringBlock = Object.keys(recurringSchedule).length > 0
     ? `\n\nSaved recurring class schedule:\n${DAYS.filter(d => recurringSchedule[d]?.length).map(d =>
@@ -303,7 +349,7 @@ export default async function handler(req, res) {
     : '';
 
   const systemPrompt = BASE_SYSTEM + dateBlock + coursesLine + modeBlock + canvasBlock
-    + scheduleBlock + recurringBlock + prioritiesBlock + habitsBlock
+    + scheduleBlock + tomorrowBlock + recurringBlock + prioritiesBlock + habitsBlock
     + energyBlock + dwBlock + racingBlock + goalsBlock + backlogBlock + recurringTasksBlock
     + memoryBlock;
 
