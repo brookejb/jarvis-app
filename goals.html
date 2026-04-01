@@ -115,6 +115,29 @@
 
 </main>
 
+<!-- Canvas Sync Modal -->
+<div id="canvas-sync-overlay" class="fixed inset-0 bg-black/60 z-[300] hidden items-end justify-center backdrop-blur-sm" onclick="if(event.target===this)closeCanvasSync()">
+  <div class="w-full max-w-lg bg-[#1d1b1e] rounded-t-3xl shadow-2xl border-t border-[#584143]/20 p-6 space-y-5">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="font-bold tracking-tight">Sync from Canvas</h3>
+        <p id="canvas-sync-goal-name" class="text-sm text-on-surface-variant mt-0.5"></p>
+      </div>
+      <button onclick="closeCanvasSync()" class="text-on-surface-variant hover:text-on-surface transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <p class="text-sm text-on-surface-variant">Which Canvas course is this goal for?</p>
+    <div id="canvas-course-list" class="space-y-2 max-h-60 overflow-y-auto">
+      <div class="flex items-center gap-2 text-on-surface-variant opacity-40">
+        <span class="material-symbols-outlined animate-spin text-sm">refresh</span>
+        <span class="text-sm">Loading Canvas courses...</span>
+      </div>
+    </div>
+    <p class="text-[10px] text-on-surface-variant opacity-40">Past-due assignments will be marked done. Future ones will be marked pending. Existing tasks are replaced.</p>
+  </div>
+</div>
+
 <!-- Goal Detail Panel -->
 <div id="goal-detail-overlay" class="fixed inset-0 bg-black/60 z-[200] hidden items-end justify-center backdrop-blur-sm" onclick="if(event.target===this)closeGoalDetail()">
   <div class="w-full max-w-lg bg-[#1d1b1e] rounded-t-3xl shadow-2xl border-t border-[#584143]/20 flex flex-col max-h-[80vh]">
@@ -248,18 +271,25 @@
     _goals = _goals.map(g => ({ ...g, tasks: g.tasks || [], progress: g.tasks?.length ? computeProgress(g.tasks) : g.progress }));
     const container = document.getElementById('semester-goals');
     container.innerHTML = _goals.map((g, i) => `
-      <div onclick="openGoalDetail(${i})" class="bg-surface-container-low p-6 rounded-xl flex items-center justify-between hover:bg-surface-container-high active:scale-[0.98] transition-all cursor-pointer">
-        <div class="flex-1 mr-4">
-          <h3 class="text-lg font-bold mb-1">${g.title}</h3>
-          <p class="text-sm text-on-surface-variant line-clamp-2">${g.desc}</p>
-          ${g.tasks?.length ? `<p class="text-[10px] uppercase tracking-wider font-bold mt-2 opacity-40">${g.tasks.filter(t=>t.done).length}/${g.tasks.length} done</p>` : ''}
+      <div class="bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container-high transition-colors">
+        <div onclick="openGoalDetail(${i})" class="p-6 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform">
+          <div class="flex-1 mr-4">
+            <h3 class="text-lg font-bold mb-1">${g.title}</h3>
+            <p class="text-sm text-on-surface-variant line-clamp-2">${g.desc}</p>
+            ${g.tasks?.length ? `<p class="text-[10px] uppercase tracking-wider font-bold mt-2 opacity-40">${g.tasks.filter(t=>t.done).length}/${g.tasks.length} done</p>` : '<p class="text-[10px] uppercase tracking-wider font-bold mt-2 opacity-30">No tasks yet</p>'}
+          </div>
+          <div class="relative w-12 h-12 flex items-center justify-center flex-shrink-0">
+            <svg class="w-full h-full -rotate-90">
+              <circle cx="24" cy="24" fill="transparent" r="20" stroke="#373437" stroke-width="3"></circle>
+              <circle cx="24" cy="24" fill="transparent" r="20" stroke="${g.color}" stroke-dasharray="${CIRC}" stroke-dashoffset="${progressOffset(g.progress)}" stroke-width="3" stroke-linecap="round"></circle>
+            </svg>
+            <span class="absolute text-[10px] font-bold">${g.progress}%</span>
+          </div>
         </div>
-        <div class="relative w-12 h-12 flex items-center justify-center flex-shrink-0">
-          <svg class="w-full h-full -rotate-90">
-            <circle cx="24" cy="24" fill="transparent" r="20" stroke="#373437" stroke-width="3"></circle>
-            <circle cx="24" cy="24" fill="transparent" r="20" stroke="${g.color}" stroke-dasharray="${CIRC}" stroke-dashoffset="${progressOffset(g.progress)}" stroke-width="3" stroke-linecap="round"></circle>
-          </svg>
-          <span class="absolute text-[10px] font-bold">${g.progress}%</span>
+        <div class="px-6 pb-4">
+          <button onclick="openCanvasSync(${i})" class="text-[10px] uppercase tracking-[0.12rem] font-bold text-on-surface-variant opacity-40 hover:opacity-80 transition-opacity flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">sync</span>Sync from Canvas
+          </button>
         </div>
       </div>
     `).join('');
@@ -391,6 +421,68 @@
         el.classList.remove('opacity-40');
       }
     }
+  }
+
+  // Canvas sync
+  let _syncGoalIdx = null;
+  let _canvasCourses = null;
+
+  async function openCanvasSync(idx) {
+    _syncGoalIdx = idx;
+    document.getElementById('canvas-sync-goal-name').textContent = _goals[idx].title;
+    document.getElementById('canvas-sync-overlay').classList.remove('hidden');
+    document.getElementById('canvas-sync-overlay').classList.add('flex');
+
+    if (!_canvasCourses) {
+      try {
+        const res = await fetch('/api/canvas?all=1');
+        const data = await res.json();
+        _canvasCourses = data.courses || [];
+      } catch(e) {
+        _canvasCourses = [];
+      }
+    }
+
+    const list = document.getElementById('canvas-course-list');
+    if (_canvasCourses.length === 0) {
+      list.innerHTML = '<p class="text-sm text-on-surface-variant opacity-40">No Canvas courses found. Make sure your Canvas iCal is connected.</p>';
+      return;
+    }
+
+    list.innerHTML = _canvasCourses.map((c, i) => `
+      <button onclick="applyCanvasCourse(${i})" class="w-full text-left p-4 rounded-xl bg-surface-container-low hover:bg-surface-container-high transition-colors flex items-center justify-between group">
+        <div>
+          <p class="font-bold text-sm">${c.code}</p>
+          <p class="text-[10px] text-on-surface-variant mt-0.5">${c.assignments.length} assignments</p>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
+      </button>
+    `).join('');
+  }
+
+  function closeCanvasSync() {
+    document.getElementById('canvas-sync-overlay').classList.add('hidden');
+    document.getElementById('canvas-sync-overlay').classList.remove('flex');
+    _syncGoalIdx = null;
+  }
+
+  function applyCanvasCourse(courseIdx) {
+    const course = _canvasCourses[courseIdx];
+    if (!course || _syncGoalIdx === null) return;
+
+    // Replace goal tasks with Canvas assignments
+    _goals[_syncGoalIdx].tasks = course.assignments.map(a => ({
+      label: a.label,
+      dueDate: a.dueDate,
+      done: a.done,
+    }));
+    _goals[_syncGoalIdx].progress = computeProgress(_goals[_syncGoalIdx].tasks);
+    saveGoals();
+    renderSemesterGoals();
+    closeCanvasSync();
+
+    // Open the detail panel to show the result
+    openGoalDetail(_syncGoalIdx);
   }
 
   renderSemesterGoals();
