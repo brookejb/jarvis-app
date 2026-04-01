@@ -111,22 +111,33 @@ export default async function handler(req, res) {
       const byCourse = {};
 
       for (const e of all) {
-        // Always group by Canvas course ID from URL — it's stable and always present
-        const key = e.courseId;
-        if (!byCourse[key]) byCourse[key] = { code: null, courseId: e.courseId, assignments: [] };
-
-        // Extract best course code from summary for display name
-        // Canvas format: "Assignment name [DEPT 314 001 WN 2026]"
-        if (!byCourse[key].code) {
-          const bracketMatch = e.summary.match(/\[([A-Z]{2,10}\s+\d{3}[A-Z]?)\s/);
-          const inlineMatch = e.summary.match(/\b([A-Z]{2,10}\s+\d{3}[A-Z]?)\b/);
-          byCourse[key].code = bracketMatch?.[1]?.trim() || inlineMatch?.[1]?.trim() || null;
-        }
-
         // Skip pure lecture/section entries
         if (/^(L|Lec|Lecture)[\d\s_]/i.test(e.summary)) continue;
 
-        const label = e.summary.replace(/\s*\[[^\]]*\]\s*/g, '').trim() || e.summary;
+        // Primary: extract course code from Canvas bracket format
+        // e.g. "HW 3 [EECS 314 001 WN 2026]" → "EECS 314"
+        // e.g. "Problem Set [MECHENG 335 001 WN 2026]" → "MECHENG 335"
+        let courseCode = null;
+        const bracketContent = e.summary.match(/\[([^\]]+)\]/);
+        if (bracketContent) {
+          const codeMatch = bracketContent[1].match(/^([A-Z]{2,10}\s+\d{3}[A-Z]?)/);
+          if (codeMatch) courseCode = codeMatch[1].trim();
+        }
+
+        // Fallback: course code appearing inline in summary
+        if (!courseCode) {
+          const inline = e.summary.match(/\b([A-Z]{2,10}\s+\d{3}[A-Z]?)\b/);
+          if (inline) courseCode = inline[1].trim();
+        }
+
+        // Last resort: use Canvas URL course ID
+        const key = courseCode || e.courseId;
+
+        if (!byCourse[key]) byCourse[key] = { code: courseCode || `Course ${e.courseId}`, assignments: [] };
+
+        // Strip bracket suffix for clean label: "HW 3 [EECS 314 001 WN 2026]" → "HW 3"
+        const label = e.summary.replace(/\s*\[[^\]]*\]\s*$/, '').trim() || e.summary;
+
         byCourse[key].assignments.push({
           label,
           dueDate: e.date.toISOString(),
@@ -134,10 +145,9 @@ export default async function handler(req, res) {
         });
       }
 
-      // Sort assignments within each course by due date, set fallback name
+      // Sort courses alphabetically, sort assignments within each by due date
       const courses = Object.values(byCourse)
         .filter(c => c.assignments.length > 0)
-        .map(c => ({ ...c, code: c.code || `Course ${c.courseId}` }))
         .sort((a, b) => a.code.localeCompare(b.code));
 
       courses.forEach(c => c.assignments.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate)));
