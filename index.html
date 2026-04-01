@@ -608,12 +608,29 @@
     // Find index of current/next item
     let nextIdx = _scheduleItems.findIndex(item => timeMins(item.time) >= nowMins);
 
+    // Recalculate nextIdx ignoring done items
+    nextIdx = _scheduleItems.findIndex(item => !item.done && timeMins(item.time) >= nowMins);
+
     list.innerHTML = _scheduleItems.map((item, i) => {
       const color = SCHED_COLOR_MAP[item.color] || SCHED_COLOR_MAP.blue;
       const mins = timeMins(item.time);
-      const isPast = mins < nowMins && (nextIdx === -1 || i < nextIdx);
-      const isNext = i === nextIdx;
+      const isDone = !!item.done;
+      const isPast = !isDone && mins < nowMins && (nextIdx === -1 || i < nextIdx);
+      const isNext = !isDone && i === nextIdx;
 
+      if (isDone) {
+        return `
+          <div class="flex items-center gap-4 opacity-40">
+            <span class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant min-w-[52px]">${item.time}</span>
+            <div class="flex-1 px-4 py-3 rounded-xl bg-surface-container-low flex items-center gap-3" style="border-left:3px solid #7DD4B040">
+              <span class="material-symbols-outlined text-base flex-shrink-0" style="color:#7DD4B0;font-variation-settings:'FILL' 1;">check_circle</span>
+              <div>
+                <p class="text-sm font-medium text-on-surface line-through">${item.title}</p>
+                ${item.note ? `<p class="text-xs text-on-surface-variant mt-0.5">${item.note}</p>` : ''}
+              </div>
+            </div>
+          </div>`;
+      }
       if (isPast) {
         return `
           <div class="flex items-center gap-4 opacity-25">
