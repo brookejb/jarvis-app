@@ -445,6 +445,9 @@
       localStorage.setItem('noa_priorities', JSON.stringify(a.items));
       renderPriorities();
     }
+    if (a.type === 'snooze_priority') {
+      renderPriorities();
+    }
     if (a.type === 'update_racing_checklist' && a.items) {
       localStorage.setItem('noa_racing_checklist', JSON.stringify(a.items));
       if (window.getCurrentMode && window.getCurrentMode() === 'racing') renderRacingChecklist();
