@@ -195,9 +195,14 @@ Plan these exact dates: ${dateRange.map(d => `${d.iso} (${d.label})`).join(', ')
     const cleaned = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '').trim();
     const plan = JSON.parse(cleaned);
 
-    // Save each day's plan to Redis
-    const saves = Object.entries(plan)
-      .filter(([, items]) => Array.isArray(items) && items.length > 0)
+    // Save each day's plan to Redis — but never overwrite dates that already
+    // have manually-set items. Check existing first, skip if occupied.
+    const planEntries = Object.entries(plan).filter(([, items]) => Array.isArray(items) && items.length > 0);
+    const existingChecks = await Promise.all(
+      planEntries.map(([date]) => kv.get(`noa_schedule_${date}`).catch(() => null))
+    );
+    const saves = planEntries
+      .filter((_, i) => !existingChecks[i] || existingChecks[i].length === 0)
       .map(([date, items]) => kv.set(`noa_schedule_${date}`, items));
     await Promise.all(saves);
 
