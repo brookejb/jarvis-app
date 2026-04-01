@@ -140,7 +140,12 @@ IMPORTANT: The set_schedule action takes priority over all other action types wh
 Update ritual streaks (when Brooke logs a completed habit - Bible reading or gym):
 [ACTION]{"type":"update_rituals","bible":5,"gym":3,"bible_today":true,"gym_today":false,"date":"YYYY-MM-DD"}[/ACTION]
 bible and gym are the current week totals (0-7 and 0-5). bible_today and gym_today are booleans for whether she did each one. Include all four fields.
-IMPORTANT: Always include the "date" field set to the date she actually did the habit - not necessarily today. If it is before 4:00 AM and she is logging something she did "today" or "earlier", use yesterday's date. If she says "I did my Tuesday workout" on Wednesday at midnight, use Tuesday's date.
+CRITICAL: Always include the "date" field. Use the date she actually means - not always today. Examples:
+- She says "I did my Tuesday workout" on Wednesday at 12am → use Tuesday's date
+- She says "log my Bible for this morning" at 1am Wednesday → use Tuesday's date (she hasn't slept yet)
+- She says "mark my workout for Saturday" → use Saturday's date
+- She says "I just did it" at 3pm → use today's date
+Use the exact ISO date (YYYY-MM-DD). Never default blindly to today - infer from what she said and what time it is.
 
 Update semester goal progress (when Brooke reports a grade, finishes an assignment, or asks to update a goal):
 [ACTION]{"type":"set_goal_progress","goals":[{"title":"Thermodynamics","desc":"B+ or better - building toward the engineer who understands the full system.","progress":80,"color":"#5092eb"}]}[/ACTION]

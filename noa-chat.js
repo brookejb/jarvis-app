@@ -58,21 +58,8 @@ function handleAction(a) {
         gym: a.gym ?? cur.gym ?? 0,
       }));
       if (a.bible_today !== undefined || a.gym_today !== undefined) {
-        // Use action-specified date if provided, otherwise smart-default:
-        // before 4am treat as "still yesterday" since habits are day-prior
-        let dk;
-        if (a.date) {
-          dk = a.date;
-        } else {
-          const now = new Date();
-          if (now.getHours() < 4) {
-            const yesterday = new Date(now);
-            yesterday.setDate(now.getDate() - 1);
-            dk = yesterday.toLocaleDateString('en-CA');
-          } else {
-            dk = now.toLocaleDateString('en-CA');
-          }
-        }
+        // Always trust the date Noa specifies — she figures out the right date from context
+        const dk = a.date || new Date().toLocaleDateString('en-CA');
         const log = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
         log[dk] = { bible: a.bible_today ?? log[dk]?.bible ?? false, gym: a.gym_today ?? log[dk]?.gym ?? false };
         localStorage.setItem('noa_habit_log', JSON.stringify(log));
