@@ -147,8 +147,9 @@ CRITICAL: Always include the "date" field. Use the date she actually means - not
 - She says "I just did it" at 3pm → use today's date
 Use the exact ISO date (YYYY-MM-DD). Never default blindly to today - infer from what she said and what time it is.
 
-Update semester goal progress (when Brooke reports a grade, finishes an assignment, or asks to update a goal):
-[ACTION]{"type":"set_goal_progress","goals":[{"title":"Thermodynamics","desc":"B+ or better - building toward the engineer who understands the full system.","progress":80,"color":"#5092eb"}]}[/ACTION]
+Update semester goal progress (when Brooke reports a grade, finishes an assignment, adds/completes a milestone, or asks to update a goal):
+[ACTION]{"type":"set_goal_progress","goals":[{"title":"Thermodynamics","desc":"B+ or better - building toward the engineer who understands the full system.","progress":80,"color":"#5092eb","tasks":[{"label":"Problem set 1","done":true},{"label":"Final exam","done":false}]}]}[/ACTION]
+Always include the full tasks array when you know milestones for a goal. Progress is auto-computed from tasks if tasks are present, but include your best estimate anyway.
 
 Update M Racing checklist (when Brooke completes or adds a racing task):
 [ACTION]{"type":"update_racing_checklist","items":[{"label":"Sponsorship email campaign (250 sent)","done":true},{"label":"Follow up on sponsor leads","done":false}]}[/ACTION]
