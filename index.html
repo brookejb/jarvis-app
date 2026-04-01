@@ -74,6 +74,34 @@
     <p id="greeting-text" class="text-on-surface leading-relaxed opacity-50">Good morning, Brooke...</p>
   </div>
 
+  <!-- Noa Brief Card -->
+  <div id="noa-brief-card" class="hidden w-full rounded-2xl overflow-hidden border border-outline-variant/10" style="background:linear-gradient(135deg,rgba(240,96,122,0.05),rgba(82,55,135,0.08));">
+    <div class="px-5 pt-4 pb-1 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm text-[#F0607A]" style="font-variation-settings:'FILL' 1;">radio_button_checked</span>
+        <span id="noa-brief-label" class="text-[9px] uppercase tracking-[0.18rem] font-bold text-[#F0607A]/70">Morning Brief</span>
+      </div>
+      <button onclick="dismissBrief()" class="text-on-surface-variant opacity-30 hover:opacity-60 transition-opacity">
+        <span class="material-symbols-outlined text-sm">close</span>
+      </button>
+    </div>
+    <div id="noa-brief-text" class="px-5 pb-4 pt-2 space-y-1">
+      <div class="flex gap-2 items-center opacity-40">
+        <span class="material-symbols-outlined text-sm animate-spin">refresh</span>
+        <span class="text-xs text-on-surface-variant">Loading...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- What should I do right now -->
+  <button onclick="askRightNow()" class="w-full py-3.5 rounded-2xl border border-[#F0607A]/20 flex items-center justify-between px-5 hover:border-[#F0607A]/40 active:scale-[0.99] transition-all group" style="background:rgba(240,96,122,0.04);">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-[#F0607A] opacity-70 group-hover:opacity-100 transition-opacity" style="font-variation-settings:'FILL' 1;">bolt</span>
+      <span class="text-sm font-bold text-on-surface">What should I do right now?</span>
+    </div>
+    <span class="material-symbols-outlined text-on-surface-variant opacity-30 group-hover:opacity-60 transition-opacity text-sm">arrow_forward</span>
+  </button>
+
   <!-- Mode Switcher -->
   <div class="flex gap-2 overflow-x-auto no-scrollbar -mt-2 pb-1">
     <button data-mode="student" onclick="setMode('student')" class="mode-chip whitespace-nowrap px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.12rem] transition-all border border-outline-variant/20 text-on-surface-variant glass-card">Student</button>
@@ -839,6 +867,90 @@
   }
   loadBacklog();
 
+  // ---- Noa Brief ----
+  async function loadBrief() {
+    const hour = new Date().getHours();
+    // Only show brief in morning (before 2pm) or evening (after 6pm)
+    if (hour >= 14 && hour < 18) return;
+
+    const briefType = hour < 14 ? 'morning' : 'evening';
+    const cacheKey = `noa_brief_${TODAY}_${briefType}`;
+    const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+
+    // Use cache if less than 90 minutes old
+    if (cached && cached.text && (Date.now() - cached.fetchedAt) < 90 * 60 * 1000) {
+      showBrief(cached.text, briefType);
+      return;
+    }
+
+    const card = document.getElementById('noa-brief-card');
+    card.classList.remove('hidden');
+
+    try {
+      const clientDate = new Date().toLocaleDateString('en-CA');
+      const clientTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      const priorities = JSON.parse(localStorage.getItem('noa_priorities') || '[]');
+      const habitLog = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
+      const energy = localStorage.getItem(`noa_energy_${TODAY}`) || null;
+      const semesterGoals = JSON.parse(localStorage.getItem('noa_semester_goals') || '[]');
+      const racingChecklist = JSON.parse(localStorage.getItem('noa_racing_checklist') || '[]');
+      const deepWorkLog = JSON.parse(localStorage.getItem('noa_deep_work_log') || '[]');
+      const todayDW = deepWorkLog.filter(s => s.date === clientDate);
+
+      // 3 weeks of habits
+      const weekHabits = {};
+      for (let i = 20; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const k = d.toLocaleDateString('en-CA');
+        if (habitLog[k]) weekHabits[k] = habitLog[k];
+      }
+
+      const res = await fetch('/api/brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientDate, clientTime, priorities, weekHabits, energy, racingChecklist, semesterGoals, todayDW }),
+      });
+      const data = await res.json();
+      if (data.brief) {
+        localStorage.setItem(cacheKey, JSON.stringify({ text: data.brief, fetchedAt: Date.now() }));
+        showBrief(data.brief, briefType);
+      }
+    } catch(e) {
+      document.getElementById('noa-brief-card').classList.add('hidden');
+    }
+  }
+
+  function showBrief(text, type) {
+    const card = document.getElementById('noa-brief-card');
+    const label = document.getElementById('noa-brief-label');
+    const textEl = document.getElementById('noa-brief-text');
+    if (!card || !textEl) return;
+
+    label.textContent = type === 'morning' ? 'Morning Brief' : 'Evening Recap';
+    const lines = text.split('\n').filter(l => l.trim());
+    textEl.innerHTML = lines.map(line =>
+      `<p class="text-sm text-on-surface/80 leading-relaxed">${line.trim()}</p>`
+    ).join('');
+    card.classList.remove('hidden');
+  }
+
+  function dismissBrief() {
+    const card = document.getElementById('noa-brief-card');
+    if (card) card.classList.add('hidden');
+    // Remember dismissed for this session
+    sessionStorage.setItem('noa_brief_dismissed', '1');
+  }
+
+  // Don't load brief if already dismissed this session
+  if (!sessionStorage.getItem('noa_brief_dismissed')) {
+    loadBrief();
+  }
+
+  // ---- What Should I Do Right Now ----
+  function askRightNow() {
+    window.noaSend && window.noaSend('What should I do right now?');
+  }
+
   // Refresh backlog when Noa updates it
   const _origOnNoaActionBacklog = window.onNoaAction;
   window.onNoaAction = function(a) {
@@ -858,9 +970,10 @@
       gap: '1.75rem',
       prioritiesLabel: "Today's Focus",
       chips: [
-        ["What's due this week?", "What's due this week?"],
-        ["Set a study block", "Help me set a deep work block for today"],
-        ["Update priorities", "Update my priorities for today"],
+        ["What's due soon?", "What Canvas deadlines are coming up in the next few days? Any clusters I should know about?"],
+        ["Plan my week", "Walk me through this week - what's heavy, what's light, and where should I focus?"],
+        ["Deep work block", "Help me set a deep work block for today based on my schedule and energy"],
+        ["Update my focus", "Update my focus list for today based on what's most urgent"],
       ],
     },
     racing: {
@@ -871,9 +984,10 @@
       gap: '2.25rem',
       prioritiesLabel: "Racing Focus",
       chips: [
-        ["What's on deck?", "What's on deck for M Racing today?"],
-        ["Update checklist", "Update my M Racing checklist"],
-        ["Prep for meeting", "Help me prep for my next team meeting"],
+        ["What's on deck?", "What's most urgent for M Racing right now? What's been sitting too long?"],
+        ["Sponsor follow-up", "Is it time to follow up on any sponsor outreach? What's the status?"],
+        ["Prep for meeting", "Help me prep for my next M Racing team meeting"],
+        ["Director progress", "How am I tracking on the Director of Business application?"],
       ],
     },
     builder: {
@@ -884,9 +998,9 @@
       gap: '3.5rem',
       prioritiesLabel: "Building Toward",
       chips: [
-        ["Ross progress", "Where am I on the Ross application?"],
-        ["5-year check-in", "Check in on my five-year Sydney vision"],
-        ["What should I build?", "What should I be working toward as a builder this week?"],
+        ["5-year check-in", "Check in on my five-year Sydney vision - am I moving toward it this week?"],
+        ["What to build next", "What should I be working toward as a builder right now?"],
+        ["Backlog review", "What's been sitting in my backlog that I should actually do this week?"],
       ],
     },
     personal: {
@@ -898,8 +1012,9 @@
       prioritiesLabel: "Anchors",
       chips: [
         ["Log Bible reading", "I did my Bible reading today"],
-        ["Week check-in", "How am I tracking on my personal anchors this week?"],
-        ["Reflect", "I want to reflect on how this week is going"],
+        ["Habit check-in", "How are my habits tracking this week? Bible and gym - give me the honest picture"],
+        ["Energy check", "My energy has been off - what patterns do you see and what should I adjust?"],
+        ["Week reflection", "I want to reflect on how this week is going and what I want to do differently"],
       ],
     },
   };
