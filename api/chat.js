@@ -193,7 +193,7 @@ export default async function handler(req, res) {
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
 
-  const { messages, priorities } = req.body;
+  const { messages, priorities, weekHabits, energy, todayDW, racingChecklist, semesterGoals } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'messages array required' });
   }
@@ -234,21 +234,73 @@ export default async function handler(req, res) {
     ? `\n\nCourses detected from Canvas this semester: ${courses.join(', ')}`
     : '';
 
-  // Load recurring class schedule so Noa knows what's already saved
-  let recurringSchedule = {};
-  try { recurringSchedule = await kv.get(RECURRING_KEY) || {}; } catch(e) {}
+  // Load everything from Redis in parallel
+  let recurringSchedule = {}, todaySchedule = [], backlog = [], recurringTasks = [];
+  try {
+    [recurringSchedule, todaySchedule, backlog, recurringTasks] = await Promise.all([
+      kv.get(RECURRING_KEY).then(v => v || {}).catch(() => ({})),
+      kv.get(`noa_schedule_${todayISO}`).then(v => v || []).catch(() => []),
+      kv.get(BACKLOG_KEY).then(v => v || []).catch(() => []),
+      kv.get(RECURRING_TASKS_KEY).then(v => v || []).catch(() => []),
+    ]);
+  } catch(e) {}
+
   const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+
   const recurringBlock = Object.keys(recurringSchedule).length > 0
     ? `\n\nSaved recurring class schedule:\n${DAYS.filter(d => recurringSchedule[d]?.length).map(d =>
         `- ${d.charAt(0).toUpperCase()+d.slice(1)}: ${recurringSchedule[d].map(e => `${e.time} ${e.title}`).join(', ')}`
       ).join('\n')}`
     : '\n\nNo recurring class schedule saved yet.';
 
-  const prioritiesBlock = priorities && priorities.length > 0
-    ? `\n\nBrooke's current focus list (Today's Focus on her dashboard):\n${priorities.map(p => `- ${p.label} (${p.category})`).join('\n')}\nYou can remove items by re-emitting set_priorities without them, or update the full list.`
-    : '\n\nBrooke has no items on her focus list right now.';
+  // Merge recurring + one-off for today's full schedule
+  const todayDayName = DAYS[new Date(todayISO + 'T12:00:00').getDay()];
+  const recurringToday = recurringSchedule[todayDayName] || [];
+  const fullTodaySchedule = [...recurringToday, ...todaySchedule];
+  const scheduleBlock = fullTodaySchedule.length > 0
+    ? `\n\nToday's full schedule:\n${fullTodaySchedule.map(i => `- ${i.time}: ${i.title}${i.note ? ` (${i.note})` : ''}`).join('\n')}`
+    : '\n\nNo schedule set for today yet.';
 
-  const systemPrompt = BASE_SYSTEM + dateBlock + coursesLine + modeBlock + canvasBlock + recurringBlock + prioritiesBlock + memoryBlock;
+  const prioritiesBlock = priorities && priorities.length > 0
+    ? `\n\nCurrent focus list (Today's Focus on dashboard):\n${priorities.map(p => `- ${p.label} (${p.category})`).join('\n')}\nTo remove an item, re-emit set_priorities without it. To add, include it in the list.`
+    : '\n\nNo items on the focus list right now.';
+
+  // Habits this week
+  const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const habitLines = weekHabits && Object.keys(weekHabits).length > 0
+    ? Object.entries(weekHabits).map(([date, h]) => {
+        const d = new Date(date + 'T12:00:00');
+        return `- ${DAY_NAMES[d.getDay()]} ${date}: Bible=${h.bible ? 'done' : 'no'}, Gym=${h.gym ? 'done' : 'no'}`;
+      }).join('\n')
+    : 'No habits logged this week yet.';
+  const habitsBlock = `\n\nThis week's habit log:\n${habitLines}`;
+
+  const energyBlock = energy ? `\n\nToday's energy level: ${energy}` : '';
+
+  const dwBlock = todayDW && todayDW.length > 0
+    ? `\n\nDeep work sessions today: ${todayDW.map(s => `"${s.task}" (${s.duration}min${s.completed ? ', completed' : ', in progress'})`).join(', ')}`
+    : '';
+
+  const racingBlock = racingChecklist && racingChecklist.length > 0
+    ? `\n\nM Racing checklist:\n${racingChecklist.map(i => `- [${i.done ? 'x' : ' '}] ${i.label}`).join('\n')}`
+    : '';
+
+  const goalsBlock = semesterGoals && semesterGoals.length > 0
+    ? `\n\nSemester goals:\n${semesterGoals.map(g => `- ${g.title}: ${g.desc} (progress: ${g.progress}%)`).join('\n')}`
+    : '';
+
+  const backlogBlock = backlog.length > 0
+    ? `\n\nBacklog (things to do eventually, no date yet):\n${backlog.map(i => `- ${i.title}${i.note ? `: ${i.note}` : ''}`).join('\n')}`
+    : '';
+
+  const recurringTasksBlock = recurringTasks.length > 0
+    ? `\n\nRecurring tasks:\n${recurringTasks.map(t => `- ${t.title}: every ${t.frequencyDays} days, last done ${t.lastDone || 'never'}`).join('\n')}`
+    : '';
+
+  const systemPrompt = BASE_SYSTEM + dateBlock + coursesLine + modeBlock + canvasBlock
+    + scheduleBlock + recurringBlock + prioritiesBlock + habitsBlock
+    + energyBlock + dwBlock + racingBlock + goalsBlock + backlogBlock + recurringTasksBlock
+    + memoryBlock;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {

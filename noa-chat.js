@@ -94,13 +94,38 @@ async function sendMessage(text) {
   setLoading(true);
   try {
     // Send client's local date so server never uses UTC to determine "today"
-    const clientDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
+    const clientDate = new Date().toLocaleDateString('en-CA');
     const mode = (typeof window.getCurrentMode === 'function') ? window.getCurrentMode() : 'student';
+
+    // Send everything Noa needs to see the full picture
     const priorities = JSON.parse(localStorage.getItem('noa_priorities') || '[]');
+    const habitLog = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
+    const energy = localStorage.getItem(`noa_energy_${clientDate}`) || null;
+    const deepWorkLog = JSON.parse(localStorage.getItem('noa_deep_work_log') || '[]');
+    const racingChecklist = JSON.parse(localStorage.getItem('noa_racing_checklist') || '[]');
+    const semesterGoals = JSON.parse(localStorage.getItem('noa_semester_goals') || '[]');
+
+    // Summarize this week's habits
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    const weekHabits = {};
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      const k = d.toLocaleDateString('en-CA');
+      if (habitLog[k]) weekHabits[k] = habitLog[k];
+    }
+
+    // Today's deep work sessions
+    const todayDW = deepWorkLog.filter(s => s.date === clientDate);
+
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: chatHistory, clientDate, mode, priorities }),
+      body: JSON.stringify({
+        messages: chatHistory, clientDate, mode,
+        priorities, weekHabits, energy, todayDW, racingChecklist, semesterGoals,
+      }),
     });
     const data = await res.json();
     const reply = data.reply || 'Something went wrong, try again.';
