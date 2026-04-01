@@ -112,6 +112,7 @@ About Brooke:
 - Peak focus: late night (11PM). Morning energy varies.
 - Five-year vision: Sydney, Australia. Every daily decision connects to that.
 - Gym sessions and Bible reading are tracked habits she cares about
+- Lives near central campus. North campus (ME 250, ME 250 Lab, EECS 314, EECS Lab, Wilson Center, any ME or EECS class) requires a 50-minute walk through the Arb each way. Always factor this into any schedule involving north campus commitments.
 
 Your role:
 - Help Brooke plan her day, prioritize tasks, and stay on track
@@ -163,6 +164,19 @@ DEEP WORK AND FOCUS:
 - Don't suggest starting a deep work block within 60 min of a scheduled commitment - not enough runway.
 - After a completed deep work session, momentum is high. Suggest continuing or moving to the next hardest thing.
 - If she hasn't had a deep work block in 3+ days and she has academic deadlines coming up, name the gap.
+
+SCHEDULING RULES - non-negotiable, apply every time you build any schedule:
+
+Before building any plan or schedule:
+1. Pull up every locked commitment on the schedule for each day in scope (classes, labs, exams, appointments). List them first. Build around them. Never create a schedule without doing this step.
+2. Cross-reference Canvas deadlines for every day in the plan. If any assignment is due on a day you're planning around and isn't already accounted for, flag it immediately before finalizing anything.
+3. Factor in commute. North campus commitments require 50 minutes of travel each way. If a day has a north campus class or lab, subtract 100 minutes from available study/work time before calculating what fits.
+
+While building the plan:
+4. Never schedule study or review sessions for material after that exam has already occurred. Once the exam is done, that subject is done.
+5. If a constraint (commute, locked commitment, limited time) forces actual available time below what was requested, flag the shortfall explicitly. Never silently accept 3.5 hours when 4 were asked for. Surface the gap and propose how to close it.
+6. When Brooke says "push X to after [event]," find the next available window after that event - the same afternoon, the next day, that weekend. Never interpret "after the exam" as "next week" unless there genuinely is no time before then.
+7. When a multi-day schedule is complete, verify it against the original list of everything that was requested. Say "here's everything accounted for" and list it. If anything was missed or doesn't fit, say so explicitly.
 
 DECISION PARALYSIS PATTERN:
 - Brooke can get stuck in optimization loops - trying to architect the perfect plan before starting anything. When she seems stuck or asks open-ended "what should I do" questions, don't give her a menu. Cut through with one specific recommendation.
@@ -304,7 +318,13 @@ Updates lastDone so Noa calculates the next optimal occurrence. Use today's date
 Remove from backlog (when a backlog item gets placed on the calendar or is no longer needed):
 [ACTION]{"type":"remove_from_backlog","id":"item-slug"}[/ACTION]
 
-Only one [ACTION] block per response. If multiple actions are needed, pick the most important one. When in doubt between set_schedule and any other action type, always pick set_schedule if a concrete event was mentioned.`;
+For set_schedule: emit one [ACTION] block per day when scheduling multiple days. You can and should send multiple set_schedule blocks in a single response - one per date. This is the only case where multiple ACTION blocks are allowed. All other action types: one per response, pick the most important one.
+
+Example of multi-day scheduling:
+[ACTION]{"type":"set_schedule","date":"2026-04-04","items":[{"time":"10:00 AM","title":"ECON Lecture","color":"blue"}]}[/ACTION]
+[ACTION]{"type":"set_schedule","date":"2026-04-05","items":[{"time":"10:00 AM","title":"ECON Problem Set","color":"blue"}]}[/ACTION]
+
+When in doubt between set_schedule and any other action type, always pick set_schedule if a concrete event was mentioned.`;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -543,7 +563,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
+        max_tokens: 4096,
         system: systemPrompt,
         messages,
       }),
@@ -574,24 +594,30 @@ export default async function handler(req, res) {
       }
     }
 
-    // Extract action block if present
-    const actionMatch = cleanReply.match(/\[ACTION\]([\s\S]*?)\[\/ACTION\]/);
+    // Extract ALL action blocks (multiple set_schedule blocks allowed for multi-day planning)
+    const allActionMatches = [...cleanReply.matchAll(/\[ACTION\]([\s\S]*?)\[\/ACTION\]/g)];
     const finalReply = cleanReply.replace(/\[ACTION\][\s\S]*?\[\/ACTION\]/g, '').trim();
 
-    let actions = null;
-    if (actionMatch) {
+    const scheduleActions = [];
+    let primaryAction = null;
+
+    for (const match of allActionMatches) {
       try {
-        const parsed = JSON.parse(actionMatch[1]);
-        if (parsed.type) {
-          actions = parsed;
-          // Persist one-off schedule to Redis
-          if (parsed.type === 'set_schedule' && Array.isArray(parsed.items)) {
-            let scheduleDate = parsed.date || todayISO;
-            // Correct year if model hallucinated the wrong year (e.g. 2025 instead of 2026)
-            scheduleDate = scheduleDate.replace(/^\d{4}/, correctYear);
-            await kv.set(`noa_schedule_${scheduleDate}`, parsed.items);
-          }
-          // Persist recurring class schedule to Redis
+        const parsed = JSON.parse(match[1]);
+        if (!parsed.type) continue;
+
+        // Persist one-off schedule to Redis (handle multiple set_schedule blocks)
+        if (parsed.type === 'set_schedule' && Array.isArray(parsed.items)) {
+          let scheduleDate = (parsed.date || todayISO).replace(/^\d{4}/, correctYear);
+          await kv.set(`noa_schedule_${scheduleDate}`, parsed.items);
+          scheduleActions.push({ ...parsed, date: scheduleDate });
+          continue; // schedule actions collected separately
+        }
+
+        // Only one non-schedule action processed per response
+        if (!primaryAction) {
+          primaryAction = parsed;
+
           if (parsed.type === 'set_recurring_schedule' && parsed.schedule) {
             const existing = await kv.get(RECURRING_KEY) || {};
             const merged = { ...existing };
@@ -600,7 +626,6 @@ export default async function handler(req, res) {
             }
             await kv.set(RECURRING_KEY, merged);
           }
-          // Add items to backlog
           if (parsed.type === 'add_to_backlog' && Array.isArray(parsed.items)) {
             const existing = await kv.get(BACKLOG_KEY) || [];
             const newItems = parsed.items.map(item => ({
@@ -610,12 +635,10 @@ export default async function handler(req, res) {
             }));
             await kv.set(BACKLOG_KEY, [...existing, ...newItems]);
           }
-          // Remove from backlog
           if (parsed.type === 'remove_from_backlog' && parsed.id) {
             const existing = await kv.get(BACKLOG_KEY) || [];
             await kv.set(BACKLOG_KEY, existing.filter(i => i.id !== parsed.id));
           }
-          // Set up or update a recurring task
           if (parsed.type === 'set_recurring_task' && parsed.task) {
             const existing = await kv.get(RECURRING_TASKS_KEY) || [];
             const idx = existing.findIndex(t => t.id === parsed.task.id);
@@ -623,7 +646,6 @@ export default async function handler(req, res) {
             else existing.push(parsed.task);
             await kv.set(RECURRING_TASKS_KEY, existing);
           }
-          // Mark recurring task complete
           if (parsed.type === 'complete_recurring_task' && parsed.id) {
             const existing = await kv.get(RECURRING_TASKS_KEY) || [];
             const idx = existing.findIndex(t => t.id === parsed.id);
@@ -638,7 +660,14 @@ export default async function handler(req, res) {
       }
     }
 
-    res.json({ reply: finalReply, ...(actions && { actions }) });
+    // Return: multiple schedule actions as array, single primary action as object
+    const actionsToReturn = scheduleActions.length > 0
+      ? scheduleActions.length === 1
+        ? scheduleActions[0]                    // single schedule: object (backward compat)
+        : scheduleActions                       // multiple schedules: array
+      : primaryAction;                          // non-schedule action: object
+
+    res.json({ reply: finalReply, ...(actionsToReturn && { actions: actionsToReturn }) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

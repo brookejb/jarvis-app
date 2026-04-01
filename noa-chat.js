@@ -148,7 +148,10 @@ async function sendMessage(text) {
     chatHistory.push({ role: 'assistant', content: reply });
     saveHistory();
     appendMessage('assistant', reply);
-    if (data.actions) handleAction(data.actions);
+    if (data.actions) {
+      const actionList = Array.isArray(data.actions) ? data.actions : [data.actions];
+      actionList.forEach(handleAction);
+    }
   } catch (e) {
     appendMessage('assistant', 'Connection error. Try again.');
   } finally {
