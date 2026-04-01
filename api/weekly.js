@@ -6,8 +6,16 @@ const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','satur
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // POST: save a schedule for a date directly
+  if (req.method === 'POST') {
+    const { date, schedule } = req.body;
+    if (!date || !Array.isArray(schedule)) return res.status(400).json({ error: 'date and schedule required' });
+    await kv.set(`noa_schedule_${date}`, schedule);
+    return res.json({ ok: true });
+  }
 
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
