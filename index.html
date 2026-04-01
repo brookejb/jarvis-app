@@ -582,19 +582,30 @@
   setInterval(() => renderTodaySchedule(), 60000);
 
   async function loadTodaySchedule() {
-    // Try Redis via API first, fall back to localStorage
+    let schedule = [];
     try {
       const res = await fetch(`/api/weekly?date=${TODAY}`);
       const data = await res.json();
-      if (data.schedule && data.schedule.length > 0) {
-        renderTodaySchedule(data.schedule);
-        return;
-      }
+      schedule = data.schedule || [];
     } catch (e) {}
-    // Fallback: localStorage
-    const local = localStorage.getItem(`noa_schedule_${TODAY}`);
-    if (local) {
-      try { renderTodaySchedule(JSON.parse(local)); } catch (e) {}
+
+    // Always merge with localStorage backup — catches Redis POST failures
+    // where the item showed on screen but never persisted
+    const localRaw = localStorage.getItem(`noa_manual_${TODAY}`);
+    if (localRaw) {
+      try {
+        const manual = JSON.parse(localRaw);
+        for (const item of manual) {
+          if (!schedule.find(s => s.title === item.title && s.time === item.time)) {
+            schedule.push(item);
+          }
+        }
+      } catch(e) {}
+    }
+
+    if (schedule.length > 0) {
+      schedule.sort((a, b) => timeMins(a.time) - timeMins(b.time));
+      renderTodaySchedule(schedule);
     }
   }
   loadTodaySchedule();
@@ -656,7 +667,13 @@
     }
     existing.sort((a, b) => toMinsLocal(a.time) - toMinsLocal(b.time));
 
-    // Save to Redis via plan API pattern — use set_schedule through weekly API
+    // Save to localStorage immediately — guaranteed, survives refresh
+    const newItem = { time: timeStr, title, color: _addEventColor };
+    const manual = JSON.parse(localStorage.getItem(`noa_manual_${TODAY}`) || '[]');
+    manual.push(newItem);
+    localStorage.setItem(`noa_manual_${TODAY}`, JSON.stringify(manual));
+
+    // Also push to Redis (best-effort, failure is covered by localStorage)
     try {
       await fetch('/api/weekly', {
         method: 'POST',
@@ -665,7 +682,6 @@
       });
     } catch(e) {}
 
-    // Always update local render immediately
     renderTodaySchedule(existing);
     closeAddEvent();
   }
