@@ -158,11 +158,43 @@
     </div>
     <div class="h-[1px] bg-outline-variant/10 flex-shrink-0"></div>
     <div id="goal-detail-tasks" class="overflow-y-auto px-6 py-4 space-y-1 flex-1"></div>
-    <div class="px-6 pb-6 pt-2 flex-shrink-0">
+    <div class="px-6 pb-6 pt-2 flex-shrink-0 space-y-2">
+      <button onclick="openManualTaskAdd()" class="w-full h-11 rounded-xl bg-primary-container/10 border border-primary-container/20 text-sm font-bold text-primary-container hover:bg-primary-container/15 transition-all">
+        + Add past assignments manually
+      </button>
       <button onclick="closeGoalDetail(); document.getElementById('noa-input').value='Add a task to my ' + document.getElementById('goal-detail-title').textContent + ' goal: '; setTimeout(()=>{document.getElementById('noa-panel').style.transform='translateX(0)'; document.getElementById('noa-overlay').classList.remove('hidden'); document.getElementById('noa-input').focus();},100)" class="w-full h-11 rounded-xl border border-outline-variant/20 text-sm font-bold text-on-surface-variant hover:text-on-surface hover:border-outline-variant/40 transition-all">
         + Add task via Noa
       </button>
     </div>
+  </div>
+</div>
+
+<!-- Manual Task Add Sheet -->
+<div id="manual-task-overlay" class="fixed inset-0 bg-black/60 z-[300] hidden items-end justify-center backdrop-blur-sm" onclick="if(event.target===this)closeManualTaskAdd()">
+  <div class="w-full max-w-lg bg-[#1d1b1e] rounded-t-3xl shadow-2xl border-t border-[#584143]/20 p-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="font-bold tracking-tight">Add Past Assignments</h3>
+        <p class="text-xs text-on-surface-variant mt-0.5" id="manual-task-course-name"></p>
+      </div>
+      <button onclick="closeManualTaskAdd()" class="text-on-surface-variant hover:text-on-surface transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <p class="text-xs text-on-surface-variant opacity-60">Enter one assignment name per line. All will be marked as completed (since they're past due). Add approximate due dates like "HW 1 - Jan 15" or just names.</p>
+    <textarea id="manual-task-input" rows="7" placeholder="HW 1 - Jan 15&#10;HW 2 - Jan 22&#10;Problem Set 1&#10;Quiz 1 - Feb 3&#10;Midterm 1 - Feb 10" class="w-full bg-[#211f22] rounded-xl px-4 py-3 text-[#e7e1e5] placeholder:text-[#dfbfc1]/30 focus:outline-none focus:ring-1 focus:ring-[#f0607a]/30 text-sm resize-none"></textarea>
+    <div class="flex items-center gap-2">
+      <select id="manual-task-month" class="flex-1 h-10 bg-[#211f22] rounded-xl px-3 text-[#e7e1e5] focus:outline-none focus:ring-1 focus:ring-[#f0607a]/30 text-sm border-0">
+        <option value="2026-01">January 2026</option>
+        <option value="2026-02">February 2026</option>
+        <option value="2026-03">March 2026</option>
+        <option value="2026-04" selected>April 2026</option>
+      </select>
+      <p class="text-[10px] text-on-surface-variant opacity-40 flex-shrink-0">Default month if no date given</p>
+    </div>
+    <button onclick="submitManualTasks()" class="w-full h-11 bg-primary-container text-on-primary-container rounded-xl font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all">
+      Save as Completed
+    </button>
   </div>
 </div>
 
@@ -514,6 +546,62 @@
     finally {
       if (btn) btn.innerHTML = '<span class="material-symbols-outlined text-sm">sync</span>Sync Canvas';
     }
+  }
+
+  // Manual past assignment import
+  function openManualTaskAdd() {
+    if (_activeGoalIdx === null) return;
+    const g = _goals[_activeGoalIdx];
+    document.getElementById('manual-task-course-name').textContent = g.title;
+    document.getElementById('manual-task-input').value = '';
+    const overlay = document.getElementById('manual-task-overlay');
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    setTimeout(() => document.getElementById('manual-task-input').focus(), 100);
+  }
+
+  function closeManualTaskAdd() {
+    document.getElementById('manual-task-overlay').classList.add('hidden');
+    document.getElementById('manual-task-overlay').classList.remove('flex');
+  }
+
+  function submitManualTasks() {
+    if (_activeGoalIdx === null) return;
+    const raw = document.getElementById('manual-task-input').value.trim();
+    const defaultMonth = document.getElementById('manual-task-month').value;
+    if (!raw) return;
+
+    const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+    const newTasks = lines.map(line => {
+      // Try to extract a date from the line: "HW 1 - Jan 15" or "HW 1 - 01/15"
+      const datePatterns = [
+        /[-–]\s*([A-Z][a-z]+\.?\s+\d{1,2})/,  // "- Jan 15"
+        /[-–]\s*(\d{1,2}\/\d{1,2})/,            // "- 01/15"
+        /\(([A-Z][a-z]+\.?\s+\d{1,2})\)/,       // "(Jan 15)"
+      ];
+      let dueDate = `${defaultMonth}-15T23:59:00.000Z`;
+      let label = line;
+      for (const pat of datePatterns) {
+        const m = line.match(pat);
+        if (m) {
+          label = line.replace(pat, '').replace(/\s*[-–]\s*$/, '').trim();
+          try {
+            const parsed = new Date(m[1] + ' 2026');
+            if (!isNaN(parsed)) dueDate = parsed.toISOString();
+          } catch(e) {}
+          break;
+        }
+      }
+      return { label: label || line, dueDate, done: true };
+    });
+
+    const g = _goals[_activeGoalIdx];
+    g.tasks = [...(g.tasks || []), ...newTasks];
+    g.progress = computeProgress(g.tasks);
+    saveGoals();
+    renderGoalDetail();
+    renderSemesterGoals();
+    closeManualTaskAdd();
   }
 
   renderSemesterGoals();
