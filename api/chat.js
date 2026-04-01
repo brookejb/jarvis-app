@@ -63,8 +63,15 @@ async function loadCanvasForChat(todayISO) {
       const groupKey = courseCode || canvasCourseId;
 
       const diffDays = Math.round((date - now) / (1000 * 60 * 60 * 24));
-      const dueStr = diffDays === 0 ? 'today' : diffDays === 1 ? 'tomorrow'
-        : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      const hasTime = dtstart.includes('T');
+      const TZ = 'America/Detroit'; // Eastern — UMich
+      const dayPart = diffDays === 0 ? 'today'
+        : diffDays === 1 ? 'tomorrow'
+        : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: TZ });
+      const timePart = hasTime
+        ? date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: TZ })
+        : null;
+      const dueStr = timePart ? `${dayPart} at ${timePart}` : dayPart;
 
       // Clean label: strip bracket suffix
       const label = summary.replace(/\s*\[[^\]]*\]\s*$/, '').trim() || summary;
@@ -334,8 +341,8 @@ export default async function handler(req, res) {
     : '';
 
   const correctYear = todayISO.split('-')[0]; // e.g. "2026"
-  const timeDisplay = clientTime ? `Current time: ${clientTime}. ` : '';
-  const dateBlock = `\n\nCRITICAL: Today is ${todayReadable} (${todayISO}). ${timeDisplay}The year is ${correctYear}. You MUST use ${todayISO} (or a future date in ${correctYear}) in all action blocks that require a date field. Never use a past year.`;
+  const timeDisplay = clientTime ? `The current time is ${clientTime} Eastern. ` : '';
+  const dateBlock = `\n\nCRITICAL DATE AND TIME: Today is ${todayReadable} (${todayISO}). ${timeDisplay}The year is ${correctYear}. Use this exact time for all time calculations — sleep math, scheduling, "how long until X", everything. You MUST use ${todayISO} (or a future date in ${correctYear}) in all action blocks that require a date field. Never use a past year. All Canvas deadlines are shown in Eastern time.`;
 
   const MODE_CONTEXT = {
     student: `\n\nACTIVE MODE: Student. Brooke is in heads-down academic mode. Focus on classes, Canvas deadlines, problem sets, exam prep, and deep work blocks. Keep suggestions academic. Don't bring up M Racing unless she asks.`,
