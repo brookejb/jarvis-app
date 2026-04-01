@@ -1447,6 +1447,123 @@
         return { cleanup() { clearTimeout(timerId); container.innerHTML = ''; } };
       }
     },
+    {
+      name: 'countdown',
+      // Animated countdown to a personal milestone — updateable through Noa
+      render({ container }) {
+        const stored = JSON.parse(
+          localStorage.getItem('noa_countdown') || '{"label":"Paris","date":"2026-05-11"}'
+        );
+        const target = new Date(stored.date + 'T00:00:00');
+        const label  = stored.label || 'Paris';
+
+        container.innerHTML = `
+          <div style="
+            width:100%;height:100%;
+            background:radial-gradient(ellipse at 50% 60%,#12090e 0%,#070510 60%,#040309 100%);
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            gap:0;position:relative;overflow:hidden;
+          ">
+            <!-- Soft warm glow behind the number -->
+            <div style="
+              position:absolute;
+              width:280px;height:180px;
+              border-radius:50%;
+              background:radial-gradient(ellipse,rgba(255,190,90,0.07) 0%,transparent 70%);
+              pointer-events:none;
+            "></div>
+
+            <!-- Event label -->
+            <p style="
+              font-size:10px;letter-spacing:0.35em;font-weight:700;
+              text-transform:uppercase;color:rgba(255,210,140,0.35);
+              margin-bottom:28px;
+            ">${label}</p>
+
+            <!-- Days — the centrepiece -->
+            <div style="position:relative;line-height:1;margin-bottom:8px;">
+              <span id="dw-cd-days" style="
+                font-size:clamp(88px,24vw,140px);
+                font-weight:900;
+                letter-spacing:-0.04em;
+                color:rgba(255,215,150,0.82);
+                font-variant-numeric:tabular-nums;
+                display:block;
+                text-align:center;
+                animation:dw-cd-glow 4s ease-in-out infinite;
+              ">--</span>
+            </div>
+
+            <!-- "days" label -->
+            <p style="
+              font-size:11px;letter-spacing:0.3em;font-weight:600;
+              text-transform:uppercase;color:rgba(255,200,120,0.25);
+              margin-bottom:32px;
+            ">days</p>
+
+            <!-- Thin divider -->
+            <div style="width:40px;height:1px;background:rgba(255,200,120,0.12);margin-bottom:28px;"></div>
+
+            <!-- HH:MM:SS -->
+            <span id="dw-cd-hms" style="
+              font-size:clamp(18px,4.5vw,26px);
+              font-weight:500;
+              letter-spacing:0.12em;
+              color:rgba(255,200,130,0.28);
+              font-variant-numeric:tabular-nums;
+            ">--:--:--</span>
+
+            <!-- Target date -->
+            <p id="dw-cd-datestr" style="
+              font-size:9px;letter-spacing:0.2em;font-weight:500;
+              text-transform:uppercase;color:rgba(255,200,120,0.15);
+              margin-top:14px;
+            "></p>
+          </div>
+          <style>
+            @keyframes dw-cd-glow {
+              0%,100% { text-shadow: 0 0 40px rgba(255,190,80,0.10); }
+              50%      { text-shadow: 0 0 80px rgba(255,190,80,0.22); }
+            }
+          </style>`;
+
+        // Set date string
+        document.getElementById('dw-cd-datestr').textContent =
+          target.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+
+        let lastSecs = -1;
+        function tick() {
+          const now  = new Date();
+          const diff = target - now;
+          if (diff <= 0) {
+            document.getElementById('dw-cd-days').textContent = '0';
+            document.getElementById('dw-cd-hms').textContent  = '00:00:00';
+            return;
+          }
+          const days  = Math.floor(diff / 864e5);
+          const hours = Math.floor((diff % 864e5)  / 36e5);
+          const mins  = Math.floor((diff % 36e5)   / 6e4);
+          const secs  = Math.floor((diff % 6e4)    / 1000);
+
+          document.getElementById('dw-cd-days').textContent = days;
+
+          // Subtle flash on the HMS when seconds change
+          const hmsEl = document.getElementById('dw-cd-hms');
+          if (secs !== lastSecs) {
+            hmsEl.style.transition = 'opacity 0.12s';
+            hmsEl.style.opacity = '0.5';
+            setTimeout(() => { if (hmsEl) hmsEl.style.opacity = '1'; }, 120);
+            lastSecs = secs;
+          }
+          hmsEl.textContent =
+            `${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+        }
+
+        tick();
+        const timer = setInterval(tick, 500);
+        return { cleanup() { clearInterval(timer); container.innerHTML = ''; } };
+      }
+    },
   ];
 
   const LAST_EXP_KEY = 'noa_last_dw_experience';

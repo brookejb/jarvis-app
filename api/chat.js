@@ -320,6 +320,10 @@ Add item to backlog (any time Brooke mentions something she needs to do that doe
 id: lowercase-hyphenated unique slug. color: blue=academic, orange=racing, green=movement, pink=faith, purple=chore/other.
 Noa will find the right time to place these when planning.
 
+Update the Deep Work countdown (when Brooke tells you what she's counting down to, or changes the target - a trip, a deadline, an event, a decision date):
+[ACTION]{"type":"set_countdown","label":"Paris","date":"2026-05-11"}[/ACTION]
+label: the name of the thing (short, like "Paris" or "Ross decision" or "graduation"). date: ISO date YYYY-MM-DD. Current countdown: Paris, May 11 2026. Update it any time she mentions changing the target or setting a new one.
+
 Set up a recurring task (when Brooke tells you something she does on a regular cadence - laundry, groceries, cleaning, etc.):
 [ACTION]{"type":"set_recurring_task","task":{"id":"laundry","title":"Laundry","frequencyDays":14,"flexDays":3,"color":"purple","lastDone":"2026-03-22","note":"~1 hour"}}[/ACTION]
 id: lowercase-hyphenated slug. frequencyDays: how often it repeats (7=weekly, 14=biweekly). flexDays: how many days early or late is acceptable. lastDone: ISO date of last completion (null if never). note: duration/details.

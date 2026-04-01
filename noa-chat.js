@@ -91,6 +91,8 @@ function handleAction(a) {
       }
       localStorage.setItem('noa_recurring_schedule', JSON.stringify(merged));
     }
+    } else if (a.type === 'set_countdown' && a.label && a.date) {
+      localStorage.setItem('noa_countdown', JSON.stringify({ label: a.label, date: a.date }));
     // start_deep_work is handled by the page via window.onNoaAction below
   } catch (e) {}
   // Notify page-level handlers (UI re-renders, deep work trigger, etc.)
