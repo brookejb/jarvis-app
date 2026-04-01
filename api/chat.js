@@ -324,9 +324,9 @@ Update the "future states" display shown during Deep Work (when Brooke adds, rem
 [ACTION]{"type":"set_future_states","items":["Sydney.","Build something that lasts.","Paris.","The engineer who understands the full system.","Ross.","Make it real."]}[/ACTION]
 items: array of short strings — places, goals, things to build. Keep them short and punchy. Sentence fragments are fine. Include a period at the end of single words for weight. Current defaults: Sydney, Paris, Ross, "Build something that lasts.", "The engineer who understands the full system.", "Make it real."
 
-Update the Deep Work countdown (when Brooke tells you what she's counting down to, or changes the target - a trip, a deadline, an event, a decision date):
-[ACTION]{"type":"set_countdown","label":"Paris","date":"2026-05-11"}[/ACTION]
-label: the name of the thing (short, like "Paris" or "Ross decision" or "graduation"). date: ISO date YYYY-MM-DD. Current countdown: Paris, May 11 2026. Update it any time she mentions changing the target or setting a new one.
+Update the Deep Work countdowns (when Brooke adds, removes, or changes anything she's counting down to — a trip, a decision date, graduation, anything with a real date):
+[ACTION]{"type":"set_countdown_list","items":[{"label":"Paris","date":"2026-05-11"},{"label":"Ross Decision","date":"2026-06-01"}]}[/ACTION]
+items: array of {label, date} objects. label: short name (e.g. "Paris", "Graduation", "Ross Decision"). date: ISO date YYYY-MM-DD. All countdowns display simultaneously while she works — every one ticking in real time. Current list: just Paris (May 11 2026). Add new ones any time she mentions a meaningful future date. Always send the full list, not just the new item.
 
 Set up a recurring task (when Brooke tells you something she does on a regular cadence - laundry, groceries, cleaning, etc.):
 [ACTION]{"type":"set_recurring_task","task":{"id":"laundry","title":"Laundry","frequencyDays":14,"flexDays":3,"color":"purple","lastDone":"2026-03-22","note":"~1 hour"}}[/ACTION]

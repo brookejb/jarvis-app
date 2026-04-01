@@ -91,8 +91,8 @@ function handleAction(a) {
       }
       localStorage.setItem('noa_recurring_schedule', JSON.stringify(merged));
     }
-    } else if (a.type === 'set_countdown' && a.label && a.date) {
-      localStorage.setItem('noa_countdown', JSON.stringify({ label: a.label, date: a.date }));
+    } else if (a.type === 'set_countdown_list' && Array.isArray(a.items)) {
+      localStorage.setItem('noa_countdown_list', JSON.stringify(a.items));
     } else if (a.type === 'set_future_states' && Array.isArray(a.items)) {
       localStorage.setItem('noa_future_states', JSON.stringify(a.items));
     // start_deep_work is handled by the page via window.onNoaAction below
