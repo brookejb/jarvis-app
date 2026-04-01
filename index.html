@@ -334,20 +334,17 @@
   <!-- Experience renders here, fills the full background -->
   <div id="dw-experience-container" class="absolute inset-0 overflow-hidden"></div>
 
-  <!-- HUD floats on top — experience owns the center, HUD stays at edges -->
-  <div id="dw-active" class="absolute inset-0 flex flex-col items-center justify-between py-10 px-8 pointer-events-none">
-    <!-- Top: task + timer in one compact strip -->
-    <div class="flex items-center gap-3 opacity-30">
-      <p id="dw-task-label" class="text-[11px] font-medium text-white uppercase tracking-[0.15rem]"></p>
-      <span class="text-[11px] text-white opacity-50">·</span>
-      <p id="dw-timer" class="text-[11px] font-bold tabular-nums text-white tracking-wide">00:00</p>
+  <!-- HUD — bottom strip only, experience owns everything above -->
+  <div id="dw-active" class="absolute bottom-0 left-0 right-0 flex flex-col items-center gap-3 pb-8 pt-4 px-8 pointer-events-none">
+    <div class="w-full max-w-[220px] rounded-full h-[2px]" style="background:rgba(255,255,255,0.08)">
+      <div id="dw-progress" class="h-[2px] rounded-full transition-all duration-1000" style="background:#F0607A;width:100%;"></div>
     </div>
-    <!-- Bottom: progress bar + end button -->
-    <div class="w-full flex flex-col items-center gap-5 pointer-events-auto">
-      <div class="w-full max-w-[220px] rounded-full h-[2px]" style="background:rgba(255,255,255,0.08)">
-        <div id="dw-progress" class="h-[2px] rounded-full transition-all duration-1000" style="background:#F0607A;width:100%;"></div>
-      </div>
-      <button onclick="exitDeepWork(false)" class="text-[9px] uppercase tracking-[0.2rem] font-bold text-white opacity-20 hover:opacity-50 transition-opacity">End session</button>
+    <div class="flex items-center gap-3 pointer-events-auto">
+      <p id="dw-task-label" class="text-[9px] font-medium text-white opacity-20 uppercase tracking-[0.15rem] max-w-[140px] truncate"></p>
+      <span class="text-[9px] text-white opacity-15">·</span>
+      <p id="dw-timer" class="text-[9px] font-bold tabular-nums text-white opacity-20 tracking-wide">00:00</p>
+      <span class="text-[9px] text-white opacity-15">·</span>
+      <button onclick="exitDeepWork(false)" class="text-[9px] uppercase tracking-[0.15rem] font-bold text-white opacity-20 hover:opacity-50 transition-opacity">End</button>
     </div>
   </div>
 
