@@ -334,13 +334,15 @@
   <!-- Experience renders here, fills the full background -->
   <div id="dw-experience-container" class="absolute inset-0 overflow-hidden"></div>
 
-  <!-- HUD floats on top — pointer-events only on interactive bits -->
-  <div id="dw-active" class="absolute inset-0 flex flex-col items-center justify-between py-14 px-8 pointer-events-none">
-    <div class="text-center space-y-1">
-      <p class="text-[9px] uppercase tracking-[0.25rem] font-bold text-white opacity-20">Deep Work</p>
-      <p id="dw-task-label" class="text-sm font-medium text-white opacity-35 leading-tight max-w-[220px] mx-auto"></p>
+  <!-- HUD floats on top — experience owns the center, HUD stays at edges -->
+  <div id="dw-active" class="absolute inset-0 flex flex-col items-center justify-between py-10 px-8 pointer-events-none">
+    <!-- Top: task + timer in one compact strip -->
+    <div class="flex items-center gap-3 opacity-30">
+      <p id="dw-task-label" class="text-[11px] font-medium text-white uppercase tracking-[0.15rem]"></p>
+      <span class="text-[11px] text-white opacity-50">·</span>
+      <p id="dw-timer" class="text-[11px] font-bold tabular-nums text-white tracking-wide">00:00</p>
     </div>
-    <div id="dw-timer" class="font-bold tabular-nums text-white tracking-tighter leading-none select-none" style="font-size:clamp(56px,18vw,88px);opacity:0.45;">00:00</div>
+    <!-- Bottom: progress bar + end button -->
     <div class="w-full flex flex-col items-center gap-5 pointer-events-auto">
       <div class="w-full max-w-[220px] rounded-full h-[2px]" style="background:rgba(255,255,255,0.08)">
         <div id="dw-progress" class="h-[2px] rounded-full transition-all duration-1000" style="background:#F0607A;width:100%;"></div>
