@@ -1,6 +1,15 @@
 // Canvas iCal feed parser
 // Extracts course info per event, assigns stable colors per course
 
+import { Redis } from '@upstash/redis';
+
+const kv = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
+
+const CANVAS_CACHE_KEY = 'noa_canvas_cache';
+
 const COURSE_PALETTE = [
   '#5092eb', // blue
   '#F0607A', // pink
@@ -90,6 +99,20 @@ function classify(summary) {
   return 'other';
 }
 
+// Extract course code from summary string
+function extractCourseCode(summary) {
+  // Primary: bracket format "[EECS 314 001 WN 2026]" → "EECS 314"
+  const bracketContent = summary.match(/\[([^\]]+)\]/);
+  if (bracketContent) {
+    const codeMatch = bracketContent[1].match(/^([A-Z]{2,10}\s+\d{3}[A-Z]?)/);
+    if (codeMatch) return codeMatch[1].trim();
+  }
+  // Fallback: course code inline in summary
+  const inline = summary.match(/\b([A-Z]{2,10}\s+\d{3}[A-Z]?)\b/);
+  if (inline) return inline[1].trim();
+  return null;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -108,40 +131,66 @@ export default async function handler(req, res) {
 
     // ?all=1 returns full semester grouped by course for goal task population
     if (req.query.all === '1') {
+
+      // --- Redis accumulation cache ---
+      // Canvas iCal feeds often only return a rolling window (e.g. current month forward).
+      // We cache every assignment we've ever seen in Redis so past months accumulate.
+
+      // Load existing cache
+      let cachedEvents = [];
+      try {
+        cachedEvents = (await kv.get(CANVAS_CACHE_KEY)) || [];
+      } catch (e) { /* cache miss is fine */ }
+
+      // Build a dedup map from cache first (older data)
+      // Key: URL (includes Canvas assignment ID) or summary|dateISO fallback
+      const eventMap = new Map();
+      for (const ev of cachedEvents) {
+        const key = ev.url || `${ev.summary}|${ev.dateISO}`;
+        eventMap.set(key, ev);
+      }
+
+      // Merge in current iCal events (overwrite with freshest data)
+      const freshFiltered = all.filter(e => !/^(L|Lec|Lecture)[\d\s_]/i.test(e.summary));
+      for (const e of freshFiltered) {
+        const key = e.url || `${e.summary}|${e.date.toISOString()}`;
+        eventMap.set(key, {
+          summary: e.summary,
+          dateISO: e.date.toISOString(),
+          url: e.url,
+          courseId: e.courseId,
+        });
+      }
+
+      // Persist merged cache back to Redis (fire and forget)
+      const mergedArr = Array.from(eventMap.values());
+      kv.set(CANVAS_CACHE_KEY, mergedArr).catch(() => {});
+
+      // --- Build course groups from merged events ---
       const byCourse = {};
 
-      for (const e of all) {
-        // Skip pure lecture/section entries
-        if (/^(L|Lec|Lecture)[\d\s_]/i.test(e.summary)) continue;
+      for (const ev of mergedArr) {
+        const { summary, dateISO, url, courseId } = ev;
+        const date = new Date(dateISO);
+        if (!summary || isNaN(date)) continue;
 
-        // Primary: extract course code from Canvas bracket format
-        // e.g. "HW 3 [EECS 314 001 WN 2026]" → "EECS 314"
-        // e.g. "Problem Set [MECHENG 335 001 WN 2026]" → "MECHENG 335"
-        let courseCode = null;
-        const bracketContent = e.summary.match(/\[([^\]]+)\]/);
-        if (bracketContent) {
-          const codeMatch = bracketContent[1].match(/^([A-Z]{2,10}\s+\d{3}[A-Z]?)/);
-          if (codeMatch) courseCode = codeMatch[1].trim();
+        const courseCode = extractCourseCode(summary);
+        const key = courseCode || courseId || 'other';
+
+        if (!byCourse[key]) {
+          byCourse[key] = {
+            code: courseCode || (courseId && courseId !== 'other' ? `Course ${courseId}` : 'Other'),
+            assignments: [],
+          };
         }
-
-        // Fallback: course code appearing inline in summary
-        if (!courseCode) {
-          const inline = e.summary.match(/\b([A-Z]{2,10}\s+\d{3}[A-Z]?)\b/);
-          if (inline) courseCode = inline[1].trim();
-        }
-
-        // Last resort: use Canvas URL course ID
-        const key = courseCode || e.courseId;
-
-        if (!byCourse[key]) byCourse[key] = { code: courseCode || `Course ${e.courseId}`, assignments: [] };
 
         // Strip bracket suffix for clean label: "HW 3 [EECS 314 001 WN 2026]" → "HW 3"
-        const label = e.summary.replace(/\s*\[[^\]]*\]\s*$/, '').trim() || e.summary;
+        const label = summary.replace(/\s*\[[^\]]*\]\s*$/, '').trim() || summary;
 
         byCourse[key].assignments.push({
           label,
-          dueDate: e.date.toISOString(),
-          done: e.date < now,
+          dueDate: dateISO,
+          done: date < now,
         });
       }
 
