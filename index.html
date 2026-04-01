@@ -325,8 +325,30 @@
     purple: { hex: '#c3a6ff' },
   };
 
-  const TODAY = new Date().toISOString().split('T')[0];
+  const TODAY = new Date().toLocaleDateString('en-CA');
   const CHECKS_KEY = `noa_daily_checks_${TODAY}`;
+
+  // Restore any snoozed priorities whose restoreAt has passed
+  (function restoreSnoozed() {
+    const snoozed = JSON.parse(localStorage.getItem('noa_snoozed_priorities') || '[]');
+    if (!snoozed.length) return;
+    const now = new Date();
+    const stillSnoozed = [];
+    const toRestore = [];
+    for (const s of snoozed) {
+      if (new Date(s.restoreAt) <= now) toRestore.push(s.item);
+      else stillSnoozed.push(s);
+    }
+    if (toRestore.length) {
+      const priorities = JSON.parse(localStorage.getItem('noa_priorities') || '[]');
+      // Add back only if not already present
+      for (const item of toRestore) {
+        if (!priorities.find(p => p.label === item.label)) priorities.push(item);
+      }
+      localStorage.setItem('noa_priorities', JSON.stringify(priorities));
+      localStorage.setItem('noa_snoozed_priorities', JSON.stringify(stillSnoozed));
+    }
+  })();
 
   function loadChecks() {
     try { return JSON.parse(localStorage.getItem(CHECKS_KEY) || '[]'); } catch(e) { return []; }

@@ -46,7 +46,19 @@ function setLoading(on) {
 
 function handleAction(a) {
   try {
-    if (a.type === 'set_priorities') {
+    if (a.type === 'snooze_priority') {
+      // Remove matched item from priorities and store with restore time
+      const priorities = JSON.parse(localStorage.getItem('noa_priorities') || '[]');
+      const snoozed = JSON.parse(localStorage.getItem('noa_snoozed_priorities') || '[]');
+      const match = priorities.find(p => p.label.toLowerCase().includes((a.label || '').toLowerCase()));
+      if (match) {
+        const remaining = priorities.filter(p => p !== match);
+        localStorage.setItem('noa_priorities', JSON.stringify(remaining));
+        snoozed.push({ item: match, restoreAt: a.restoreAt });
+        localStorage.setItem('noa_snoozed_priorities', JSON.stringify(snoozed));
+        if (typeof renderPriorities === 'function') renderPriorities();
+      }
+    } else if (a.type === 'set_priorities') {
       localStorage.setItem('noa_priorities', JSON.stringify(a.items));
     } else if (a.type === 'set_schedule') {
       const date = a.date || new Date().toISOString().split('T')[0];
