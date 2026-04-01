@@ -329,28 +329,35 @@
 <div id="bg-orb-2" class="fixed bottom-[-5%] left-[-5%] w-[400px] h-[400px] rounded-full blur-[100px] pointer-events-none z-0 transition-colors duration-700" style="background:rgba(82,55,135,0.10)"></div>
 
 <!-- Deep Work Overlay -->
-<div id="deep-work-overlay" class="fixed inset-0 z-[150] hidden flex-col items-center justify-center px-8" style="background:#0f0d10;">
-  <!-- Active session -->
-  <div id="dw-active" class="flex flex-col items-center gap-10 w-full max-w-xs">
-    <div class="text-center space-y-2">
-      <p class="text-[10px] uppercase tracking-[0.2rem] font-bold text-on-surface-variant opacity-50">Deep Work</p>
-      <p id="dw-task-label" class="text-xl font-bold text-on-surface leading-tight"></p>
+<div id="deep-work-overlay" class="fixed inset-0 z-[150] hidden" style="background:#0f0d10;">
+
+  <!-- Experience renders here, fills the full background -->
+  <div id="dw-experience-container" class="absolute inset-0 overflow-hidden"></div>
+
+  <!-- HUD floats on top — pointer-events only on interactive bits -->
+  <div id="dw-active" class="absolute inset-0 flex flex-col items-center justify-between py-14 px-8 pointer-events-none">
+    <div class="text-center space-y-1">
+      <p class="text-[9px] uppercase tracking-[0.25rem] font-bold text-white opacity-20">Deep Work</p>
+      <p id="dw-task-label" class="text-sm font-medium text-white opacity-35 leading-tight max-w-[220px] mx-auto"></p>
     </div>
-    <div id="dw-timer" class="font-bold tabular-nums text-on-surface tracking-tighter leading-none" style="font-size:clamp(64px,20vw,96px);">00:00</div>
-    <div class="w-full bg-surface-container-high rounded-full h-[3px]">
-      <div id="dw-progress" class="h-[3px] rounded-full transition-all duration-1000" style="background:#F0607A;width:100%;"></div>
+    <div id="dw-timer" class="font-bold tabular-nums text-white tracking-tighter leading-none select-none" style="font-size:clamp(56px,18vw,88px);opacity:0.45;">00:00</div>
+    <div class="w-full flex flex-col items-center gap-5 pointer-events-auto">
+      <div class="w-full max-w-[220px] rounded-full h-[2px]" style="background:rgba(255,255,255,0.08)">
+        <div id="dw-progress" class="h-[2px] rounded-full transition-all duration-1000" style="background:#F0607A;width:100%;"></div>
+      </div>
+      <button onclick="exitDeepWork(false)" class="text-[9px] uppercase tracking-[0.2rem] font-bold text-white opacity-20 hover:opacity-50 transition-opacity">End session</button>
     </div>
-    <button onclick="exitDeepWork(false)" class="mt-4 text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant opacity-30 hover:opacity-60 transition-opacity">Exit session</button>
   </div>
-  <!-- Done state -->
-  <div id="dw-done" class="hidden flex-col items-center gap-8 w-full max-w-xs text-center">
+
+  <!-- Done state — sits on top of everything -->
+  <div id="dw-done" class="hidden absolute inset-0 flex flex-col items-center justify-center gap-8 px-8 text-center" style="background:#0f0d10;">
     <span class="material-symbols-outlined text-[72px]" style="color:#7DD4B0;font-variation-settings:'FILL' 1;">check_circle</span>
     <div class="space-y-2">
       <p class="text-2xl font-bold text-on-surface">Session complete.</p>
       <p class="text-sm text-on-surface-variant" id="dw-done-sub"></p>
     </div>
-    <button onclick="exitDeepWork(true)" class="w-full py-4 rounded-full font-bold text-sm tracking-tight" style="background:#F0607A;color:#5b001c;">What's next?</button>
-    <button onclick="exitDeepWork(false)" class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant opacity-40 hover:opacity-70 transition-opacity">Back to home</button>
+    <button onclick="exitDeepWork(true)" class="w-full max-w-xs py-4 rounded-full font-bold text-sm tracking-tight" style="background:#F0607A;color:#5b001c;">What's next?</button>
+    <button onclick="exitDeepWork(false)" class="text-[9px] uppercase tracking-[0.2rem] font-bold text-on-surface-variant opacity-40 hover:opacity-70 transition-opacity">Back to home</button>
   </div>
 </div>
 
@@ -1298,6 +1305,161 @@
   // Init mode — skip greeting reload since loadGreeting() already handles initial load with mode
   setMode(localStorage.getItem('noa_mode') || 'student', false);
 
+  // ---- Focus Experiences ----
+  // Each experience: { name, render({ container, task, duration }) → { cleanup() } }
+  // To add a new experience: push an object to this array. Nothing else changes.
+  const FOCUS_EXPERIENCES = [
+    {
+      name: 'void',
+      // Near-black field with a single massive ghostly word that slowly breathes
+      render({ container }) {
+        container.innerHTML = `
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#0a0a0e;">
+            <span id="dw-void-word" style="
+              font-size:clamp(80px,22vw,160px);
+              font-weight:900;
+              letter-spacing:-0.04em;
+              color:rgba(255,255,255,0.03);
+              user-select:none;
+              animation:dw-void-pulse 6s ease-in-out infinite;
+            ">FOCUS</span>
+          </div>
+          <style>
+            @keyframes dw-void-pulse {
+              0%,100% { opacity:0.4; transform:scale(1); }
+              50%      { opacity:1;   transform:scale(1.04); }
+            }
+          </style>`;
+        return { cleanup() { container.innerHTML = ''; } };
+      }
+    },
+    {
+      name: 'breathe',
+      // A single soft circle expanding and contracting on a 5s breath cycle
+      render({ container }) {
+        container.innerHTML = `
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#08080f;">
+            <div style="position:relative;display:flex;align-items:center;justify-content:center;">
+              <div style="
+                width:100px;height:100px;border-radius:50%;
+                background:radial-gradient(circle,rgba(80,146,235,0.25) 0%,rgba(80,146,235,0) 70%);
+                animation:dw-breathe 5s ease-in-out infinite;
+              "></div>
+              <div style="
+                position:absolute;
+                width:32px;height:32px;border-radius:50%;
+                background:rgba(80,146,235,0.35);
+                animation:dw-breathe 5s ease-in-out infinite;
+              "></div>
+            </div>
+          </div>
+          <style>
+            @keyframes dw-breathe {
+              0%,100% { transform:scale(1);   opacity:0.35; }
+              50%      { transform:scale(2.4); opacity:0.75; }
+            }
+          </style>`;
+        return { cleanup() { container.innerHTML = ''; } };
+      }
+    },
+    {
+      name: 'drift',
+      // Slow-drifting soft dots on a dark field — purely CSS, no canvas
+      render({ container }) {
+        const dots = Array.from({ length: 18 }, (_, i) => {
+          const size  = 3 + Math.random() * 5;
+          const x     = Math.random() * 100;
+          const y     = Math.random() * 100;
+          const dur   = 14 + Math.random() * 16;
+          const delay = -(Math.random() * dur);
+          const dx    = (Math.random() - 0.5) * 40;
+          const dy    = (Math.random() - 0.5) * 40;
+          const op    = 0.08 + Math.random() * 0.14;
+          return `<div style="
+            position:absolute;
+            width:${size}px;height:${size}px;border-radius:50%;
+            background:rgba(200,220,255,${op});
+            left:${x}%;top:${y}%;
+            animation:dw-drift-${i} ${dur}s ${delay}s ease-in-out infinite alternate;
+          "></div>
+          <style>@keyframes dw-drift-${i} {
+            from { transform:translate(0,0); }
+            to   { transform:translate(${dx}px,${dy}px); }
+          }</style>`;
+        }).join('');
+        container.innerHTML = `<div style="position:relative;width:100%;height:100%;background:#07090f;overflow:hidden;">${dots}</div>`;
+        return { cleanup() { container.innerHTML = ''; } };
+      }
+    },
+    {
+      name: 'typewriter',
+      // Types a short focus phrase letter by letter, then fades and repeats
+      render({ container, task }) {
+        const phrases = [
+          'One hour at a time.',
+          'The work is the work.',
+          'This is how it gets built.',
+          'Head down. Keep going.',
+          'Every session counts.',
+        ];
+        container.innerHTML = `
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#09090d;padding:2rem;">
+            <p id="dw-type-text" style="
+              font-size:clamp(18px,4vw,28px);
+              font-weight:600;
+              color:rgba(255,255,255,0.18);
+              letter-spacing:0.01em;
+              line-height:1.5;
+              text-align:center;
+              min-height:2em;
+            "></p>
+          </div>`;
+
+        let phraseIdx = Math.floor(Math.random() * phrases.length);
+        let charIdx = 0;
+        let typing = true;
+        let timerId = null;
+
+        function tick() {
+          const el = document.getElementById('dw-type-text');
+          if (!el) return;
+          const phrase = phrases[phraseIdx];
+          if (typing) {
+            el.textContent = phrase.slice(0, ++charIdx);
+            if (charIdx >= phrase.length) {
+              typing = false;
+              timerId = setTimeout(tick, 3200); // pause before erasing
+              return;
+            }
+            timerId = setTimeout(tick, 55 + Math.random() * 40);
+          } else {
+            el.textContent = phrase.slice(0, --charIdx);
+            if (charIdx <= 0) {
+              typing = true;
+              phraseIdx = (phraseIdx + 1) % phrases.length;
+              timerId = setTimeout(tick, 900);
+              return;
+            }
+            timerId = setTimeout(tick, 28);
+          }
+        }
+        timerId = setTimeout(tick, 600);
+        return { cleanup() { clearTimeout(timerId); container.innerHTML = ''; } };
+      }
+    },
+  ];
+
+  const LAST_EXP_KEY = 'noa_last_dw_experience';
+  let _expCleanup = null;
+
+  function selectExperience() {
+    const last = localStorage.getItem(LAST_EXP_KEY);
+    const pool = FOCUS_EXPERIENCES.length > 1
+      ? FOCUS_EXPERIENCES.filter(e => e.name !== last)
+      : FOCUS_EXPERIENCES;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
   // ---- Deep Work ----
   const DW_LOG_KEY = 'noa_deep_work_log';
   let dwTimerInterval = null;
@@ -1347,14 +1509,20 @@
     document.getElementById('dw-task-label').textContent = task;
     document.getElementById('dw-timer').textContent = formatDWTime(dwRemainingSeconds);
     document.getElementById('dw-progress').style.width = '100%';
-    document.getElementById('dw-active').classList.remove('hidden');
-    document.getElementById('dw-active').style.display = 'flex';
-    document.getElementById('dw-done').classList.add('hidden');
+    document.getElementById('dw-active').style.visibility = 'visible';
     document.getElementById('dw-done').style.display = 'none';
+
+    // Select and render focus experience
+    if (_expCleanup) { _expCleanup.cleanup(); _expCleanup = null; }
+    const exp = selectExperience();
+    localStorage.setItem(LAST_EXP_KEY, exp.name);
+    const expContainer = document.getElementById('dw-experience-container');
+    expContainer.innerHTML = '';
+    _expCleanup = exp.render({ container: expContainer, task, duration }) || { cleanup() {} };
 
     // Show overlay
     const overlay = document.getElementById('deep-work-overlay');
-    overlay.style.display = 'flex';
+    overlay.style.display = 'block';
     overlay.classList.remove('hidden');
 
     // Close Noa panel so screen is clear
@@ -1393,8 +1561,9 @@
       localStorage.setItem(DW_LOG_KEY, JSON.stringify(log));
     } catch(e) {}
 
-    // Switch to done UI
-    document.getElementById('dw-active').style.display = 'none';
+    // Switch to done UI — hide HUD, show done state, clean up experience
+    if (_expCleanup) { _expCleanup.cleanup(); _expCleanup = null; }
+    document.getElementById('dw-active').style.visibility = 'hidden';
     document.getElementById('dw-done').style.display = 'flex';
     document.getElementById('dw-done-sub').textContent = `${dwDuration} min on ${dwTask}.`;
     updateDWLabel();
@@ -1402,6 +1571,7 @@
 
   window.exitDeepWork = function(sendToNoa) {
     if (dwTimerInterval) { clearInterval(dwTimerInterval); dwTimerInterval = null; }
+    if (_expCleanup) { _expCleanup.cleanup(); _expCleanup = null; }
     const overlay = document.getElementById('deep-work-overlay');
     overlay.style.display = 'none';
     overlay.classList.add('hidden');
