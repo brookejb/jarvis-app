@@ -125,6 +125,53 @@ Proactive context use:
 - If she asks about her morning and she has a 9am class on her recurring schedule, factor it in.
 - The system knows a lot about her. Use all of it.
 
+PROACTIVE BEHAVIORS - volunteer these without being asked, woven naturally into your answers:
+
+Habits and patterns (you receive up to 3 weeks of data with computed summaries):
+- If Bible hasn't been logged in 3+ days and it comes up in any planning or check-in context, name it - not as guilt, but as something she'd want to know. Her faith is foundational, not a line item.
+- If Gym hasn't happened in 3+ days AND her energy is low, connect those dots explicitly. "You haven't hit the gym in X days and your energy's been low - those are probably related."
+- If she has a current streak of 4+ days on either habit, name it warmly. She's building something.
+- Don't comment on habits unprompted in unrelated conversations. Wait for planning/check-in context.
+
+Deadline clustering:
+- If 2+ Canvas deadlines fall within the same 2-day window, flag it: "You have 3 things due Thursday - worth knowing now."
+- If she's planning something for the night before a Canvas deadline, catch it: "That's the night before your EECS HW is due."
+- If she's asking about her week and has something due within 3 days, surface it without her having to ask.
+
+Recurring tasks (you have computed next-due dates):
+- If a task is overdue or due within 2 days, mention it when planning conversations come up.
+- If tomorrow or the next day looks light and a recurring task is due soon, suggest connecting them.
+- Don't wait for her to remember - she set these up so she wouldn't have to.
+
+Goal progress:
+- If she mentions finishing a task that maps to a semester goal, connect it: "That moves your EECS 314 goal forward."
+- If a goal's progress hasn't been updated in a while (you can infer from stagnant % and old task dates), mention it.
+- When relevant, connect her daily work to the Sydney vision. Not every time - just when it lands.
+
+Energy management:
+- Low energy + no recent gym = probably connected. Name it.
+- Low energy = steer toward admin tasks, emails, backlog clearing. Don't push deep work on a drained day.
+- When energy is high and it's evening (especially near 11pm, her peak): flag it as a good window for hard problems and deep work.
+- Never suggest intense focus work if context shows she's running on under 5 hours of sleep.
+
+Schedule awareness:
+- If today has 5+ scheduled events with no clear gaps, acknowledge it's a full day. Offer to help prioritize.
+- If tomorrow's schedule looks heavy, mention it tonight so she can prepare mentally and practically.
+- If she's trying to schedule something that overlaps with a saved event or class, catch it.
+
+Backlog aging:
+- If she asks about her week or what to do and there are backlog items that have been there 14+ days, surface one: "There's also X that's been in your backlog for 3 weeks - worth deciding if it belongs this week."
+- Light schedule days are good opportunities to clear small backlog items. Suggest it.
+
+Peak performance:
+- Her peak focus is 11pm. If she has deep work to do and asks about when to schedule it, always mention the late evening window.
+- Morning energy is variable. Don't push demanding tasks in the AM unless she specifically says she's sharp.
+
+Mode awareness:
+- If she has a Canvas deadline or exam within 2 days and she's in any mode other than student, note it.
+- If M Racing has something time-sensitive on the checklist and she's in student mode, note it as a quick flag.
+- Don't push mode switches unsolicited - just name the relevant pressure if it's imminent.
+
 MEMORY RULE - NON-NEGOTIABLE:
 Any time Brooke tells you a concrete fact (exam date, deadline, preference, life update, habit, goal), you MUST save it immediately - even if you are also asking follow-up questions. Add this block at the very end of your response, after everything else:
 [MEMORY]{"facts":["concise fact 1","concise fact 2"]}[/MEMORY]
@@ -316,15 +363,74 @@ export default async function handler(req, res) {
     ? `\n\nCurrent focus list (Today's Focus on dashboard):\n${priorities.map(p => `- ${p.label} (${p.category})`).join('\n')}\nTo remove an item, re-emit set_priorities without it. To add, include it in the list.`
     : '\n\nNo items on the focus list right now.';
 
-  // Habits this week
+  // Habits - up to 3 weeks of data with computed summaries
   const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const habitLines = weekHabits && Object.keys(weekHabits).length > 0
-    ? Object.entries(weekHabits).map(([date, h]) => {
+  const habitEntries = weekHabits && Object.keys(weekHabits).length > 0
+    ? Object.entries(weekHabits).sort(([a], [b]) => a.localeCompare(b))
+    : [];
+
+  // Compute streaks and totals
+  const allDates = [];
+  for (let i = 20; i >= 0; i--) {
+    const d = new Date(todayISO + 'T12:00:00');
+    d.setDate(d.getDate() - i);
+    allDates.push(d.toLocaleDateString('en-CA'));
+  }
+
+  let bibleStreak = 0, gymStreak = 0;
+  let bible7 = 0, gym7 = 0, bible14 = 0, gym14 = 0;
+  let lastBible = null, lastGym = null;
+
+  for (const date of allDates) {
+    const h = weekHabits?.[date] || {};
+    const daysAgo = Math.round((new Date(todayISO) - new Date(date + 'T12:00:00')) / (1000 * 60 * 60 * 24));
+    if (h.bible) { if (daysAgo <= 7) bible7++; if (daysAgo <= 14) bible14++; if (!lastBible) lastBible = date; }
+    if (h.gym)   { if (daysAgo <= 7) gym7++;   if (daysAgo <= 14) gym14++;   if (!lastGym) lastGym = date; }
+  }
+  // Current streaks (consecutive days ending today)
+  for (let i = 0; i < allDates.length; i++) {
+    const date = allDates[allDates.length - 1 - i];
+    const h = weekHabits?.[date] || {};
+    if (i === 0 || (weekHabits?.[allDates[allDates.length - i]]?.bible)) {
+      if (h.bible) bibleStreak++; else if (i > 0) break;
+    }
+  }
+  // Simpler streak calc
+  bibleStreak = 0; gymStreak = 0;
+  for (let i = allDates.length - 1; i >= 0; i--) {
+    const h = weekHabits?.[allDates[i]] || {};
+    if (bibleStreak === i - (allDates.length - 1 - bibleStreak) && h.bible) bibleStreak++;
+    else if (!h.bible && bibleStreak > 0) break;
+  }
+  // Clean streak: count backwards from today
+  bibleStreak = 0; gymStreak = 0;
+  for (let i = allDates.length - 1; i >= 0; i--) {
+    const h = weekHabits?.[allDates[i]] || {};
+    if (allDates.length - 1 - i === bibleStreak && h.bible) bibleStreak++;
+    else if (allDates.length - 1 - i === bibleStreak) break;
+  }
+  for (let i = allDates.length - 1; i >= 0; i--) {
+    const h = weekHabits?.[allDates[i]] || {};
+    if (allDates.length - 1 - i === gymStreak && h.gym) gymStreak++;
+    else if (allDates.length - 1 - i === gymStreak) break;
+  }
+
+  const lastBibleDaysAgo = lastBible ? Math.round((new Date(todayISO) - new Date(lastBible + 'T12:00:00')) / (1000 * 60 * 60 * 24)) : null;
+  const lastGymDaysAgo   = lastGym   ? Math.round((new Date(todayISO) - new Date(lastGym   + 'T12:00:00')) / (1000 * 60 * 60 * 24)) : null;
+
+  const habitSummary = [
+    `Bible: ${bible7}/7 days this week, ${bible14}/14 days past 2 weeks${bibleStreak > 1 ? `, current streak: ${bibleStreak} days` : ''}${lastBibleDaysAgo !== null && lastBibleDaysAgo > 0 ? `, last done ${lastBibleDaysAgo} day${lastBibleDaysAgo===1?'':'s'} ago` : lastBibleDaysAgo === 0 ? ', done today' : ', never logged'}`,
+    `Gym: ${gym7}/7 days this week, ${gym14}/14 days past 2 weeks${gymStreak > 1 ? `, current streak: ${gymStreak} days` : ''}${lastGymDaysAgo !== null && lastGymDaysAgo > 0 ? `, last done ${lastGymDaysAgo} day${lastGymDaysAgo===1?'':'s'} ago` : lastGymDaysAgo === 0 ? ', done today' : ', never logged'}`,
+  ].join('\n');
+
+  const habitDetail = habitEntries.length > 0
+    ? '\nDetail:\n' + habitEntries.map(([date, h]) => {
         const d = new Date(date + 'T12:00:00');
         return `- ${DAY_NAMES[d.getDay()]} ${date}: Bible=${h.bible ? 'done' : 'no'}, Gym=${h.gym ? 'done' : 'no'}`;
       }).join('\n')
-    : 'No habits logged this week yet.';
-  const habitsBlock = `\n\nThis week's habit log:\n${habitLines}`;
+    : '';
+
+  const habitsBlock = `\n\nHabit log (last 3 weeks):\n${habitSummary}${habitDetail}`;
 
   const energyBlock = energy ? `\n\nToday's energy level: ${energy}` : '';
 
@@ -340,12 +446,33 @@ export default async function handler(req, res) {
     ? `\n\nSemester goals:\n${semesterGoals.map(g => `- ${g.title}: ${g.desc} (progress: ${g.progress}%)`).join('\n')}`
     : '';
 
+  // Backlog with aging
   const backlogBlock = backlog.length > 0
-    ? `\n\nBacklog (things to do eventually, no date yet):\n${backlog.map(i => `- ${i.title}${i.note ? `: ${i.note}` : ''}`).join('\n')}`
+    ? `\n\nBacklog (things to do eventually, no date yet):\n${backlog.map(i => {
+        const daysOld = i.addedAt
+          ? Math.round((new Date(todayISO) - new Date(i.addedAt)) / (1000 * 60 * 60 * 24))
+          : null;
+        const age = daysOld !== null ? ` [in backlog ${daysOld} day${daysOld === 1 ? '' : 's'}]` : '';
+        return `- ${i.title}${i.note ? `: ${i.note}` : ''}${age}`;
+      }).join('\n')}`
     : '';
 
+  // Recurring tasks with computed next-due dates
   const recurringTasksBlock = recurringTasks.length > 0
-    ? `\n\nRecurring tasks:\n${recurringTasks.map(t => `- ${t.title}: every ${t.frequencyDays} days, last done ${t.lastDone || 'never'}`).join('\n')}`
+    ? `\n\nRecurring tasks:\n${recurringTasks.map(t => {
+        let dueLine = 'never done';
+        if (t.lastDone) {
+          const lastDate = new Date(t.lastDone + 'T12:00:00');
+          const nextDue = new Date(lastDate);
+          nextDue.setDate(lastDate.getDate() + (t.frequencyDays || 7));
+          const daysUntil = Math.round((nextDue - new Date(todayISO + 'T12:00:00')) / (1000 * 60 * 60 * 24));
+          if (daysUntil < 0) dueLine = `OVERDUE by ${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? '' : 's'}`;
+          else if (daysUntil === 0) dueLine = 'due TODAY';
+          else if (daysUntil <= 3) dueLine = `due in ${daysUntil} day${daysUntil === 1 ? '' : 's'}`;
+          else dueLine = `next due ${nextDue.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+        }
+        return `- ${t.title}: every ${t.frequencyDays} days, last done ${t.lastDone || 'never'} (${dueLine})`;
+      }).join('\n')}`
     : '';
 
   const systemPrompt = BASE_SYSTEM + dateBlock + coursesLine + modeBlock + canvasBlock

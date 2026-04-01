@@ -121,13 +121,13 @@ async function sendMessage(text) {
     const racingChecklist = JSON.parse(localStorage.getItem('noa_racing_checklist') || '[]');
     const semesterGoals = JSON.parse(localStorage.getItem('noa_semester_goals') || '[]');
 
-    // Summarize this week's habits
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    // Send 3 weeks of habit history so Noa can detect patterns, not just this week
     const weekHabits = {};
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(weekStart);
-      d.setDate(weekStart.getDate() + i);
+    const habitStart = new Date();
+    habitStart.setDate(habitStart.getDate() - 20); // 3 weeks back
+    for (let i = 0; i <= 20; i++) {
+      const d = new Date(habitStart);
+      d.setDate(habitStart.getDate() + i);
       const k = d.toLocaleDateString('en-CA');
       if (habitLog[k]) weekHabits[k] = habitLog[k];
     }
