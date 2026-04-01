@@ -17,7 +17,8 @@ async function loadCanvasForChat(todayISO) {
     const text = await res.text();
 
     const now = new Date(todayISO + 'T00:00:00Z');
-    const cutoff = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+    // 21-day window so upcoming assignments are never cut off
+    const cutoff = new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000);
 
     const events = [];
     const blocks = text.split('BEGIN:VEVENT');
@@ -31,7 +32,7 @@ async function loadCanvasForChat(todayISO) {
       const dtstart = get('DTSTART');
       const url = get('URL');
       if (!summary || !dtstart) continue;
-      if (/^L[\d\s_]/i.test(summary)) continue; // skip lectures
+      if (/^L[\d\s_]/i.test(summary)) continue; // skip pure lecture entries
 
       let date;
       try {
@@ -44,38 +45,49 @@ async function loadCanvasForChat(todayISO) {
 
       if (date < now || date > cutoff) continue;
 
-      // Try to extract course code from summary (e.g. "EECS 314", "ME 335")
-      const codeMatch = summary.match(/\b([A-Z]{2,8}\s*\d{3,4})\b/);
-      const courseCode = codeMatch ? codeMatch[1].replace(/\s+/, ' ') : null;
+      // Extract course code: prefer bracket format "[EECS 314 001 WN 2026]", fall back to inline
+      let courseCode = null;
+      const bracketMatch = summary.match(/\[([^\]]+)\]/);
+      if (bracketMatch) {
+        const cm = bracketMatch[1].match(/^([A-Z]{2,10}\s+\d{3}[A-Z]?)/);
+        if (cm) courseCode = cm[1].trim();
+      }
+      if (!courseCode) {
+        const inline = summary.match(/\b([A-Z]{2,10}\s*\d{3,4}[A-Z]?)\b/);
+        if (inline) courseCode = inline[1].replace(/\s+/, ' ').trim();
+      }
 
-      // Stable course grouping via Canvas URL course ID
+      // Fallback: URL course ID
       const urlMatch = url.match(/\/courses\/(\d+)\//);
       const canvasCourseId = urlMatch ? urlMatch[1] : 'other';
+      const groupKey = courseCode || canvasCourseId;
 
       const diffDays = Math.round((date - now) / (1000 * 60 * 60 * 24));
       const dueStr = diffDays === 0 ? 'today' : diffDays === 1 ? 'tomorrow'
         : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
-      events.push({ summary, dueStr, courseCode, canvasCourseId });
+      // Clean label: strip bracket suffix
+      const label = summary.replace(/\s*\[[^\]]*\]\s*$/, '').trim() || summary;
+
+      events.push({ label, dueStr, dueDate: date, courseCode, groupKey });
     }
 
     if (!events.length) return { block: '', courses: [] };
 
-    // Group by canvas course
+    // Group by course code (primary) or URL ID (fallback) - no per-course item cap
     const byCourse = {};
     for (const e of events) {
-      if (!byCourse[e.canvasCourseId]) byCourse[e.canvasCourseId] = { code: e.courseCode, items: [] };
-      else if (!byCourse[e.canvasCourseId].code && e.courseCode) byCourse[e.canvasCourseId].code = e.courseCode;
-      byCourse[e.canvasCourseId].items.push(`${e.summary} (due ${e.dueStr})`);
+      if (!byCourse[e.groupKey]) byCourse[e.groupKey] = { code: e.courseCode || e.groupKey, items: [] };
+      byCourse[e.groupKey].items.push(`${e.label} (due ${e.dueStr})`);
     }
 
-    const courses = Object.values(byCourse).filter(c => c.code).map(c => c.code);
-    const lines = Object.values(byCourse).map(c =>
-      `- ${c.code || 'Other'}: ${c.items.slice(0, 4).join(' | ')}`
-    );
+    const courses = [...new Set(Object.values(byCourse).map(c => c.code).filter(Boolean))];
+    const lines = Object.values(byCourse)
+      .sort((a, b) => a.code?.localeCompare(b.code || '') || 0)
+      .map(c => `- ${c.code}: ${c.items.join(' | ')}`);
 
     return {
-      block: `\n\nLive Canvas deadlines (next 14 days):\n${lines.join('\n')}`,
+      block: `\n\nLive Canvas deadlines (next 21 days):\n${lines.join('\n')}`,
       courses,
     };
   } catch(e) {
@@ -148,6 +160,16 @@ DEEP WORK AND FOCUS:
 DECISION PARALYSIS PATTERN:
 - Brooke can get stuck in optimization loops - trying to architect the perfect plan before starting anything. When she seems stuck or asks open-ended "what should I do" questions, don't give her a menu. Cut through with one specific recommendation.
 - The best thing in a stuck moment: one small concrete action, not a full plan.
+
+NEVER ASK FOR INFORMATION YOU ALREADY HAVE - NON-NEGOTIABLE:
+- If she says "you have it in Canvas" or "it's in your calendar" or "it's already in the system" - look at your context and find it. Do not say "I don't have that." You have 21 days of live Canvas data in your context. Use it.
+- If her Canvas context shows an assignment for a course she's talking about, use that due date. Don't ask her to repeat it.
+- If she's already given you her schedule, recurring classes, energy level, or priorities - they are in your context. Reference them directly, don't ask again.
+
+NEVER BOUNCE DECISIONS BACK WHEN DELEGATED - NON-NEGOTIABLE:
+- If she says "you decide," "I'll let you choose," "whatever you think is best," "you figure it out" - she means it. Make the decision. Don't turn it into another question.
+- When she delegates timing, stacking vs. spreading, ordering, or any planning decision: use your judgment, state your reasoning in one sentence, and execute. She can push back if needed.
+- The pattern of "you decide" → Noa asks a clarifying question → Brooke has to decide anyway is the opposite of what this system is for. Break that pattern every time.
 
 PROACTIVE BEHAVIORS - volunteer these without being asked, woven naturally into your answers:
 
