@@ -247,14 +247,6 @@
         { label: 'Final project', done: false },
       ]
     },
-    {
-      title: 'All Other Classes', desc: 'Stay caught up - protect the momentum you have built.', progress: 90, color: '#5092eb',
-      tasks: [
-        { label: 'Assignments current', done: true },
-        { label: 'No missing work', done: true },
-        { label: 'Finals prep', done: false },
-      ]
-    },
   ];
 
   const DEFAULT_CHECKLIST = [
@@ -280,8 +272,9 @@
   }
 
   function renderSemesterGoals() {
+    const EXCLUDED_GOALS = ['All Other Classes', 'ENGR 260'];
     const saved = JSON.parse(localStorage.getItem('noa_semester_goals') || 'null');
-    _goals = saved || DEFAULT_SEMESTER_GOALS;
+    _goals = (saved || DEFAULT_SEMESTER_GOALS).filter(g => !EXCLUDED_GOALS.includes(g.title));
     _goals = _goals.map(g => ({ ...g, tasks: g.tasks || [], progress: g.tasks?.length ? computeProgress(g.tasks) : g.progress }));
     const container = document.getElementById('semester-goals');
     container.innerHTML = _goals.map((g, i) => `
