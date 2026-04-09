@@ -108,7 +108,10 @@
 
   <!-- Task Deck -->
   <div id="task-deck-section" class="space-y-3 hidden">
-    <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant">What to work on</p>
+    <div class="flex items-center justify-between">
+      <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant">What to work on</p>
+      <p id="task-deck-window" class="text-[10px] font-bold text-on-surface-variant opacity-50 hidden"></p>
+    </div>
     <div id="task-deck-card" class="glass-card rounded-2xl p-5 space-y-4">
       <div id="task-deck-meta" class="flex items-center gap-2">
         <span id="task-deck-dot" class="w-2 h-2 rounded-full bg-primary-container flex-shrink-0"></span>
@@ -116,6 +119,7 @@
         <span id="task-deck-time" class="text-[10px] font-bold text-on-surface-variant opacity-50 ml-auto"></span>
       </div>
       <h3 id="task-deck-title" class="text-xl font-bold tracking-tight text-on-surface leading-snug"></h3>
+      <p id="task-deck-fit-warning" class="hidden text-[10px] text-on-surface-variant opacity-50 italic"></p>
       <div class="flex gap-3 pt-1">
         <button onclick="taskDeckSkip()" class="flex-1 py-3 rounded-xl border border-outline-variant/20 text-sm font-bold text-on-surface-variant hover:opacity-70 transition-all active:scale-[0.98]">Skip</button>
         <button onclick="taskDeckDoIt()" class="flex-2 flex-grow py-3 rounded-xl bg-primary-container text-on-primary-container text-sm font-bold hover:opacity-90 transition-all active:scale-[0.98]">Do it</button>
@@ -1909,22 +1913,47 @@
   checkMorningRoutine();
 
   // ── Next Up (compact schedule, max 3 upcoming events) ──
+  // ── Free time tracking (set by renderNextUp, used by buildTaskDeck) ──
+  let _nextEventMins = null;
+  let _nextEventLabel = null;
+
+  function toMinsFromTimeStr(timeStr) {
+    const m = (timeStr || '').match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!m) return null;
+    let h = parseInt(m[1]), min = parseInt(m[2]);
+    if (m[3].toUpperCase() === 'PM' && h !== 12) h += 12;
+    if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
+    return h * 60 + min;
+  }
+
+  function parseEstMins(str) {
+    if (!str) return null;
+    const m = String(str).match(/(\d+)\s*(h|hr|hour|min|m)/i);
+    if (!m) return null;
+    return m[2].toLowerCase().startsWith('h') ? parseInt(m[1]) * 60 : parseInt(m[1]);
+  }
+
   function renderNextUp(schedule) {
     const section = document.getElementById('next-up-section');
     const list = document.getElementById('next-up-list');
-    if (!schedule || schedule.length === 0) { section.classList.add('hidden'); return; }
-    const now = new Date();
-    const nowMins = now.getHours() * 60 + now.getMinutes();
+    _nextEventMins = null;
+    _nextEventLabel = null;
+    if (!schedule || schedule.length === 0) { section.classList.add('hidden'); buildTaskDeck(); return; }
+    const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
     const upcoming = schedule.filter(e => {
       if (e.done) return false;
-      const m = (e.time || '').match(/(\d+):(\d+)\s*(AM|PM)/i);
-      if (!m) return true;
-      let h = parseInt(m[1]), min = parseInt(m[2]);
-      if (m[3].toUpperCase() === 'PM' && h !== 12) h += 12;
-      if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
-      return (h * 60 + min) >= nowMins - 30;
+      const mins = toMinsFromTimeStr(e.time);
+      return mins === null || mins >= nowMins - 30;
     }).slice(0, 3);
-    if (upcoming.length === 0) { section.classList.add('hidden'); return; }
+    if (upcoming.length === 0) { section.classList.add('hidden'); buildTaskDeck(); return; }
+
+    // Store next event for timing context
+    const nextMins = toMinsFromTimeStr(upcoming[0].time);
+    if (nextMins !== null && nextMins > nowMins) {
+      _nextEventMins = nextMins;
+      _nextEventLabel = upcoming[0].title;
+    }
+
     const colorMap = { blue:'#5092eb', orange:'#E87D4A', green:'#7DD4B0', pink:'#F0607A', purple:'#c3a6ff' };
     list.innerHTML = upcoming.map(e => {
       const c = colorMap[e.color] || '#dfbfc1';
@@ -1937,6 +1966,7 @@
       </div>`;
     }).join('');
     section.classList.remove('hidden');
+    buildTaskDeck();
   }
 
   // ── Task Deck ──────────────────────────────────────────
@@ -1944,16 +1974,47 @@
   let _taskDeckIdx = 0;
 
   function buildTaskDeck() {
+    const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+    const freeMins = (_nextEventMins && _nextEventMins > nowMins) ? _nextEventMins - nowMins : null;
+
+    // Update free time label in header
+    const windowEl = document.getElementById('task-deck-window');
+    if (windowEl) {
+      if (freeMins && freeMins > 0 && _nextEventLabel) {
+        const h = Math.floor(freeMins / 60);
+        const m = freeMins % 60;
+        const timeStr = h > 0 ? `${h}h${m > 0 ? ' ' + m + 'min' : ''}` : `${m}min`;
+        windowEl.textContent = `${timeStr} until ${_nextEventLabel}`;
+        windowEl.classList.remove('hidden');
+      } else {
+        windowEl.classList.add('hidden');
+      }
+    }
+
     const priorities = JSON.parse(localStorage.getItem('noa_priorities') || '[]');
-    const energy = localStorage.getItem('noa_energy') || 'steady';
     const activePriorities = priorities.filter(p => !p.done && !p.snoozed);
-    _taskDeck = activePriorities.map(p => ({
-      title: p.label,
-      category: p.category || 'Focus',
-      color: p.color || 'blue',
-      estimatedTime: p.estimatedTime || null,
-      source: 'priority',
-    }));
+    _taskDeck = activePriorities.map(p => {
+      const estMins = parseEstMins(p.estimatedTime);
+      const fits = freeMins ? (estMins === null || estMins <= freeMins) : true;
+      return {
+        title: p.label,
+        category: p.category || 'Focus',
+        color: p.color || 'blue',
+        estimatedTime: p.estimatedTime || null,
+        estimatedMins: estMins,
+        fits,
+      };
+    });
+
+    // Tasks that fit the window bubble up
+    if (freeMins) {
+      _taskDeck.sort((a, b) => {
+        if (a.fits && !b.fits) return -1;
+        if (!a.fits && b.fits) return 1;
+        return 0;
+      });
+    }
+
     _taskDeckIdx = parseInt(sessionStorage.getItem('noa_deck_idx') || '0');
     if (_taskDeckIdx >= _taskDeck.length) _taskDeckIdx = 0;
     renderTaskDeck();
@@ -1979,6 +2040,18 @@
     document.getElementById('task-deck-category').textContent = t.category;
     document.getElementById('task-deck-time').textContent = t.estimatedTime ? `~${t.estimatedTime}` : '';
     document.getElementById('task-deck-title').textContent = t.title;
+    // Fit warning
+    const warn = document.getElementById('task-deck-fit-warning');
+    if (warn) {
+      const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+      const freeMins = (_nextEventMins && _nextEventMins > nowMins) ? _nextEventMins - nowMins : null;
+      if (freeMins && t.estimatedMins && t.estimatedMins > freeMins) {
+        warn.textContent = `Needs ~${t.estimatedTime} — runs into ${_nextEventLabel}`;
+        warn.classList.remove('hidden');
+      } else {
+        warn.classList.add('hidden');
+      }
+    }
   }
 
   function taskDeckSkip() {
@@ -2008,8 +2081,8 @@
     openDWLauncher();
   }
 
-  // Init task deck after schedule loads
-  setTimeout(buildTaskDeck, 500);
+  // Fallback: build deck even if schedule never loads
+  setTimeout(() => { if (_taskDeck.length === 0) buildTaskDeck(); }, 1500);
 </script>
 <script src="/noa-chat.js"></script>
 </body>
