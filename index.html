@@ -68,89 +68,23 @@
   </div>
 </header>
 
-<main class="mode-main flex-grow pt-24 pb-32 px-6 max-w-2xl mx-auto w-full space-y-10">
-  <!-- Greeting -->
-  <div class="max-w-[85%] glass-card p-5 rounded-2xl rounded-tl-none border border-outline-variant/10">
-    <p id="greeting-text" class="text-on-surface leading-relaxed opacity-50">Good morning, Brooke...</p>
+<main class="max-w-screen-md mx-auto px-5 space-y-6 pt-4 pb-36">
+
+  <!-- Morning Routine CTA (shown if not done today, hidden after) -->
+  <div id="morning-routine-cta" class="hidden">
+    <a href="morning-routine.html" class="w-full py-5 rounded-full bg-gradient-to-r from-primary-container to-[#ad2d4a] text-on-primary-fixed font-bold text-sm tracking-tight flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(240,96,122,0.15)]">
+      Begin Morning Routine
+      <span class="material-symbols-outlined">arrow_forward</span>
+    </a>
   </div>
 
-  <!-- Noa Brief Card -->
-  <div id="noa-brief-card" class="hidden w-full rounded-2xl overflow-hidden border border-outline-variant/10" style="background:linear-gradient(135deg,rgba(240,96,122,0.05),rgba(82,55,135,0.08));">
-    <div class="px-5 pt-4 pb-1 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-sm text-[#F0607A]" style="font-variation-settings:'FILL' 1;">radio_button_checked</span>
-        <span id="noa-brief-label" class="text-[9px] uppercase tracking-[0.18rem] font-bold text-[#F0607A]/70">Morning Brief</span>
-      </div>
-      <button onclick="dismissBrief()" class="text-on-surface-variant opacity-30 hover:opacity-60 transition-opacity">
-        <span class="material-symbols-outlined text-sm">close</span>
-      </button>
-    </div>
-    <div id="noa-brief-text" class="px-5 pb-4 pt-2 space-y-1">
-      <div class="flex gap-2 items-center opacity-40">
-        <span class="material-symbols-outlined text-sm animate-spin">refresh</span>
-        <span class="text-xs text-on-surface-variant">Loading...</span>
-      </div>
-    </div>
+  <!-- Morning Brief -->
+  <div id="brief-card" class="glass-card rounded-2xl px-5 py-4 space-y-1 hidden">
+    <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant" id="brief-type-label">Morning Brief</p>
+    <div id="brief-text" class="text-sm text-on-surface leading-relaxed space-y-1"></div>
   </div>
 
-  <!-- Quick action row -->
-  <div class="flex gap-3">
-    <!-- What should I do right now -->
-    <button onclick="askRightNow()" class="flex-1 py-3.5 rounded-2xl border border-[#F0607A]/20 flex items-center justify-between px-4 hover:border-[#F0607A]/40 active:scale-[0.99] transition-all group" style="background:rgba(240,96,122,0.04);">
-      <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-[#F0607A] opacity-70 group-hover:opacity-100 transition-opacity text-base" style="font-variation-settings:'FILL' 1;">bolt</span>
-        <span class="text-sm font-bold text-on-surface">Right now?</span>
-      </div>
-      <span class="material-symbols-outlined text-on-surface-variant opacity-30 group-hover:opacity-60 transition-opacity text-sm">arrow_forward</span>
-    </button>
-    <!-- Start Deep Work -->
-    <button onclick="openDWLauncher()" class="py-3.5 px-4 rounded-2xl border border-[#5092eb]/20 flex items-center gap-2 hover:border-[#5092eb]/40 active:scale-[0.99] transition-all group" style="background:rgba(80,146,235,0.04);">
-      <span class="material-symbols-outlined text-[#5092eb] opacity-70 group-hover:opacity-100 transition-opacity text-base" style="font-variation-settings:'FILL' 1;">target</span>
-      <span class="text-sm font-bold text-on-surface whitespace-nowrap">Deep work</span>
-    </button>
-  </div>
-
-  <!-- Deep Work Launcher Sheet -->
-  <div id="dw-launcher" class="fixed inset-0 z-[140] hidden items-end justify-center" style="background:rgba(0,0,0,0.5);">
-    <div class="w-full max-w-lg bg-[#1d1b1e] rounded-t-3xl px-6 pt-6 pb-10 flex flex-col gap-5 border-t border-[#584143]/20">
-      <div class="flex items-center justify-between">
-        <p class="text-base font-bold text-on-surface">Start deep work</p>
-        <button onclick="closeDWLauncher()" class="text-on-surface-variant opacity-50 hover:opacity-80 transition-opacity">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      <input id="dw-launcher-task" type="text" placeholder="What are you working on?" maxlength="80"
-        class="w-full h-12 bg-[#2a2730] rounded-xl px-4 text-[#e7e1e5] placeholder:text-[#dfbfc1]/40 focus:outline-none focus:ring-1 focus:ring-[#5092eb]/40 text-sm"/>
-      <div>
-        <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant opacity-50 mb-3">Duration</p>
-        <div class="flex flex-wrap gap-2" id="dw-duration-chips">
-          <button onclick="selectDWDuration(5)"   class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">5 min</button>
-          <button onclick="selectDWDuration(10)"  class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">10 min</button>
-          <button onclick="selectDWDuration(15)"  class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">15 min</button>
-          <button onclick="selectDWDuration(25)"  class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">25 min</button>
-          <button onclick="selectDWDuration(45)"  class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">45 min</button>
-          <button onclick="selectDWDuration(60)"  class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">1 hr</button>
-          <button onclick="selectDWDuration(90)"  class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">90 min</button>
-          <button onclick="selectDWDuration(120)" class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">2 hr</button>
-        </div>
-      </div>
-      <button onclick="launchDWSession()" id="dw-launcher-go"
-        class="w-full py-4 rounded-full font-bold text-sm tracking-tight opacity-40 pointer-events-none transition-all"
-        style="background:#5092eb;color:#0a1a30;">
-        Start session
-      </button>
-    </div>
-  </div>
-
-  <!-- Mode Switcher -->
-  <div class="flex gap-2 overflow-x-auto no-scrollbar -mt-2 pb-1">
-    <button data-mode="student" onclick="setMode('student')" class="mode-chip whitespace-nowrap px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.12rem] transition-all border border-outline-variant/20 text-on-surface-variant glass-card">Student</button>
-    <button data-mode="racing" onclick="setMode('racing')" class="mode-chip whitespace-nowrap px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.12rem] transition-all border border-outline-variant/20 text-on-surface-variant glass-card">M Racing</button>
-    <button data-mode="builder" onclick="setMode('builder')" class="mode-chip whitespace-nowrap px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.12rem] transition-all border border-outline-variant/20 text-on-surface-variant glass-card">Builder</button>
-    <button data-mode="personal" onclick="setMode('personal')" class="mode-chip whitespace-nowrap px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.12rem] transition-all border border-outline-variant/20 text-on-surface-variant glass-card">Personal</button>
-  </div>
-
-  <!-- Energy check-in -->
+  <!-- Energy Check-in -->
   <div id="energy-section" class="space-y-3">
     <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant">How's your energy right now?</p>
     <div class="flex gap-2 flex-wrap">
@@ -161,23 +95,50 @@
     </div>
   </div>
 
-  <!-- Weather -->
-  <div id="weather-card" class="flex items-center gap-4 px-1 opacity-0 transition-opacity duration-500">
-    <span id="weather-icon" class="material-symbols-outlined text-3xl text-on-surface-variant" style="font-variation-settings:'FILL' 1;">wb_sunny</span>
-    <div>
-      <p class="text-2xl font-bold tracking-tight text-on-surface" id="weather-temp">--°</p>
-      <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant" id="weather-desc">Loading...</p>
+  <!-- Next Up (compact schedule - next 3 events only) -->
+  <div id="next-up-section" class="space-y-3 hidden">
+    <div class="flex justify-between items-center">
+      <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant">Next Up</p>
+      <button onclick="openAddEvent()" class="flex items-center gap-1 uppercase tracking-[0.15rem] text-[10px] font-bold text-primary-container hover:opacity-70 transition-opacity">
+        <span class="material-symbols-outlined text-sm">add</span>Add
+      </button>
     </div>
-    <div class="ml-auto text-right">
-      <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant" id="weather-feels">Feels like --°</p>
-      <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant/60" id="weather-location">Ann Arbor</p>
-    </div>
+    <div id="next-up-list" class="space-y-2"></div>
   </div>
 
-  <!-- Priority Matrix -->
-  <div data-modes="student,racing,builder" class="mode-section w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-6">
+  <!-- Task Deck -->
+  <div id="task-deck-section" class="space-y-3 hidden">
+    <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant">What to work on</p>
+    <div id="task-deck-card" class="glass-card rounded-2xl p-5 space-y-4">
+      <div id="task-deck-meta" class="flex items-center gap-2">
+        <span id="task-deck-dot" class="w-2 h-2 rounded-full bg-primary-container flex-shrink-0"></span>
+        <span id="task-deck-category" class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant"></span>
+        <span id="task-deck-time" class="text-[10px] font-bold text-on-surface-variant opacity-50 ml-auto"></span>
+      </div>
+      <h3 id="task-deck-title" class="text-xl font-bold tracking-tight text-on-surface leading-snug"></h3>
+      <div class="flex gap-3 pt-1">
+        <button onclick="taskDeckSkip()" class="flex-1 py-3 rounded-xl border border-outline-variant/20 text-sm font-bold text-on-surface-variant hover:opacity-70 transition-all active:scale-[0.98]">Skip</button>
+        <button onclick="taskDeckDoIt()" class="flex-2 flex-grow py-3 rounded-xl bg-primary-container text-on-primary-container text-sm font-bold hover:opacity-90 transition-all active:scale-[0.98]">Do it</button>
+      </div>
+    </div>
+    <p id="task-deck-empty" class="hidden text-sm text-on-surface-variant opacity-40 text-center py-4">You're clear. Tell Noa what else is on your mind.</p>
+  </div>
+
+  <!-- Deep Work + Quick actions -->
+  <div class="flex gap-3">
+    <button onclick="openQuickDW()" class="flex-1 py-4 rounded-2xl border border-outline-variant/20 glass-card flex items-center justify-center gap-2 hover:border-outline-variant/40 active:scale-[0.99] transition-all group">
+      <span class="material-symbols-outlined text-[#5092eb] text-base" style="font-variation-settings:'FILL' 1;">target</span>
+      <span class="text-sm font-bold text-on-surface">Deep Work</span>
+    </button>
+    <button onclick="window.location.href='morning-routine.html'" id="routine-shortcut" class="hidden py-4 px-5 rounded-2xl border border-outline-variant/20 glass-card flex items-center gap-2 hover:border-outline-variant/40 active:scale-[0.99] transition-all">
+      <span class="material-symbols-outlined text-primary-container text-base" style="font-variation-settings:'FILL' 1;">self_improvement</span>
+    </button>
+  </div>
+
+  <!-- Today's Focus (priorities) -->
+  <div id="priorities-section" class="w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-4">
     <div class="flex justify-between items-center">
-      <h3 id="priorities-label" class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Today's Focus</h3>
+      <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Today's Focus</h3>
       <span id="priorities-done-count" class="text-[10px] font-bold text-on-surface-variant opacity-0"></span>
     </div>
     <div id="priority-list" class="space-y-1">
@@ -185,20 +146,16 @@
     </div>
   </div>
 
-  <!-- Today's Schedule -->
-  <div data-modes="student,racing" class="mode-section w-full space-y-4">
+  <!-- Canvas Due Soon -->
+  <div id="canvas-section" class="w-full space-y-3 hidden">
     <div class="flex justify-between items-center">
-      <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Today's Schedule</h3>
-      <button onclick="openAddEvent()" class="flex items-center gap-1 uppercase tracking-[0.15rem] text-[10px] font-bold text-primary-container hover:opacity-70 transition-opacity">
-        <span class="material-symbols-outlined text-sm">add</span>Add
-      </button>
+      <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Due Soon</h3>
+      <a href="plan.html" class="uppercase tracking-[0.15rem] text-[10px] font-bold text-primary-container hover:opacity-70 transition-opacity">All</a>
     </div>
-    <div id="today-schedule-list" class="space-y-2">
-      <p class="text-sm text-on-surface-variant opacity-40 py-2">Tell Noa your schedule and she'll show it here.</p>
-    </div>
+    <div id="canvas-list" class="flex gap-3 overflow-x-auto no-scrollbar pb-1"></div>
   </div>
 
-  <!-- Add Event Modal -->
+  <!-- Add Event Modal (keep exactly as-is) -->
   <div id="add-event-overlay" class="fixed inset-0 bg-black/60 z-[200] hidden items-end justify-center backdrop-blur-sm" onclick="if(event.target===this)closeAddEvent()">
     <div class="w-full max-w-md bg-[#1d1b1e] rounded-t-3xl p-6 space-y-5 shadow-2xl border-t border-[#584143]/20">
       <div class="flex items-center justify-between">
@@ -220,111 +177,55 @@
     </div>
   </div>
 
-  <!-- Deep Work Entry -->
-  <button data-modes="student,racing" onclick="openDeepWorkPrompt()" class="mode-section w-full py-4 rounded-2xl border border-outline-variant/20 glass-card flex items-center justify-between px-5 hover:border-outline-variant/40 active:scale-[0.99] transition-all group">
-    <div class="flex items-center gap-3">
-      <span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface transition-colors" style="font-variation-settings:'FILL' 1;">timer</span>
-      <div class="text-left">
-        <p class="text-sm font-bold text-on-surface">Deep Work</p>
-        <p class="text-[10px] uppercase tracking-[0.1rem] font-bold text-on-surface-variant opacity-60" id="dw-sessions-label">Start a focused session</p>
-      </div>
-    </div>
-    <span class="material-symbols-outlined text-on-surface-variant opacity-40 group-hover:opacity-70 transition-opacity">chevron_right</span>
-  </button>
-
-  <!-- Morning Routine -->
-  <div data-modes="student,racing,builder,personal" class="mode-section flex flex-col items-start space-y-6">
-    <a href="morning-routine.html" class="w-full py-5 rounded-full bg-gradient-to-r from-primary-container to-[#ad2d4a] text-on-primary-fixed font-bold text-sm tracking-tight flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(240,96,122,0.15)]">
-      Begin Morning Routine
-      <span class="material-symbols-outlined">arrow_forward</span>
-    </a>
-  </div>
-
-  <!-- Canvas: Upcoming -->
-  <div data-modes="student" id="canvas-section" class="mode-section w-full space-y-4 hidden">
-    <div class="flex justify-between items-center">
-      <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Due Soon</h3>
-      <a href="weekly.html" class="uppercase tracking-[0.15rem] text-[10px] font-bold text-primary-container hover:opacity-70 transition-opacity">All</a>
-    </div>
-    <div id="canvas-list" class="flex gap-3 overflow-x-auto no-scrollbar pb-1"></div>
-  </div>
-
-  <!-- Backlog + Recurring tasks -->
-  <div id="backlog-section" class="w-full space-y-4 hidden">
-    <div class="flex justify-between items-center">
-      <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">Holding</h3>
-      <span class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant opacity-40">Noa will find the right time</span>
-    </div>
-    <div id="backlog-list" class="space-y-2"></div>
-    <div id="recurring-tasks-list" class="space-y-2"></div>
-  </div>
-
-  <!-- Racing Checklist (Racing mode) -->
-  <div data-modes="racing" class="mode-section hidden w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-4">
-    <div class="flex justify-between items-center">
-      <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">M Racing Checklist</h3>
-      <span id="racing-done-count" class="text-[10px] font-bold text-on-surface-variant opacity-0"></span>
-    </div>
-    <div id="racing-checklist-list" class="space-y-1">
-      <p class="text-sm text-on-surface-variant opacity-40 py-2">Tell Noa what's on deck for M Racing</p>
-    </div>
-  </div>
-
-  <!-- Sydney Vision - Hero (Personal mode) -->
-  <div data-modes="personal" class="mode-section hidden w-full rounded-3xl p-8 space-y-5 border border-[#F0607A]/15" style="background:linear-gradient(135deg,rgba(240,96,122,0.07),rgba(82,55,135,0.12));">
-    <p class="text-[10px] uppercase tracking-[0.2rem] font-bold" style="color:rgba(240,96,122,0.7)">Five-Year Vision</p>
-    <div class="space-y-2">
-      <p class="text-4xl font-bold text-on-surface tracking-tight leading-none">Sydney.</p>
-      <p class="text-base text-on-surface-variant leading-relaxed">Building something real, on your own terms, across the world.</p>
-    </div>
-    <p class="text-xs text-on-surface-variant/40 italic">Every decision today is a brick in that wall.</p>
-  </div>
-
-  <!-- Sydney Vision - Brief (Builder mode) -->
-  <div data-modes="builder" class="mode-section hidden w-full rounded-2xl p-5 border border-[#c3a6ff]/20" style="background:rgba(195,166,255,0.06);">
-    <p class="text-[10px] uppercase tracking-[0.15rem] font-bold mb-2" style="color:rgba(195,166,255,0.7)">Vision</p>
-    <p class="text-sm font-bold text-on-surface">Sydney in five years. Everything you build now is the foundation.</p>
-  </div>
-
-  <!-- Bible & Habits (Personal mode) -->
-  <div data-modes="personal" class="mode-section hidden w-full glass-card border border-outline-variant/15 rounded-3xl p-6 space-y-5">
-    <h3 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant">This Week</h3>
-    <div class="space-y-3">
-      <div>
-        <p class="text-xs font-bold text-on-surface mb-2">Bible</p>
-        <div id="bible-dots" class="flex gap-2"></div>
-      </div>
-      <div>
-        <p class="text-xs font-bold text-on-surface mb-2">Gym</p>
-        <div id="gym-dots" class="flex gap-2"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Quick replies (dynamic by mode) -->
+  <!-- Quick replies -->
   <div id="quick-replies" class="flex gap-2 overflow-x-auto no-scrollbar pb-2"></div>
+
 </main>
+
+<!-- Deep Work Launcher Sheet -->
+<div id="dw-launcher" class="fixed inset-0 z-[140] hidden items-end justify-center" style="background:rgba(0,0,0,0.5);">
+  <div class="w-full max-w-lg bg-[#1d1b1e] rounded-t-3xl px-6 pt-6 pb-10 flex flex-col gap-5 border-t border-[#584143]/20">
+    <div class="flex items-center justify-between">
+      <p class="text-base font-bold text-on-surface">Start deep work</p>
+      <button onclick="closeDWLauncher()" class="text-on-surface-variant opacity-50 hover:opacity-80 transition-opacity">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <input id="dw-launcher-task" type="text" placeholder="What are you working on?" maxlength="80"
+      class="w-full h-12 bg-[#2a2730] rounded-xl px-4 text-[#e7e1e5] placeholder:text-[#dfbfc1]/40 focus:outline-none focus:ring-1 focus:ring-[#5092eb]/40 text-sm"/>
+    <div>
+      <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant opacity-50 mb-3">Duration</p>
+      <div class="flex flex-wrap gap-2" id="dw-duration-chips">
+        <button onclick="selectDWDuration(5)"   class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">5 min</button>
+        <button onclick="selectDWDuration(10)"  class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">10 min</button>
+        <button onclick="selectDWDuration(15)"  class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">15 min</button>
+        <button onclick="selectDWDuration(25)"  class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">25 min</button>
+        <button onclick="selectDWDuration(45)"  class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">45 min</button>
+        <button onclick="selectDWDuration(60)"  class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">1 hr</button>
+        <button onclick="selectDWDuration(90)"  class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">90 min</button>
+        <button onclick="selectDWDuration(120)" class="dw-dur-chip px-3 py-2 rounded-full text-xs font-bold border border-outline-variant/20 text-on-surface-variant transition-all">2 hr</button>
+      </div>
+    </div>
+    <button onclick="launchDWSession()" id="dw-launcher-go"
+      class="w-full py-4 rounded-full font-bold text-sm tracking-tight opacity-40 pointer-events-none transition-all"
+      style="background:#5092eb;color:#0a1a30;">
+      Start session
+    </button>
+  </div>
+</div>
 
 <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-16 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
   <a href="index.html" class="flex flex-col items-center justify-center text-[#F0607A] relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-[#F0607A] after:rounded-full after:shadow-[0_0_8px_#F0607A] scale-110">
-    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">today</span>
-    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Today</span>
+    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Now</span>
   </a>
-  <a href="weekly.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
-    <span class="material-symbols-outlined">date_range</span>
-    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Week</span>
-  </a>
-    <a href="monthly.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+  <a href="plan.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
     <span class="material-symbols-outlined">calendar_month</span>
-    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Month</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Plan</span>
   </a>
   <a href="goals.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
     <span class="material-symbols-outlined">ads_click</span>
     <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Goals</span>
-  </a>
-  <a href="metrics.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
-    <span class="material-symbols-outlined">equalizer</span>
-    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Metrics</span>
   </a>
 </nav>
 
@@ -700,6 +601,7 @@
     if (schedule.length > 0) {
       schedule.sort((a, b) => timeMins(a.time) - timeMins(b.time));
       renderTodaySchedule(schedule);
+      renderNextUp(schedule);
     }
   }
   loadTodaySchedule();
@@ -1989,6 +1891,125 @@
       setTimeout(() => window.startDeepWork({ task: a.task, duration: parseInt(a.duration, 10) }), 800);
     }
   };
+
+  // ── Morning Routine Check ──────────────────────────────
+  function checkMorningRoutine() {
+    const today = new Date().toLocaleDateString('en-CA');
+    const routineLog = JSON.parse(localStorage.getItem('noa_routine_log') || '{}');
+    const done = routineLog[today]?.completed;
+    const cta = document.getElementById('morning-routine-cta');
+    const shortcut = document.getElementById('routine-shortcut');
+    if (!done) {
+      cta.classList.remove('hidden');
+    } else {
+      cta.classList.add('hidden');
+      if (shortcut) shortcut.classList.remove('hidden');
+    }
+  }
+  checkMorningRoutine();
+
+  // ── Next Up (compact schedule, max 3 upcoming events) ──
+  function renderNextUp(schedule) {
+    const section = document.getElementById('next-up-section');
+    const list = document.getElementById('next-up-list');
+    if (!schedule || schedule.length === 0) { section.classList.add('hidden'); return; }
+    const now = new Date();
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+    const upcoming = schedule.filter(e => {
+      if (e.done) return false;
+      const m = (e.time || '').match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!m) return true;
+      let h = parseInt(m[1]), min = parseInt(m[2]);
+      if (m[3].toUpperCase() === 'PM' && h !== 12) h += 12;
+      if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
+      return (h * 60 + min) >= nowMins - 30;
+    }).slice(0, 3);
+    if (upcoming.length === 0) { section.classList.add('hidden'); return; }
+    const colorMap = { blue:'#5092eb', orange:'#E87D4A', green:'#7DD4B0', pink:'#F0607A', purple:'#c3a6ff' };
+    list.innerHTML = upcoming.map(e => {
+      const c = colorMap[e.color] || '#dfbfc1';
+      return `<div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-surface-container-low border-l-2" style="border-color:${c}">
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-bold text-on-surface truncate">${e.title}</p>
+          ${e.time ? `<p class="text-[10px] font-bold text-on-surface-variant opacity-60 uppercase tracking-wider">${e.time}</p>` : ''}
+        </div>
+        ${e.done ? '<span class="material-symbols-outlined text-[#7DD4B0] text-base" style="font-variation-settings:\'FILL\' 1;">check_circle</span>' : ''}
+      </div>`;
+    }).join('');
+    section.classList.remove('hidden');
+  }
+
+  // ── Task Deck ──────────────────────────────────────────
+  let _taskDeck = [];
+  let _taskDeckIdx = 0;
+
+  function buildTaskDeck() {
+    const priorities = JSON.parse(localStorage.getItem('noa_priorities') || '[]');
+    const energy = localStorage.getItem('noa_energy') || 'steady';
+    const activePriorities = priorities.filter(p => !p.done && !p.snoozed);
+    _taskDeck = activePriorities.map(p => ({
+      title: p.label,
+      category: p.category || 'Focus',
+      color: p.color || 'blue',
+      estimatedTime: p.estimatedTime || null,
+      source: 'priority',
+    }));
+    _taskDeckIdx = parseInt(sessionStorage.getItem('noa_deck_idx') || '0');
+    if (_taskDeckIdx >= _taskDeck.length) _taskDeckIdx = 0;
+    renderTaskDeck();
+  }
+
+  function renderTaskDeck() {
+    const section = document.getElementById('task-deck-section');
+    const empty = document.getElementById('task-deck-empty');
+    const card = document.getElementById('task-deck-card');
+    if (_taskDeck.length === 0) {
+      section.classList.remove('hidden');
+      card.classList.add('hidden');
+      empty.classList.remove('hidden');
+      return;
+    }
+    section.classList.remove('hidden');
+    card.classList.remove('hidden');
+    empty.classList.add('hidden');
+    const t = _taskDeck[_taskDeckIdx];
+    const colorMap = { blue:'#5092eb', orange:'#E87D4A', green:'#7DD4B0', pink:'#F0607A', purple:'#c3a6ff' };
+    const c = colorMap[t.color] || '#dfbfc1';
+    document.getElementById('task-deck-dot').style.background = c;
+    document.getElementById('task-deck-category').textContent = t.category;
+    document.getElementById('task-deck-time').textContent = t.estimatedTime ? `~${t.estimatedTime}` : '';
+    document.getElementById('task-deck-title').textContent = t.title;
+  }
+
+  function taskDeckSkip() {
+    if (_taskDeck.length === 0) return;
+    _taskDeckIdx = (_taskDeckIdx + 1) % _taskDeck.length;
+    sessionStorage.setItem('noa_deck_idx', _taskDeckIdx);
+    const card = document.getElementById('task-deck-card');
+    card.style.opacity = '0';
+    card.style.transform = 'translateX(-20px)';
+    setTimeout(() => {
+      renderTaskDeck();
+      card.style.transition = 'opacity 0.2s, transform 0.2s';
+      card.style.opacity = '1';
+      card.style.transform = 'translateX(0)';
+    }, 150);
+  }
+
+  function taskDeckDoIt() {
+    if (_taskDeck.length === 0) return;
+    const t = _taskDeck[_taskDeckIdx];
+    const input = document.getElementById('dw-launcher-task');
+    if (input) input.value = t.title;
+    openDWLauncher();
+  }
+
+  function openQuickDW() {
+    openDWLauncher();
+  }
+
+  // Init task deck after schedule loads
+  setTimeout(buildTaskDeck, 500);
 </script>
 <script src="/noa-chat.js"></script>
 </body>

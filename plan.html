@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Noa -- Weekly View</title>
+<title>Noa -- Plan</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -51,101 +51,123 @@
     <span class="text-2xl font-bold tracking-tighter">Noa</span>
   </div>
 </header>
-<main class="px-6 space-y-10 max-w-screen-xl mx-auto pt-4">
+<main class="px-6 space-y-8 max-w-screen-xl mx-auto pt-4">
 
-  <!-- Weekly Insight -->
-  <section class="relative group">
-    <div class="absolute -inset-1 bg-gradient-to-r from-primary-container to-secondary-container rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
-    <div class="relative glass-card rounded-2xl p-8">
-      <div class="space-y-2">
-        <p class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Weekly Insight</p>
-        <h1 id="weekly-insight" class="text-3xl font-bold tracking-tighter text-on-surface leading-tight opacity-40">Loading...</h1>
-        <p id="weekly-detail" class="text-on-surface-variant max-w-md opacity-40"></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Plan status bar -->
-  <div id="plan-status" class="hidden flex items-center gap-3 px-4 py-2 rounded-xl bg-surface-container-low border border-outline-variant/10">
-    <span id="plan-status-icon" class="material-symbols-outlined text-sm text-on-surface-variant animate-spin">refresh</span>
-    <span id="plan-status-text" class="text-xs text-on-surface-variant">Noa is planning your week...</span>
-    <button id="replan-btn" onclick="runPlan(true)" class="ml-auto text-[10px] uppercase tracking-[0.12rem] font-bold text-primary-container hover:opacity-70 transition-opacity hidden">Re-plan</button>
+  <!-- View Toggle -->
+  <div class="flex gap-2 p-1 rounded-full bg-[#211f22] w-fit">
+    <button id="toggle-week" onclick="switchView('week')" class="px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.12rem] transition-all bg-primary-container text-on-primary-container">This Week</button>
+    <button id="toggle-coming" onclick="switchView('coming')" class="px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.12rem] transition-all text-on-surface-variant hover:text-on-surface">Coming Up</button>
   </div>
 
-  <!-- Week Grid -->
-  <section class="space-y-4">
-    <div class="flex justify-between items-center">
-      <button onclick="shiftWeek(-1)" class="p-2 rounded-xl hover:bg-surface-container-low transition-colors">
-        <span class="material-symbols-outlined text-on-surface-variant">chevron_left</span>
-      </button>
-      <div class="text-center">
-        <h2 id="month-year" class="text-lg font-bold tracking-tight"></h2>
-        <span id="week-num" class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold"></span>
-      </div>
-      <button onclick="shiftWeek(1)" class="p-2 rounded-xl hover:bg-surface-container-low transition-colors">
-        <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
-      </button>
-    </div>
-    <div id="week-grid" class="grid grid-cols-7 gap-2"></div>
-  </section>
+  <!-- THIS WEEK VIEW -->
+  <div id="view-week">
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
-    <!-- Today's Schedule -->
-    <div class="lg:col-span-2 space-y-6">
-      <div class="flex items-center gap-3">
-        <h3 id="schedule-heading" class="text-xl font-bold tracking-tight">Today's Schedule</h3>
-        <div class="h-[1px] flex-1 bg-outline-variant/10"></div>
-      </div>
-      <div id="schedule-list" class="space-y-4">
-        <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/10 text-sm text-on-surface-variant">
-          Tell Noa your schedule on the Today tab and she'll show it here.
+    <!-- Weekly Insight -->
+    <section class="relative group">
+      <div class="absolute -inset-1 bg-gradient-to-r from-primary-container to-secondary-container rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
+      <div class="relative glass-card rounded-2xl p-8">
+        <div class="space-y-2">
+          <p class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Weekly Insight</p>
+          <h1 id="weekly-insight" class="text-3xl font-bold tracking-tighter text-on-surface leading-tight opacity-40">Loading...</h1>
+          <p id="weekly-detail" class="text-on-surface-variant max-w-md opacity-40"></p>
         </div>
       </div>
+    </section>
+
+    <!-- Plan status bar -->
+    <div id="plan-status" class="hidden flex items-center gap-3 px-4 py-2 rounded-xl bg-surface-container-low border border-outline-variant/10 mt-4">
+      <span id="plan-status-icon" class="material-symbols-outlined text-sm text-on-surface-variant animate-spin">refresh</span>
+      <span id="plan-status-text" class="text-xs text-on-surface-variant">Noa is planning your week...</span>
+      <button id="replan-btn" onclick="runPlan(true)" class="ml-auto text-[10px] uppercase tracking-[0.12rem] font-bold text-primary-container hover:opacity-70 transition-opacity hidden">Re-plan</button>
     </div>
 
-    <!-- Rituals -->
-    <div class="space-y-6">
-      <div class="flex items-center gap-3">
-        <h3 class="text-xl font-bold tracking-tight">Rituals</h3>
-        <div class="h-[1px] flex-1 bg-outline-variant/10"></div>
-      </div>
-      <div id="rituals-card" class="glass-card rounded-2xl p-6 space-y-8">
-        <div class="space-y-4">
-          <div class="flex justify-between items-center">
-            <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Bible Reading</span>
-            <span id="bible-count" class="text-[10px] font-bold text-secondary">0/7</span>
-          </div>
-          <div id="bible-dots" class="flex gap-2"></div>
+    <!-- Week Grid -->
+    <section class="space-y-4 mt-8">
+      <div class="flex justify-between items-center">
+        <button onclick="shiftWeek(-1)" class="p-2 rounded-xl hover:bg-surface-container-low transition-colors">
+          <span class="material-symbols-outlined text-on-surface-variant">chevron_left</span>
+        </button>
+        <div class="text-center">
+          <h2 id="month-year" class="text-lg font-bold tracking-tight"></h2>
+          <span id="week-num" class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold"></span>
         </div>
-        <div class="space-y-4">
-          <div class="flex justify-between items-center">
-            <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Gym</span>
-            <span id="gym-count" class="text-[10px] font-bold text-[#7DD4B0]">0/5</span>
+        <button onclick="shiftWeek(1)" class="p-2 rounded-xl hover:bg-surface-container-low transition-colors">
+          <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+        </button>
+      </div>
+      <div id="week-grid" class="grid grid-cols-7 gap-2"></div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 mt-8">
+      <!-- Today's Schedule -->
+      <div class="lg:col-span-2 space-y-6">
+        <div class="flex items-center gap-3">
+          <h3 id="schedule-heading" class="text-xl font-bold tracking-tight">Today's Schedule</h3>
+          <div class="h-[1px] flex-1 bg-outline-variant/10"></div>
+        </div>
+        <div id="schedule-list" class="space-y-4">
+          <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/10 text-sm text-on-surface-variant">
+            Tell Noa your schedule on the Now tab and she'll show it here.
           </div>
-          <div id="gym-dots" class="flex gap-2"></div>
+        </div>
+      </div>
+
+      <!-- Rituals -->
+      <div class="space-y-6">
+        <div class="flex items-center gap-3">
+          <h3 class="text-xl font-bold tracking-tight">Rituals</h3>
+          <div class="h-[1px] flex-1 bg-outline-variant/10"></div>
+        </div>
+        <div id="rituals-card" class="glass-card rounded-2xl p-6 space-y-8">
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Bible Reading</span>
+              <span id="bible-count" class="text-[10px] font-bold text-secondary">0/7</span>
+            </div>
+            <div id="bible-dots" class="flex gap-2"></div>
+          </div>
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Gym</span>
+              <span id="gym-count" class="text-[10px] font-bold text-[#7DD4B0]">0/5</span>
+            </div>
+            <div id="gym-dots" class="flex gap-2"></div>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Upcoming Deadlines -->
+    <section class="space-y-6 mt-8">
+      <div class="flex items-center gap-3">
+        <h3 class="text-xl font-bold tracking-tight">Upcoming Deadlines</h3>
+        <div class="h-[1px] flex-1 bg-outline-variant/10"></div>
+      </div>
+      <div id="deadlines-list" class="flex overflow-x-auto pb-4 gap-4 no-scrollbar">
+        <div class="min-w-[280px] p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-center gap-4 opacity-40">
+          <div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center">
+            <span class="material-symbols-outlined text-on-surface-variant">hourglass_empty</span>
+          </div>
+          <div>
+            <h4 class="font-bold text-sm">Loading deadlines...</h4>
+            <p class="text-xs text-on-surface-variant">Checking with Noa</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 
-  <!-- Upcoming Deadlines -->
-  <section class="space-y-6">
-    <div class="flex items-center gap-3">
-      <h3 class="text-xl font-bold tracking-tight">Upcoming Deadlines</h3>
+  <!-- COMING UP VIEW -->
+  <div id="view-coming" class="hidden space-y-4">
+    <div class="flex items-center gap-3 mb-6">
+      <h2 class="text-xl font-bold tracking-tight">Next 30 Days</h2>
       <div class="h-[1px] flex-1 bg-outline-variant/10"></div>
     </div>
-    <div id="deadlines-list" class="flex overflow-x-auto pb-4 gap-4 no-scrollbar">
-      <div class="min-w-[280px] p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-center gap-4 opacity-40">
-        <div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center">
-          <span class="material-symbols-outlined text-on-surface-variant">hourglass_empty</span>
-        </div>
-        <div>
-          <h4 class="font-bold text-sm">Loading deadlines...</h4>
-          <p class="text-xs text-on-surface-variant">Checking with Noa</p>
-        </div>
-      </div>
+    <div id="coming-up-list" class="space-y-6">
+      <p class="text-sm text-on-surface-variant opacity-40">Loading upcoming events...</p>
     </div>
-  </section>
+  </div>
 
 </main>
 <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-16 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
@@ -207,6 +229,31 @@
     Other: 'task_alt',
   };
 
+  // --- View Toggle ---
+  function switchView(view) {
+    const weekView = document.getElementById('view-week');
+    const comingView = document.getElementById('view-coming');
+    const toggleWeek = document.getElementById('toggle-week');
+    const toggleComing = document.getElementById('toggle-coming');
+
+    if (view === 'week') {
+      weekView.classList.remove('hidden');
+      comingView.classList.add('hidden');
+      toggleWeek.classList.add('bg-primary-container', 'text-on-primary-container');
+      toggleWeek.classList.remove('text-on-surface-variant', 'hover:text-on-surface');
+      toggleComing.classList.remove('bg-primary-container', 'text-on-primary-container');
+      toggleComing.classList.add('text-on-surface-variant', 'hover:text-on-surface');
+    } else {
+      weekView.classList.add('hidden');
+      comingView.classList.remove('hidden');
+      toggleComing.classList.add('bg-primary-container', 'text-on-primary-container');
+      toggleComing.classList.remove('text-on-surface-variant', 'hover:text-on-surface');
+      toggleWeek.classList.remove('bg-primary-container', 'text-on-primary-container');
+      toggleWeek.classList.add('text-on-surface-variant', 'hover:text-on-surface');
+      loadComingUp();
+    }
+  }
+
   // --- Week Grid ---
   function getISOWeek(date) {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -218,11 +265,10 @@
 
   const today = new Date();
   let selectedDate = today;
-  let weekOffset = 0; // 0 = this week, 1 = next week, etc.
+  let weekOffset = 0;
 
   function shiftWeek(delta) {
     weekOffset += delta;
-    // If shifting forward and selected date is behind new week start, move it forward
     const newWeekStart = getWeekStart(weekOffset);
     const newWeekEnd = new Date(newWeekStart); newWeekEnd.setDate(newWeekStart.getDate() + 6);
     if (selectedDate < newWeekStart) selectedDate = new Date(newWeekStart);
@@ -246,7 +292,6 @@
 
   function renderWeekGrid() {
     const weekStart = getWeekStart(weekOffset);
-    const refDate = weekOffset === 0 ? today : weekStart;
 
     document.getElementById('month-year').textContent = weekStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     document.getElementById('week-num').textContent = weekOffset === 0 ? 'THIS WEEK' : weekOffset === 1 ? 'NEXT WEEK' : weekOffset === -1 ? 'LAST WEEK' : `WEEK ${getISOWeek(weekStart)}`;
@@ -283,7 +328,7 @@
     }
   }
 
-  // --- Rituals (tappable dots, computed from noa_habit_log) ---
+  // --- Rituals ---
   function toggleHabit(dateKey, habit) {
     const log = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
     if (!log[dateKey]) log[dateKey] = {};
@@ -295,23 +340,21 @@
   function renderRituals() {
     const log = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
 
-    // Get this week's Sunday-Saturday range using local dates
     const dayOfWeek = today.getDay();
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - dayOfWeek);
     weekStart.setHours(0, 0, 0, 0);
 
-    // Build per-day data with local date keys (matching how noa-chat.js stores)
     const bibleData = [], gymData = [];
     for (let i = 0; i < 7; i++) {
       const d = new Date(weekStart);
       d.setDate(weekStart.getDate() + i);
-      const key = d.toLocaleDateString('en-CA'); // YYYY-MM-DD local, never UTC-shifted
+      const key = d.toLocaleDateString('en-CA');
       bibleData.push({ done: !!log[key]?.bible, key });
       gymData.push({ done: !!log[key]?.gym, key });
     }
 
-    const gymWeekData = gymData.slice(1, 6); // Mon-Fri only
+    const gymWeekData = gymData.slice(1, 6);
     const bibleCount = bibleData.filter(d => d.done).length;
     const gymCount = gymWeekData.filter(d => d.done).length;
 
@@ -345,7 +388,7 @@
 
     if (!schedule || schedule.length === 0) {
       list.innerHTML = `<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/10 text-sm text-on-surface-variant">
-        ${isToday ? 'Tell Noa your schedule on the Today tab and she\'ll show it here.' : 'No schedule set for this day.'}
+        ${isToday ? 'Tell Noa your schedule on the Now tab and she\'ll show it here.' : 'No schedule set for this day.'}
       </div>`;
       return;
     }
@@ -389,7 +432,7 @@
     } catch (e) {}
   }
 
-  // --- Weekly Insight + Schedule from API ---
+  // --- Weekly data from API ---
   async function loadWeeklyData() {
     try {
       const res = await fetch(`/api/weekly?date=${dateKey(selectedDate)}`);
@@ -414,6 +457,158 @@
         insightEl.classList.remove('opacity-40');
       }
     }
+  }
+
+  // --- Coming Up (next 30 days) ---
+  let _comingUpLoaded = false;
+
+  async function loadComingUp() {
+    if (_comingUpLoaded) return;
+    _comingUpLoaded = true;
+
+    const container = document.getElementById('coming-up-list');
+    if (!container) return;
+
+    // Fetch 4 weeks of data grouped by week
+    const weeks = [];
+    for (let w = 0; w < 4; w++) {
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() + w * 7);
+      weeks.push(weekStart);
+    }
+
+    // Fetch all days in parallel
+    const allDayData = [];
+    const fetches = [];
+    for (let d = 0; d < 30; d++) {
+      const day = new Date(today);
+      day.setDate(today.getDate() + d);
+      fetches.push(
+        fetch(`/api/weekly?date=${dateKey(day)}`)
+          .then(r => r.json())
+          .then(data => ({ day: new Date(day), schedule: data.schedule || [] }))
+          .catch(() => ({ day: new Date(day), schedule: [] }))
+      );
+    }
+
+    const results = await Promise.all(fetches);
+
+    // Also get canvas deadlines
+    let canvasDeadlines = [];
+    try {
+      const res = await fetch('/api/canvas');
+      const data = await res.json();
+      canvasDeadlines = data.deadlines || [];
+    } catch(e) {}
+
+    // Group by week
+    const weekGroups = [[], [], [], []];
+    results.forEach(({ day, schedule }) => {
+      const diffDays = Math.floor((day - today) / (1000 * 60 * 60 * 24));
+      const weekIdx = Math.min(Math.floor(diffDays / 7), 3);
+      if (schedule.length > 0 || canvasDeadlines.some(cd => {
+        // rough match: check if deadline falls in this day
+        return false; // canvas deadlines handled separately below
+      })) {
+        weekGroups[weekIdx].push({ day, schedule });
+      } else if (schedule.length > 0) {
+        weekGroups[weekIdx].push({ day, schedule });
+      }
+    });
+
+    // Re-group all results regardless of empty schedule so we can show canvas deadlines
+    const weekGroupsFull = [[], [], [], []];
+    results.forEach(({ day, schedule }) => {
+      const diffDays = Math.floor((day - today) / (1000 * 60 * 60 * 24));
+      const weekIdx = Math.min(Math.floor(diffDays / 7), 3);
+      weekGroupsFull[weekIdx].push({ day, schedule });
+    });
+
+    const WEEK_LABELS = ['This Week', 'Next Week', 'In Two Weeks', 'In Three Weeks'];
+    const COLOR_HEX = { blue:'#5092eb', orange:'#E87D4A', green:'#7DD4B0', pink:'#F0607A', purple:'#c3a6ff' };
+
+    let html = '';
+    weekGroupsFull.forEach((days, wi) => {
+      const daysWithContent = days.filter(({ day, schedule }) => {
+        const dayStr = dateKey(day);
+        const hasSchedule = schedule.length > 0;
+        const hasDeadlines = canvasDeadlines.some(cd => {
+          const dueStr = cd.due || '';
+          return dueStr.includes(day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        });
+        return hasSchedule || hasDeadlines;
+      });
+
+      if (daysWithContent.length === 0) return;
+
+      const weekStartDate = days[0]?.day;
+      const weekEndDate = days[days.length - 1]?.day;
+      const weekRange = weekStartDate && weekEndDate
+        ? `${weekStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+        : '';
+
+      html += `<div class="space-y-3">
+        <div class="flex items-center gap-3">
+          <h3 class="text-sm font-bold tracking-tight text-on-surface-variant uppercase tracking-[0.12rem]">${WEEK_LABELS[wi]}</h3>
+          <span class="text-[10px] text-on-surface-variant opacity-40 font-bold">${weekRange}</span>
+          <div class="h-[1px] flex-1 bg-outline-variant/10"></div>
+        </div>
+        <div class="space-y-2">`;
+
+      daysWithContent.forEach(({ day, schedule }) => {
+        const isToday = day.toDateString() === today.toDateString();
+        const dayLabel = isToday ? 'Today' : day.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+        html += `<div class="px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/10 space-y-2">
+          <p class="text-[10px] uppercase tracking-[0.15rem] font-bold ${isToday ? 'text-primary-container' : 'text-on-surface-variant'}">${dayLabel}</p>`;
+
+        if (schedule.length > 0) {
+          schedule.slice(0, 4).forEach(item => {
+            const c = COLOR_HEX[item.color] || COLOR_HEX.blue;
+            html += `<div class="flex items-center gap-3">
+              <div class="w-1 h-4 rounded-full flex-shrink-0" style="background:${c}"></div>
+              <span class="text-xs font-bold text-on-surface-variant min-w-[48px] opacity-60">${item.time || ''}</span>
+              <span class="text-sm text-on-surface truncate">${item.title}</span>
+            </div>`;
+          });
+          if (schedule.length > 4) {
+            html += `<p class="text-[10px] text-on-surface-variant opacity-40 pl-4">+${schedule.length - 4} more</p>`;
+          }
+        }
+
+        html += `</div>`;
+      });
+
+      html += `</div></div>`;
+    });
+
+    // Add canvas deadlines section
+    if (canvasDeadlines.length > 0) {
+      html += `<div class="space-y-3 mt-2">
+        <div class="flex items-center gap-3">
+          <h3 class="text-sm font-bold tracking-tight text-on-surface-variant uppercase tracking-[0.12rem]">Canvas Deadlines</h3>
+          <div class="h-[1px] flex-1 bg-outline-variant/10"></div>
+        </div>
+        <div class="space-y-2">`;
+      canvasDeadlines.forEach(d => {
+        const c = COLOR_HEX[d.color] || COLOR_HEX.blue;
+        const icon = d.type === 'homework' ? 'assignment' : d.type === 'modules' ? 'library_books' : 'task_alt';
+        html += `<div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/10">
+          <span class="material-symbols-outlined text-base flex-shrink-0" style="color:${c}">${icon}</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold text-on-surface truncate">${d.title}</p>
+            <p class="text-[10px] font-bold text-on-surface-variant opacity-60 uppercase tracking-wider">${d.due}</p>
+          </div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    }
+
+    if (!html) {
+      html = '<p class="text-sm text-on-surface-variant opacity-40 py-4">Nothing scheduled for the next 30 days. Tell Noa your plans.</p>';
+    }
+
+    container.innerHTML = html;
   }
 
   // --- Planning Engine ---
@@ -445,7 +640,6 @@
           : 'Plan up to date';
       } else if (data.status === 'planned') {
         statusText.textContent = `14-day plan ready - ${data.daysPlanned} days scheduled`;
-        // Reload current day's schedule now that plan is fresh
         loadWeeklyData();
       } else {
         statusText.textContent = 'Planning complete';
