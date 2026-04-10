@@ -39,6 +39,8 @@
   .glass-card { background: rgba(55, 52, 55, 0.15); backdrop-filter: blur(20px); border: 1px solid rgba(88, 65, 67, 0.15); }
   .orb-glow { background: radial-gradient(circle, #f0607a 0%, #523787 100%); filter: blur(8px); }
   body { background-color: #151316; color: #e7e1e5; font-family: 'Inter', sans-serif; min-height: max(884px, 100dvh); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 </head>
 <body class="bg-background text-on-surface font-body min-h-screen pb-32">
@@ -48,55 +50,123 @@
     <span class="text-2xl font-bold tracking-tighter">Noa</span>
   </div>
 </header>
-<main class="max-w-screen-xl mx-auto px-6 pt-4">
 
-  <section class="mb-16">
+<main class="max-w-screen-xl mx-auto px-6 pt-4 pb-32">
+
+  <!-- Page header -->
+  <section class="mb-10">
     <h1 class="text-6xl font-extrabold tracking-tighter mb-2">Goals</h1>
-    <p class="uppercase tracking-[0.15rem] text-[12px] font-bold text-on-surface-variant opacity-70">Why the work matters.</p>
+    <p class="uppercase tracking-[0.15rem] text-[12px] font-bold text-on-surface-variant opacity-70">Every decision connects upward.</p>
   </section>
 
-  <!-- Semester Goals -->
+  <!-- SPRINT BOARD -->
   <section class="mb-14">
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-sm uppercase tracking-[0.15rem] font-bold text-on-surface-variant">Semester Goals</h2>
+      <h2 class="text-sm uppercase tracking-[0.15rem] font-bold text-on-surface-variant">Right Now</h2>
       <div class="h-[1px] flex-grow ml-6 bg-outline-variant/20"></div>
-      <button onclick="autoSyncGoalsFromCanvas(true)" id="canvas-refresh-btn" class="ml-4 flex items-center gap-1 text-[10px] uppercase tracking-[0.12rem] font-bold text-on-surface-variant opacity-40 hover:opacity-80 transition-opacity flex-shrink-0">
-        <span class="material-symbols-outlined text-sm">sync</span>Sync Canvas
+      <button onclick="openSprintAdd()" class="ml-4 flex items-center gap-1 text-[10px] uppercase tracking-[0.12rem] font-bold text-primary-container opacity-70 hover:opacity-100 transition-opacity flex-shrink-0">
+        <span class="material-symbols-outlined text-sm">add</span>Add
       </button>
     </div>
-    <div id="semester-goals" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    <div id="sprint-board" class="space-y-2"></div>
   </section>
 
-  <!-- M Racing + Milestones -->
-  <section class="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-14">
-    <div class="lg:col-span-2 relative overflow-hidden rounded-xl bg-surface-container-low p-8 border border-outline-variant/10">
-      <div class="absolute top-0 right-0 w-64 h-64 bg-tertiary-container/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
-      <div class="relative z-10">
-        <div class="flex items-center justify-between mb-8">
-          <h2 class="text-3xl font-extrabold tracking-tight">M Racing</h2>
-          <span class="bg-[#E87D4A]/20 text-[#E87D4A] text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-[#E87D4A]/30">In Progress</span>
-        </div>
-        <p class="text-on-surface-variant mb-6 font-medium">Director of Business Subteam</p>
-        <div id="racing-checklist" class="grid md:grid-cols-2 gap-4"></div>
-      </div>
+  <!-- ACADEMIC & CAREER -->
+  <section class="mb-14">
+    <div class="flex items-center mb-6">
+      <h2 class="text-sm uppercase tracking-[0.15rem] font-bold text-on-surface-variant">Academic &amp; Career</h2>
+      <div class="h-[1px] flex-grow ml-6 bg-outline-variant/20"></div>
     </div>
-    <div class="flex flex-col gap-6">
-      <div class="flex-1 glass-card p-6 rounded-xl relative overflow-hidden">
-        <h4 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant mb-4">Big Picture</h4>
-        <h3 class="text-xl font-bold">Ross Application</h3>
-        <p id="ross-note" class="text-sm text-on-surface-variant mt-2">Due March 31 - final touches remaining.</p>
-      </div>
-      <div class="flex-1 glass-card p-6 rounded-xl relative overflow-hidden">
-        <h4 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant mb-4">Vision</h4>
-        <h3 class="text-xl font-bold">Sydney, Australia</h3>
-        <p class="text-sm text-on-surface-variant mt-2">Every daily decision connects to this.</p>
-      </div>
-      <!-- milestone card tabled for later -->
-    </div>
+    <div id="goals-academic" class="grid grid-cols-2 lg:grid-cols-3 gap-4"></div>
   </section>
 
+  <!-- PERSONAL -->
+  <section class="mb-14">
+    <div class="flex items-center mb-6">
+      <h2 class="text-sm uppercase tracking-[0.15rem] font-bold text-on-surface-variant">Personal</h2>
+      <div class="h-[1px] flex-grow ml-6 bg-outline-variant/20"></div>
+    </div>
+    <div id="goals-personal" class="grid grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </section>
+
+  <!-- HEALTH -->
+  <section class="mb-14">
+    <div class="flex items-center mb-6">
+      <h2 class="text-sm uppercase tracking-[0.15rem] font-bold text-on-surface-variant">Health</h2>
+      <div class="h-[1px] flex-grow ml-6 bg-outline-variant/20"></div>
+    </div>
+    <div id="goals-health" class="grid grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </section>
+
+  <!-- SEMESTER TIMELINE -->
+  <section class="mb-14">
+    <div class="flex items-center mb-6">
+      <h2 class="text-sm uppercase tracking-[0.15rem] font-bold text-on-surface-variant">Semester Timeline</h2>
+      <div class="h-[1px] flex-grow ml-6 bg-outline-variant/20"></div>
+    </div>
+    <div id="semester-timeline" class="overflow-x-auto no-scrollbar">
+      <div id="timeline-inner" class="flex gap-4 pb-2" style="min-width: max-content;"></div>
+    </div>
+  </section>
 
 </main>
+
+<!-- Sprint Add Modal -->
+<div id="sprint-add-overlay" class="fixed inset-0 bg-black/60 z-[300] hidden items-end justify-center backdrop-blur-sm" onclick="if(event.target===this)closeSprintAdd()">
+  <div class="w-full max-w-lg bg-[#1d1b1e] rounded-t-3xl shadow-2xl border-t border-[#584143]/20 p-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <h3 class="font-bold tracking-tight">Add Sprint Item</h3>
+      <button onclick="closeSprintAdd()" class="text-on-surface-variant hover:text-on-surface transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <input id="sprint-title-input" type="text" placeholder="What are you working on right now?" class="w-full h-12 bg-[#211f22] rounded-xl px-4 text-[#e7e1e5] placeholder:text-[#dfbfc1]/40 focus:outline-none focus:ring-1 focus:ring-[#f0607a]/30 text-sm"/>
+    <div>
+      <p class="text-[10px] uppercase tracking-[0.12rem] font-bold text-on-surface-variant opacity-60 mb-2">Link to a life goal</p>
+      <div id="sprint-goal-selector" class="space-y-2 max-h-52 overflow-y-auto"></div>
+    </div>
+    <button onclick="submitSprintItem()" class="w-full h-11 bg-primary-container text-on-primary-container rounded-xl font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all">
+      Add to Sprint
+    </button>
+  </div>
+</div>
+
+<!-- Goal Detail Panel -->
+<div id="goal-detail-overlay" class="fixed inset-0 bg-black/60 z-[200] hidden items-end justify-center backdrop-blur-sm" onclick="if(event.target===this)closeGoalDetail()">
+  <div class="w-full max-w-lg bg-[#1d1b1e] rounded-t-3xl shadow-2xl border-t border-[#584143]/20 flex flex-col max-h-[85vh]">
+    <div class="flex items-center justify-between px-6 pt-6 pb-4 flex-shrink-0">
+      <div class="flex-1 mr-4">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h2 id="goal-detail-title" class="text-xl font-bold tracking-tight"></h2>
+          <span id="goal-detail-badge" class="hidden text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full"></span>
+        </div>
+        <p id="goal-detail-timeframe" class="text-sm text-on-surface-variant mt-1"></p>
+      </div>
+      <div class="flex items-center gap-4 flex-shrink-0">
+        <div id="goal-detail-ring-wrap" class="relative w-12 h-12 flex items-center justify-center">
+          <svg class="w-full h-full -rotate-90" viewBox="0 0 48 48">
+            <circle cx="24" cy="24" fill="transparent" r="20" stroke="#373437" stroke-width="3"></circle>
+            <circle id="goal-detail-ring" cx="24" cy="24" fill="transparent" r="20" stroke="#f0607a" stroke-dasharray="125.66" stroke-dashoffset="125.66" stroke-width="3" stroke-linecap="round"></circle>
+          </svg>
+          <span id="goal-detail-pct" class="absolute text-[10px] font-bold"></span>
+        </div>
+        <button onclick="closeGoalDetail()" class="text-on-surface-variant hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+    </div>
+    <div class="h-[1px] bg-outline-variant/10 flex-shrink-0"></div>
+    <div id="goal-detail-body" class="overflow-y-auto px-6 py-4 space-y-1 flex-1"></div>
+    <div class="px-6 pb-6 pt-2 flex-shrink-0 space-y-2">
+      <button onclick="openManualTaskAdd()" class="w-full h-11 rounded-xl bg-primary-container/10 border border-primary-container/20 text-sm font-bold text-primary-container hover:bg-primary-container/15 transition-all">
+        + Add past assignments manually
+      </button>
+      <button id="goal-detail-noa-btn" class="w-full h-11 rounded-xl border border-outline-variant/20 text-sm font-bold text-on-surface-variant hover:text-on-surface hover:border-outline-variant/40 transition-all">
+        + Add task via Noa
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- Canvas Sync Modal -->
 <div id="canvas-sync-overlay" class="fixed inset-0 bg-black/60 z-[300] hidden items-end justify-center backdrop-blur-sm" onclick="if(event.target===this)closeCanvasSync()">
@@ -121,34 +191,6 @@
   </div>
 </div>
 
-<!-- Goal Detail Panel -->
-<div id="goal-detail-overlay" class="fixed inset-0 bg-black/60 z-[200] hidden items-end justify-center backdrop-blur-sm" onclick="if(event.target===this)closeGoalDetail()">
-  <div class="w-full max-w-lg bg-[#1d1b1e] rounded-t-3xl shadow-2xl border-t border-[#584143]/20 flex flex-col max-h-[80vh]">
-    <div class="flex items-center justify-between px-6 pt-6 pb-4 flex-shrink-0">
-      <div>
-        <h2 id="goal-detail-title" class="text-xl font-bold tracking-tight"></h2>
-        <p id="goal-detail-desc" class="text-sm text-on-surface-variant mt-1"></p>
-      </div>
-      <div class="flex items-center gap-4">
-        <span id="goal-detail-pct" class="text-2xl font-extrabold tracking-tighter text-primary-container"></span>
-        <button onclick="closeGoalDetail()" class="text-on-surface-variant hover:text-on-surface transition-colors">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-    </div>
-    <div class="h-[1px] bg-outline-variant/10 flex-shrink-0"></div>
-    <div id="goal-detail-tasks" class="overflow-y-auto px-6 py-4 space-y-1 flex-1"></div>
-    <div class="px-6 pb-6 pt-2 flex-shrink-0 space-y-2">
-      <button onclick="openManualTaskAdd()" class="w-full h-11 rounded-xl bg-primary-container/10 border border-primary-container/20 text-sm font-bold text-primary-container hover:bg-primary-container/15 transition-all">
-        + Add past assignments manually
-      </button>
-      <button onclick="closeGoalDetail(); document.getElementById('noa-input').value='Add a task to my ' + document.getElementById('goal-detail-title').textContent + ' goal: '; setTimeout(()=>{document.getElementById('noa-panel').style.transform='translateX(0)'; document.getElementById('noa-overlay').classList.remove('hidden'); document.getElementById('noa-input').focus();},100)" class="w-full h-11 rounded-xl border border-outline-variant/20 text-sm font-bold text-on-surface-variant hover:text-on-surface hover:border-outline-variant/40 transition-all">
-        + Add task via Noa
-      </button>
-    </div>
-  </div>
-</div>
-
 <!-- Manual Task Add Sheet -->
 <div id="manual-task-overlay" class="fixed inset-0 bg-black/60 z-[300] hidden items-end justify-center backdrop-blur-sm" onclick="if(event.target===this)closeManualTaskAdd()">
   <div class="w-full max-w-lg bg-[#1d1b1e] rounded-t-3xl shadow-2xl border-t border-[#584143]/20 p-6 space-y-4">
@@ -161,7 +203,7 @@
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
-    <p class="text-xs text-on-surface-variant opacity-60">Enter one assignment name per line. All will be marked as completed (since they're past due). Add approximate due dates like "HW 1 - Jan 15" or just names.</p>
+    <p class="text-xs text-on-surface-variant opacity-60">Enter one assignment name per line. All will be marked as completed. Add approximate due dates like "HW 1 - Jan 15" or just names.</p>
     <textarea id="manual-task-input" rows="7" placeholder="HW 1 - Jan 15&#10;HW 2 - Jan 22&#10;Problem Set 1&#10;Quiz 1 - Feb 3&#10;Midterm 1 - Feb 10" class="w-full bg-[#211f22] rounded-xl px-4 py-3 text-[#e7e1e5] placeholder:text-[#dfbfc1]/30 focus:outline-none focus:ring-1 focus:ring-[#f0607a]/30 text-sm resize-none"></textarea>
     <div class="flex items-center gap-2">
       <select id="manual-task-month" class="flex-1 h-10 bg-[#211f22] rounded-xl px-3 text-[#e7e1e5] focus:outline-none focus:ring-1 focus:ring-[#f0607a]/30 text-sm border-0">
@@ -192,6 +234,7 @@
     <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Goals</span>
   </a>
 </nav>
+
 <!-- Noa Side Panel -->
 <div id="noa-overlay" class="fixed inset-0 bg-black/40 z-[90] hidden backdrop-blur-sm"></div>
 <div id="noa-panel" class="fixed right-0 top-0 h-full w-[360px] max-w-[90vw] bg-[#1d1b1e] z-[100] transform translate-x-full transition-transform duration-300 flex flex-col shadow-2xl border-l border-[#584143]/20">
@@ -221,29 +264,72 @@
 <script src="/noa-chat.js"></script>
 
 <script>
-  const CIRC = 125.66; // 2 * pi * 20
+  const CIRC = 125.66; // 2 * PI * 20
 
-  // Default data - overridden by localStorage if Noa has updated it
-  const DEFAULT_SEMESTER_GOALS = [
-    {
-      title: 'Thermodynamics', desc: 'B+ or better - building toward the engineer who understands the full system.', progress: 75, color: '#5092eb',
-      tasks: [
-        { label: 'Keep up with problem sets', done: true },
-        { label: 'Midterm 1', done: true },
-        { label: 'Midterm 2', done: true },
-        { label: 'Final exam', done: false },
-      ]
-    },
-    {
-      title: 'EECS 314', desc: 'Catch up on late submissions - stay consistent through the end.', progress: 40, color: '#5092eb',
-      tasks: [
-        { label: 'Late HW caught up', done: false },
-        { label: 'Midterm 1', done: true },
-        { label: 'Midterm 2', done: false },
-        { label: 'Final project', done: false },
-      ]
-    },
-  ];
+  // ─── DEFAULT DATA ────────────────────────────────────────────────────────────
+
+  const DEFAULT_LIFE_GOALS = {
+    academic: [
+      {
+        id: 'masters-business',
+        title: "Master's in Business",
+        timeframe: '4-5 years',
+        color: '#5092eb',
+        yearly: [{ id: 'y1', label: 'Get accepted into Ross', done: false }],
+        semester: [
+          { id: 's1', label: 'Maintain strong GPA', done: false },
+          { id: 's2', label: 'Submit Ross application', done: true },
+          { id: 's3', label: 'Finish Thermo strong', done: false },
+          { id: 's4', label: 'Catch up EECS 314', done: false }
+        ],
+        monthly: [],
+      },
+      {
+        id: 'job-you-love',
+        title: 'Job You Love',
+        timeframe: '3-5 years',
+        color: '#5092eb',
+        yearly: [{ id: 'y1', label: 'Land a relevant internship', done: false }],
+        semester: [
+          { id: 's1', label: 'M Racing Director of Business role', done: false }
+        ],
+        monthly: [],
+      }
+    ],
+    personal: [
+      {
+        id: 'sydney',
+        title: 'Live in Sydney',
+        timeframe: '5-7 years',
+        color: '#c3a6ff',
+        yearly: [],
+        semester: [],
+        monthly: [],
+      },
+      {
+        id: 'family',
+        title: 'Have a Family',
+        timeframe: '10+ years',
+        isNorthStar: true,
+        color: '#c3a6ff',
+        yearly: [],
+        semester: [],
+        monthly: [],
+      }
+    ],
+    health: [
+      {
+        id: 'fitness-8020',
+        title: 'Good Shape, 80/20',
+        timeframe: 'ongoing',
+        isRhythm: true,
+        color: '#7DD4B0',
+        yearly: [],
+        semester: [],
+        monthly: [],
+      }
+    ]
+  };
 
   const DEFAULT_CHECKLIST = [
     { label: 'Sponsorship email campaign (250 sent)', done: true },
@@ -252,57 +338,251 @@
     { label: 'Director application preparation', done: false },
   ];
 
+  // ─── STATE ──────────────────────────────────────────────────────────────────
+
+  let _lifeGoals = {};
+  let _sprintItems = [];
+  let _activeGoal = null; // { category, id }
+  let _selectedSprintGoalId = null;
+
+  // ─── LOAD / SAVE ─────────────────────────────────────────────────────────────
+
+  function loadData() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('noa_life_goals') || 'null');
+      _lifeGoals = saved || DEFAULT_LIFE_GOALS;
+    } catch(e) { _lifeGoals = DEFAULT_LIFE_GOALS; }
+    try {
+      _sprintItems = JSON.parse(localStorage.getItem('noa_sprint_items') || '[]');
+    } catch(e) { _sprintItems = []; }
+  }
+
+  function saveLifeGoals() {
+    localStorage.setItem('noa_life_goals', JSON.stringify(_lifeGoals));
+  }
+
+  function saveSprint() {
+    localStorage.setItem('noa_sprint_items', JSON.stringify(_sprintItems));
+  }
+
+  // ─── PROGRESS ────────────────────────────────────────────────────────────────
+
+  function computeGoalProgress(goal) {
+    const all = [...(goal.yearly||[]), ...(goal.semester||[]), ...(goal.monthly||[])];
+    if (all.length === 0) return 0;
+    return Math.round(all.filter(t => t.done).length / all.length * 100);
+  }
+
   function progressOffset(pct) {
     return CIRC * (1 - pct / 100);
   }
 
-  let _goals = [];
+  // ─── GYM DOTS (for isRhythm goals) ──────────────────────────────────────────
 
-  function computeProgress(tasks) {
-    if (!tasks || tasks.length === 0) return 0;
-    return Math.round((tasks.filter(t => t.done).length / tasks.length) * 100);
-  }
-
-  function saveGoals() {
-    localStorage.setItem('noa_semester_goals', JSON.stringify(_goals));
-  }
-
-  function renderSemesterGoals() {
-    const EXCLUDED_GOALS = ['All Other Classes', 'ENGR 260'];
-    const saved = JSON.parse(localStorage.getItem('noa_semester_goals') || 'null');
-    _goals = (saved || DEFAULT_SEMESTER_GOALS).filter(g => !EXCLUDED_GOALS.includes(g.title));
-    _goals = _goals.map(g => ({ ...g, tasks: g.tasks || [], progress: g.tasks?.length ? computeProgress(g.tasks) : g.progress }));
-    const container = document.getElementById('semester-goals');
-    container.innerHTML = _goals.map((g, i) => `
-      <div class="bg-surface-container-low rounded-xl overflow-hidden hover:bg-surface-container-high transition-colors">
-        <div onclick="openGoalDetail(${i})" class="p-6 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform">
-          <div class="flex-1 mr-4">
-            <h3 class="text-lg font-bold mb-1">${g.title}</h3>
-            <p class="text-sm text-on-surface-variant line-clamp-2">${g.desc}</p>
-            ${g.tasks?.length ? `<p class="text-[10px] uppercase tracking-wider font-bold mt-2 opacity-40">${g.tasks.filter(t=>t.done).length}/${g.tasks.length} done</p>` : '<p class="text-[10px] uppercase tracking-wider font-bold mt-2 opacity-30">No tasks yet</p>'}
-          </div>
-          <div class="relative w-12 h-12 flex items-center justify-center flex-shrink-0">
-            <svg class="w-full h-full -rotate-90">
-              <circle cx="24" cy="24" fill="transparent" r="20" stroke="#373437" stroke-width="3"></circle>
-              <circle cx="24" cy="24" fill="transparent" r="20" stroke="${g.color}" stroke-dasharray="${CIRC}" stroke-dashoffset="${progressOffset(g.progress)}" stroke-width="3" stroke-linecap="round"></circle>
-            </svg>
-            <span class="absolute text-[10px] font-bold">${g.progress}%</span>
-          </div>
-        </div>
-        <div class="px-6 pb-4">
-          <button onclick="openCanvasSync(${i})" class="text-[10px] uppercase tracking-[0.12rem] font-bold text-on-surface-variant opacity-40 hover:opacity-80 transition-opacity flex items-center gap-1">
-            <span class="material-symbols-outlined text-sm">sync</span>Sync from Canvas
-          </button>
-        </div>
+  function buildGymDots() {
+    const habitLog = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const k = d.toLocaleDateString('en-CA');
+      const label = d.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+      days.push({ label, done: !!(habitLog[k] && habitLog[k].gym) });
+    }
+    return days.map(d => `
+      <div class="flex flex-col items-center gap-1">
+        <div class="w-2 h-2 rounded-full ${d.done ? 'bg-[#7DD4B0]' : 'bg-surface-container-highest'}"></div>
+        <span class="text-[8px] text-on-surface-variant opacity-40">${d.label}</span>
       </div>
     `).join('');
   }
 
-  // Goal detail panel
-  let _activeGoalIdx = null;
+  // ─── LIFE GOAL CARDS ─────────────────────────────────────────────────────────
 
-  function openGoalDetail(idx) {
-    _activeGoalIdx = idx;
+  function renderLifeGoalCard(goal, category) {
+    const pct = computeGoalProgress(goal);
+    const offset = progressOffset(pct);
+
+    let ringContent = '';
+    if (goal.isNorthStar) {
+      ringContent = `<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background:${goal.color}22;color:${goal.color};">North Star</span>`;
+    } else if (goal.isRhythm) {
+      ringContent = `<div class="flex gap-1.5 items-end">${buildGymDots()}</div>`;
+    } else {
+      ringContent = `
+        <div class="relative w-12 h-12 flex items-center justify-center flex-shrink-0">
+          <svg class="w-full h-full -rotate-90" viewBox="0 0 48 48">
+            <circle cx="24" cy="24" fill="transparent" r="20" stroke="#373437" stroke-width="3"></circle>
+            <circle cx="24" cy="24" fill="transparent" r="20" stroke="${goal.color}" stroke-dasharray="${CIRC}" stroke-dashoffset="${offset}" stroke-width="3" stroke-linecap="round"></circle>
+          </svg>
+          <span class="absolute text-[10px] font-bold">${pct}%</span>
+        </div>
+      `;
+    }
+
+    return `
+      <div onclick="openGoalDetail('${category}','${goal.id}')"
+           class="bg-surface-container-low rounded-xl p-5 cursor-pointer hover:bg-surface-container-high active:scale-[0.98] transition-all flex flex-col gap-4 border border-outline-variant/5">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex-1 min-w-0">
+            <h3 class="font-bold text-base leading-tight">${goal.title}</h3>
+            <p class="text-[10px] uppercase tracking-wider font-bold mt-1 opacity-40">${goal.timeframe}</p>
+          </div>
+        </div>
+        <div class="flex items-center">
+          ${ringContent}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderLifeGoals() {
+    const categories = { academic: 'goals-academic', personal: 'goals-personal', health: 'goals-health' };
+    for (const [cat, containerId] of Object.entries(categories)) {
+      const container = document.getElementById(containerId);
+      if (!container) continue;
+      const goals = _lifeGoals[cat] || [];
+      if (goals.length === 0) {
+        container.innerHTML = `<p class="text-sm text-on-surface-variant opacity-30 col-span-full py-2">No goals yet. Tell Noa what you're building toward.</p>`;
+      } else {
+        container.innerHTML = goals.map(g => renderLifeGoalCard(g, cat)).join('');
+      }
+    }
+  }
+
+  // ─── SPRINT BOARD ─────────────────────────────────────────────────────────────
+
+  function renderSprintBoard() {
+    const container = document.getElementById('sprint-board');
+    if (!container) return;
+
+    if (_sprintItems.length === 0) {
+      container.innerHTML = `
+        <div class="flex items-center gap-3 p-4 rounded-xl border border-dashed border-outline-variant/30">
+          <span class="material-symbols-outlined text-on-surface-variant opacity-30">radio_button_unchecked</span>
+          <p class="text-sm text-on-surface-variant opacity-40">Nothing in your sprint yet. Add the things you're actively working on this week.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const active = _sprintItems.filter(i => !i.done);
+    const done = _sprintItems.filter(i => i.done);
+    const ordered = [...active, ...done];
+
+    container.innerHTML = ordered.map(item => `
+      <div class="flex items-center gap-3 p-3.5 rounded-xl ${item.done ? 'opacity-50' : 'bg-surface-container-low hover:bg-surface-container-high'} transition-colors group">
+        <button onclick="toggleSprintItem('${item.id}')" class="flex-shrink-0 text-on-surface-variant hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined text-xl ${item.done ? 'text-[#7DD4B0]' : ''}"
+                style="${item.done ? "font-variation-settings:'FILL' 1;" : ''}">
+            ${item.done ? 'check_circle' : 'radio_button_unchecked'}
+          </span>
+        </button>
+        <span class="flex-1 text-sm font-medium ${item.done ? 'line-through text-on-surface-variant' : ''}">${item.title}</span>
+        ${item.goalTitle ? `
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 whitespace-nowrap"
+                style="background:${item.goalColor || '#5092eb'}22;color:${item.goalColor || '#5092eb'};">
+            ${item.goalTitle}
+          </span>
+        ` : ''}
+      </div>
+    `).join('');
+  }
+
+  function toggleSprintItem(id) {
+    const idx = _sprintItems.findIndex(i => i.id === id);
+    if (idx < 0) return;
+    _sprintItems[idx].done = !_sprintItems[idx].done;
+
+    // Sync into the corresponding goal's sprint items if it has one
+    const item = _sprintItems[idx];
+    if (item.goalId) {
+      for (const cat of Object.values(_lifeGoals)) {
+        const goal = cat.find ? cat.find(g => g.id === item.goalId) : null;
+        if (goal) {
+          const si = (goal.sprintItems || []).find(s => s.id === id);
+          if (si) si.done = item.done;
+          saveLifeGoals();
+          break;
+        }
+      }
+    }
+
+    saveSprint();
+    renderSprintBoard();
+  }
+
+  // ─── SPRINT ADD MODAL ────────────────────────────────────────────────────────
+
+  function openSprintAdd() {
+    _selectedSprintGoalId = null;
+    document.getElementById('sprint-title-input').value = '';
+    // Build goal selector
+    const selector = document.getElementById('sprint-goal-selector');
+    const allGoals = [];
+    for (const [cat, goals] of Object.entries(_lifeGoals)) {
+      for (const g of goals) {
+        allGoals.push({ ...g, category: cat });
+      }
+    }
+    selector.innerHTML = allGoals.map(g => `
+      <button onclick="selectSprintGoal('${g.id}','${g.title}','${g.color || '#5092eb'}')"
+              id="sprint-goal-btn-${g.id}"
+              class="w-full text-left px-4 py-3 rounded-xl bg-surface-container-low hover:bg-surface-container-high transition-colors flex items-center gap-3">
+        <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${g.color || '#5092eb'};"></span>
+        <span class="text-sm font-medium">${g.title}</span>
+      </button>
+    `).join('');
+    const overlay = document.getElementById('sprint-add-overlay');
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    setTimeout(() => document.getElementById('sprint-title-input').focus(), 100);
+  }
+
+  function selectSprintGoal(id, title, color) {
+    _selectedSprintGoalId = { id, title, color };
+    // Visual feedback
+    document.querySelectorAll('[id^="sprint-goal-btn-"]').forEach(btn => {
+      btn.classList.remove('ring-1', 'ring-[#f0607a]/40', 'bg-surface-container-high');
+    });
+    const btn = document.getElementById(`sprint-goal-btn-${id}`);
+    if (btn) btn.classList.add('ring-1', 'ring-[#f0607a]/40', 'bg-surface-container-high');
+  }
+
+  function closeSprintAdd() {
+    const overlay = document.getElementById('sprint-add-overlay');
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+    _selectedSprintGoalId = null;
+  }
+
+  function submitSprintItem() {
+    const title = document.getElementById('sprint-title-input').value.trim();
+    if (!title) return;
+    const id = 'sp-' + Date.now();
+    const newItem = {
+      id,
+      title,
+      goalId: _selectedSprintGoalId ? _selectedSprintGoalId.id : null,
+      goalTitle: _selectedSprintGoalId ? _selectedSprintGoalId.title : null,
+      goalColor: _selectedSprintGoalId ? _selectedSprintGoalId.color : null,
+      done: false,
+      addedAt: new Date().toISOString().split('T')[0],
+    };
+    _sprintItems.unshift(newItem);
+    saveSprint();
+    renderSprintBoard();
+    closeSprintAdd();
+  }
+
+  // ─── GOAL DETAIL PANEL ───────────────────────────────────────────────────────
+
+  function findGoal(category, id) {
+    return (_lifeGoals[category] || []).find(g => g.id === id) || null;
+  }
+
+  function openGoalDetail(category, id) {
+    _activeGoal = { category, id };
     renderGoalDetail();
     const overlay = document.getElementById('goal-detail-overlay');
     overlay.classList.remove('hidden');
@@ -310,129 +590,168 @@
   }
 
   function closeGoalDetail() {
-    _activeGoalIdx = null;
-    document.getElementById('goal-detail-overlay').classList.add('hidden');
-    document.getElementById('goal-detail-overlay').classList.remove('flex');
+    _activeGoal = null;
+    const overlay = document.getElementById('goal-detail-overlay');
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
   }
 
   function renderGoalDetail() {
-    const g = _goals[_activeGoalIdx];
-    if (!g) return;
-    document.getElementById('goal-detail-title').textContent = g.title;
-    document.getElementById('goal-detail-desc').textContent = g.desc;
-    const pct = computeProgress(g.tasks);
-    document.getElementById('goal-detail-pct').textContent = `${pct}%`;
+    if (!_activeGoal) return;
+    const goal = findGoal(_activeGoal.category, _activeGoal.id);
+    if (!goal) return;
 
-    const done = (g.tasks || []).filter(t => t.done);
-    const todo = (g.tasks || []).filter(t => !t.done);
+    document.getElementById('goal-detail-title').textContent = goal.title;
+    document.getElementById('goal-detail-timeframe').textContent = goal.timeframe;
 
-    const taskList = document.getElementById('goal-detail-tasks');
-    taskList.innerHTML = '';
-
-    if (todo.length) {
-      taskList.innerHTML += `<p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant mb-2">To Do</p>`;
-      taskList.innerHTML += todo.map((t, i) => {
-        const globalIdx = (g.tasks || []).indexOf(t);
-        return `<div onclick="toggleTask(${globalIdx})" class="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container-high cursor-pointer transition-colors group">
-          <span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface transition-colors">radio_button_unchecked</span>
-          <span class="text-sm font-medium">${t.label}</span>
-        </div>`;
-      }).join('');
+    // Badge
+    const badge = document.getElementById('goal-detail-badge');
+    if (goal.isNorthStar) {
+      badge.textContent = 'North Star';
+      badge.style.background = goal.color + '22';
+      badge.style.color = goal.color;
+      badge.classList.remove('hidden');
+    } else if (goal.isRhythm) {
+      badge.textContent = 'Rhythm';
+      badge.style.background = goal.color + '22';
+      badge.style.color = goal.color;
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
     }
 
-    if (done.length) {
-      taskList.innerHTML += `<p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant mt-4 mb-2">Done</p>`;
-      taskList.innerHTML += done.map((t, i) => {
-        const globalIdx = (g.tasks || []).indexOf(t);
-        return `<div onclick="toggleTask(${globalIdx})" class="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container-high cursor-pointer transition-colors group opacity-50">
-          <span class="material-symbols-outlined text-[#7DD4B0]" style="font-variation-settings:'FILL' 1;">check_circle</span>
-          <span class="text-sm font-medium line-through">${t.label}</span>
-        </div>`;
-      }).join('');
+    // Progress ring
+    const pct = computeGoalProgress(goal);
+    const ringWrap = document.getElementById('goal-detail-ring-wrap');
+    const ring = document.getElementById('goal-detail-ring');
+    const pctEl = document.getElementById('goal-detail-pct');
+    if (goal.isNorthStar || goal.isRhythm) {
+      ringWrap.classList.add('hidden');
+    } else {
+      ringWrap.classList.remove('hidden');
+      ring.setAttribute('stroke', goal.color);
+      ring.setAttribute('stroke-dashoffset', progressOffset(pct));
+      pctEl.textContent = pct + '%';
     }
 
-    if (!g.tasks || g.tasks.length === 0) {
-      taskList.innerHTML = `<p class="text-sm text-on-surface-variant opacity-40 py-4">No tasks yet. Tell Noa what milestones are part of this goal.</p>`;
+    // Noa button
+    document.getElementById('goal-detail-noa-btn').onclick = () => {
+      closeGoalDetail();
+      const input = document.getElementById('noa-input');
+      if (input) input.value = `Add a goal to my ${goal.title}: `;
+      setTimeout(() => {
+        document.getElementById('noa-panel').classList.remove('translate-x-full');
+        document.getElementById('noa-overlay').classList.remove('hidden');
+        if (input) input.focus();
+      }, 100);
+    };
+
+    // Body
+    const body = document.getElementById('goal-detail-body');
+    body.innerHTML = '';
+
+    // Layers: yearly, semester, monthly, sprint
+    const sections = [
+      { label: 'Yearly', key: 'yearly' },
+      { label: 'Semester', key: 'semester' },
+      { label: 'Monthly', key: 'monthly' },
+    ];
+
+    let hasAny = false;
+    for (const sec of sections) {
+      const items = goal[sec.key] || [];
+      if (items.length === 0) continue;
+      hasAny = true;
+      const todoItems = items.filter(t => !t.done);
+      const doneItems = items.filter(t => t.done);
+
+      body.innerHTML += `<p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant pt-2 pb-1">${sec.label}</p>`;
+      body.innerHTML += [...todoItems, ...doneItems].map(t => `
+        <div onclick="toggleGoalItem('${sec.key}','${t.id}')"
+             class="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container-high cursor-pointer transition-colors group ${t.done ? 'opacity-50' : ''}">
+          <span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface transition-colors ${t.done ? 'text-[#7DD4B0]' : ''}"
+                style="${t.done ? "font-variation-settings:'FILL' 1;" : ''}">
+            ${t.done ? 'check_circle' : 'radio_button_unchecked'}
+          </span>
+          <span class="text-sm font-medium ${t.done ? 'line-through' : ''}">${t.label}</span>
+        </div>
+      `).join('');
+    }
+
+    // Sprint items for this goal
+    const goalSprintItems = _sprintItems.filter(s => s.goalId === goal.id);
+    if (goalSprintItems.length > 0) {
+      hasAny = true;
+      body.innerHTML += `<p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant pt-2 pb-1">Sprint (Right Now)</p>`;
+      body.innerHTML += goalSprintItems.map(s => `
+        <div onclick="toggleSprintItemFromDetail('${s.id}')"
+             class="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container-high cursor-pointer transition-colors group ${s.done ? 'opacity-50' : ''}">
+          <span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface transition-colors ${s.done ? 'text-[#7DD4B0]' : ''}"
+                style="${s.done ? "font-variation-settings:'FILL' 1;" : ''}">
+            ${s.done ? 'check_circle' : 'radio_button_unchecked'}
+          </span>
+          <span class="text-sm font-medium ${s.done ? 'line-through' : ''}">${s.title}</span>
+          <span class="ml-auto text-[10px] font-bold uppercase tracking-wider text-on-surface-variant opacity-40">Sprint</span>
+        </div>
+      `).join('');
+    }
+
+    // M Racing checklist inside Job You Love
+    if (goal.id === 'job-you-love') {
+      hasAny = true;
+      const saved = JSON.parse(localStorage.getItem('noa_racing_checklist') || 'null');
+      const racingItems = saved || DEFAULT_CHECKLIST;
+      body.innerHTML += `<p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant pt-2 pb-1">M Racing Checklist</p>`;
+      body.innerHTML += racingItems.map((item, idx) => `
+        <div onclick="toggleRacingItem(${idx})"
+             class="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container-high cursor-pointer transition-colors group ${item.done ? 'opacity-50' : ''}">
+          <span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface transition-colors ${item.done ? 'text-[#7DD4B0]' : ''}"
+                style="${item.done ? "font-variation-settings:'FILL' 1;" : ''}">
+            ${item.done ? 'check_circle' : 'radio_button_unchecked'}
+          </span>
+          <span class="text-sm font-medium ${item.done ? 'line-through' : ''}">${item.label}</span>
+        </div>
+      `).join('');
+    }
+
+    if (!hasAny) {
+      body.innerHTML = `<p class="text-sm text-on-surface-variant opacity-40 py-4">No milestones yet. Tell Noa what steps are part of this goal, or use the button below to add tasks.</p>`;
     }
   }
 
-  function toggleTask(taskIdx) {
-    const g = _goals[_activeGoalIdx];
-    if (!g || !g.tasks) return;
-    g.tasks[taskIdx].done = !g.tasks[taskIdx].done;
-    g.progress = computeProgress(g.tasks);
-    saveGoals();
+  function toggleGoalItem(layerKey, itemId) {
+    if (!_activeGoal) return;
+    const goal = findGoal(_activeGoal.category, _activeGoal.id);
+    if (!goal || !goal[layerKey]) return;
+    const item = goal[layerKey].find(t => t.id === itemId);
+    if (item) item.done = !item.done;
+    saveLifeGoals();
     renderGoalDetail();
-    renderSemesterGoals();
+    renderLifeGoals();
   }
 
-  function renderChecklist() {
+  function toggleRacingItem(idx) {
     const saved = JSON.parse(localStorage.getItem('noa_racing_checklist') || 'null');
-    const items = saved || DEFAULT_CHECKLIST;
-    const container = document.getElementById('racing-checklist');
-
-    function saveAndRender(updated) {
-      localStorage.setItem('noa_racing_checklist', JSON.stringify(updated));
-      renderChecklist();
-    }
-
-    // Split into two columns
-    const half = Math.ceil(items.length / 2);
-    const cols = [items.slice(0, half), items.slice(half)];
-
-    container.innerHTML = cols.map(col => `
-      <ul class="space-y-4">
-        ${col.map((item, colIdx) => {
-          const globalIdx = items.indexOf(item);
-          return `
-            <li class="flex items-start gap-3 cursor-pointer group" data-idx="${globalIdx}">
-              <span class="material-symbols-outlined text-sm mt-1 transition-colors ${item.done ? 'text-tertiary' : 'text-on-surface-variant group-hover:text-on-surface'}"
-                style="font-variation-settings: 'FILL' ${item.done ? 1 : 0};">
-                ${item.done ? 'check_circle' : 'radio_button_unchecked'}
-              </span>
-              <span class="font-medium transition-colors ${item.done ? 'text-on-surface' : 'text-on-surface/70'}">${item.label}</span>
-            </li>
-          `;
-        }).join('')}
-      </ul>
-    `).join('');
-
-    // Add click handlers
-    container.querySelectorAll('[data-idx]').forEach(el => {
-      el.addEventListener('click', () => {
-        const idx = parseInt(el.dataset.idx);
-        const updated = [...items];
-        updated[idx] = { ...updated[idx], done: !updated[idx].done };
-        saveAndRender(updated);
-      });
-    });
+    const items = [...(saved || DEFAULT_CHECKLIST)];
+    items[idx] = { ...items[idx], done: !items[idx].done };
+    localStorage.setItem('noa_racing_checklist', JSON.stringify(items));
+    renderGoalDetail();
   }
 
-  async function loadGoalsInsight() {
-    try {
-      const res = await fetch('/api/goals');
-      const data = await res.json();
-      const el = document.getElementById('goals-insight');
-      if (el && data.insight) {
-        el.textContent = `"${data.insight}"`;
-        el.classList.remove('opacity-40');
-      }
-    } catch (e) {
-      const el = document.getElementById('goals-insight');
-      if (el) {
-        el.textContent = '"Keep showing up. The compound effect is real."';
-        el.classList.remove('opacity-40');
-      }
-    }
+  function toggleSprintItemFromDetail(id) {
+    toggleSprintItem(id);
+    renderGoalDetail();
   }
 
-  // Canvas sync
-  let _syncGoalIdx = null;
+  // ─── CANVAS SYNC ─────────────────────────────────────────────────────────────
+
+  let _canvasSyncGoal = null; // { category, id }
   let _canvasCourses = null;
 
-  async function openCanvasSync(idx) {
-    _syncGoalIdx = idx;
-    document.getElementById('canvas-sync-goal-name').textContent = _goals[idx].title;
+  async function openCanvasSync(category, id) {
+    _canvasSyncGoal = { category, id };
+    const goal = findGoal(category, id);
+    document.getElementById('canvas-sync-goal-name').textContent = goal ? goal.title : '';
     document.getElementById('canvas-sync-overlay').classList.remove('hidden');
     document.getElementById('canvas-sync-overlay').classList.add('flex');
 
@@ -441,9 +760,7 @@
         const res = await fetch('/api/canvas?all=1');
         const data = await res.json();
         _canvasCourses = data.courses || [];
-      } catch(e) {
-        _canvasCourses = [];
-      }
+      } catch(e) { _canvasCourses = []; }
     }
 
     const list = document.getElementById('canvas-course-list');
@@ -451,7 +768,6 @@
       list.innerHTML = '<p class="text-sm text-on-surface-variant opacity-40">No Canvas courses found. Make sure your Canvas iCal is connected.</p>';
       return;
     }
-
     list.innerHTML = _canvasCourses.map((c, i) => `
       <button onclick="applyCanvasCourse(${i})" class="w-full text-left p-4 rounded-xl bg-surface-container-low hover:bg-surface-container-high transition-colors flex items-center justify-between group">
         <div>
@@ -466,62 +782,69 @@
   function closeCanvasSync() {
     document.getElementById('canvas-sync-overlay').classList.add('hidden');
     document.getElementById('canvas-sync-overlay').classList.remove('flex');
-    _syncGoalIdx = null;
+    _canvasSyncGoal = null;
   }
 
   function applyCanvasCourse(courseIdx) {
     const course = _canvasCourses[courseIdx];
-    if (!course || _syncGoalIdx === null) return;
-
-    // Replace goal tasks with Canvas assignments
-    _goals[_syncGoalIdx].tasks = course.assignments.map(a => ({
+    if (!course || !_canvasSyncGoal) return;
+    const goal = findGoal(_canvasSyncGoal.category, _canvasSyncGoal.id);
+    if (!goal) return;
+    goal.semester = course.assignments.map(a => ({
+      id: 'cv-' + (a.label || '').replace(/\s+/g, '-').toLowerCase() + '-' + Date.now(),
       label: a.label,
       dueDate: a.dueDate,
       done: a.done,
     }));
-    _goals[_syncGoalIdx].progress = computeProgress(_goals[_syncGoalIdx].tasks);
-    saveGoals();
-    renderSemesterGoals();
+    saveLifeGoals();
+    renderLifeGoals();
     closeCanvasSync();
-
-    // Open the detail panel to show the result
-    openGoalDetail(_syncGoalIdx);
+    openGoalDetail(_canvasSyncGoal.category, _canvasSyncGoal.id);
   }
 
-  // Auto-populate goals from Canvas if no saved goals, or if existing goals have no Canvas tasks
   async function autoSyncGoalsFromCanvas(force = false) {
-    const saved = JSON.parse(localStorage.getItem('noa_semester_goals') || 'null');
-    const hasRealTasks = saved && saved.some(g => g.tasks && g.tasks.length > 0 && g.tasks.some(t => t.dueDate));
-    if (!force && hasRealTasks) return; // real Canvas tasks already exist
-    const btn = document.getElementById('canvas-refresh-btn');
-    if (btn) btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">refresh</span>Syncing...';
+    const hasRealTasks = Object.values(_lifeGoals).flat().some(g =>
+      (g.semester || []).some(t => t.dueDate)
+    );
+    if (!force && hasRealTasks) return;
     try {
       const res = await fetch('/api/canvas?all=1');
       const data = await res.json();
       if (!data.courses || data.courses.length === 0) return;
-
+      // Auto-map courses to known goals by name similarity
       const GOAL_COLORS = ['#5092eb','#c3a6ff','#E87D4A','#7DD4B0','#F0607A'];
       const generated = data.courses.map((c, i) => ({
+        id: 'canvas-' + c.code.replace(/\s+/g, '-').toLowerCase(),
         title: c.code,
-        desc: `Stay on top of ${c.code} through the end of semester.`,
-        progress: c.assignments.length ? computeProgress(c.assignments) : 0,
+        timeframe: 'this semester',
         color: GOAL_COLORS[i % GOAL_COLORS.length],
-        tasks: c.assignments,
+        yearly: [],
+        semester: c.assignments.map(a => ({
+          id: 'cv-' + Date.now() + Math.random(),
+          label: a.label,
+          dueDate: a.dueDate,
+          done: a.done,
+        })),
+        monthly: [],
       }));
-
-      localStorage.setItem('noa_semester_goals', JSON.stringify(generated));
-      renderSemesterGoals();
+      // Merge into academic without overwriting existing
+      const existing = _lifeGoals.academic || [];
+      const existingIds = new Set(existing.map(g => g.id));
+      for (const g of generated) {
+        if (!existingIds.has(g.id)) existing.push(g);
+      }
+      _lifeGoals.academic = existing;
+      saveLifeGoals();
+      renderLifeGoals();
     } catch(e) {}
-    finally {
-      if (btn) btn.innerHTML = '<span class="material-symbols-outlined text-sm">sync</span>Sync Canvas';
-    }
   }
 
-  // Manual past assignment import
+  // ─── MANUAL TASK ADD ─────────────────────────────────────────────────────────
+
   function openManualTaskAdd() {
-    if (_activeGoalIdx === null) return;
-    const g = _goals[_activeGoalIdx];
-    document.getElementById('manual-task-course-name').textContent = g.title;
+    if (!_activeGoal) return;
+    const goal = findGoal(_activeGoal.category, _activeGoal.id);
+    document.getElementById('manual-task-course-name').textContent = goal ? goal.title : '';
     document.getElementById('manual-task-input').value = '';
     const overlay = document.getElementById('manual-task-overlay');
     overlay.classList.remove('hidden');
@@ -535,18 +858,17 @@
   }
 
   function submitManualTasks() {
-    if (_activeGoalIdx === null) return;
+    if (!_activeGoal) return;
     const raw = document.getElementById('manual-task-input').value.trim();
     const defaultMonth = document.getElementById('manual-task-month').value;
     if (!raw) return;
 
     const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
     const newTasks = lines.map(line => {
-      // Try to extract a date from the line: "HW 1 - Jan 15" or "HW 1 - 01/15"
       const datePatterns = [
-        /[-–]\s*([A-Z][a-z]+\.?\s+\d{1,2})/,  // "- Jan 15"
-        /[-–]\s*(\d{1,2}\/\d{1,2})/,            // "- 01/15"
-        /\(([A-Z][a-z]+\.?\s+\d{1,2})\)/,       // "(Jan 15)"
+        /[-–]\s*([A-Z][a-z]+\.?\s+\d{1,2})/,
+        /[-–]\s*(\d{1,2}\/\d{1,2})/,
+        /\(([A-Z][a-z]+\.?\s+\d{1,2})\)/,
       ];
       let dueDate = `${defaultMonth}-15T23:59:00.000Z`;
       let label = line;
@@ -561,21 +883,123 @@
           break;
         }
       }
-      return { label: label || line, dueDate, done: true };
+      return { id: 'mt-' + Date.now() + Math.random(), label: label || line, dueDate, done: true };
     });
 
-    const g = _goals[_activeGoalIdx];
-    g.tasks = [...(g.tasks || []), ...newTasks];
-    g.progress = computeProgress(g.tasks);
-    saveGoals();
-    renderGoalDetail();
-    renderSemesterGoals();
+    const goal = findGoal(_activeGoal.category, _activeGoal.id);
+    if (goal) {
+      goal.semester = [...(goal.semester || []), ...newTasks];
+      saveLifeGoals();
+      renderGoalDetail();
+      renderLifeGoals();
+    }
     closeManualTaskAdd();
   }
 
-  renderSemesterGoals();
-  renderChecklist();
-  loadGoalsInsight();
+  // ─── SEMESTER TIMELINE ───────────────────────────────────────────────────────
+
+  function renderSemesterTimeline() {
+    const inner = document.getElementById('timeline-inner');
+    if (!inner) return;
+
+    // Collect all tasks with dueDates across life goals + legacy semester goals
+    const events = [];
+    for (const goals of Object.values(_lifeGoals)) {
+      for (const g of goals) {
+        for (const layer of ['yearly', 'semester', 'monthly']) {
+          for (const t of (g[layer] || [])) {
+            if (t.dueDate) {
+              events.push({ label: t.label, date: new Date(t.dueDate), goalTitle: g.title, goalColor: g.color, done: t.done });
+            }
+          }
+        }
+      }
+    }
+    // Legacy noa_semester_goals
+    try {
+      const legacy = JSON.parse(localStorage.getItem('noa_semester_goals') || '[]');
+      for (const g of legacy) {
+        for (const t of (g.tasks || [])) {
+          if (t.dueDate) {
+            events.push({ label: t.label, date: new Date(t.dueDate), goalTitle: g.title, goalColor: g.color || '#5092eb', done: t.done });
+          }
+        }
+      }
+    } catch(e) {}
+
+    if (events.length === 0) {
+      inner.innerHTML = `<div class="bg-surface-container-low rounded-xl p-6 flex items-center gap-3 w-80 flex-shrink-0">
+        <span class="material-symbols-outlined text-on-surface-variant opacity-30">calendar_month</span>
+        <p class="text-sm text-on-surface-variant opacity-40">Tell Noa about your upcoming exams and deadlines.</p>
+      </div>`;
+      return;
+    }
+
+    // Group by month
+    events.sort((a, b) => a.date - b.date);
+    const now = new Date();
+    const upcoming = events.filter(e => e.date >= new Date(now.getFullYear(), now.getMonth(), 1));
+
+    const byMonth = {};
+    for (const e of upcoming.slice(0, 40)) {
+      const key = e.date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      if (!byMonth[key]) byMonth[key] = [];
+      byMonth[key].push(e);
+    }
+
+    if (Object.keys(byMonth).length === 0) {
+      inner.innerHTML = `<div class="bg-surface-container-low rounded-xl p-6 flex items-center gap-3 w-80 flex-shrink-0">
+        <span class="material-symbols-outlined text-on-surface-variant opacity-30">calendar_month</span>
+        <p class="text-sm text-on-surface-variant opacity-40">No upcoming deadlines found. Tell Noa about your exams and due dates.</p>
+      </div>`;
+      return;
+    }
+
+    inner.innerHTML = Object.entries(byMonth).map(([month, evts]) => `
+      <div class="bg-surface-container-low rounded-xl p-5 flex-shrink-0 w-64 border border-outline-variant/5">
+        <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant mb-3 opacity-60">${month}</p>
+        <div class="space-y-2.5">
+          ${evts.map(e => `
+            <div class="flex items-start gap-2.5">
+              <div class="flex-shrink-0 mt-0.5">
+                <span class="text-[10px] font-bold text-on-surface-variant opacity-50 block w-7 text-right">${e.date.getDate()}</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium leading-tight ${e.done ? 'line-through opacity-40' : ''} truncate">${e.label}</p>
+                <p class="text-[10px] mt-0.5 font-bold truncate" style="color:${e.goalColor || '#5092eb'};">${e.goalTitle}</p>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ─── NOA ACTION HOOK ─────────────────────────────────────────────────────────
+
+  window.onNoaAction = function(a) {
+    if (a.type === 'set_life_goals' || a.type === 'add_sprint_item' || a.type === 'complete_sprint_item') {
+      loadData();
+      renderLifeGoals();
+      renderSprintBoard();
+      renderSemesterTimeline();
+      if (_activeGoal) renderGoalDetail();
+    } else if (a.type === 'update_racing_checklist') {
+      if (_activeGoal && _activeGoal.id === 'job-you-love') renderGoalDetail();
+    } else if (a.type === 'set_goal_progress') {
+      // Legacy compat: also re-render timeline
+      renderSemesterTimeline();
+    } else if (a.type === 'update_rituals') {
+      renderLifeGoals(); // refresh gym dots
+    }
+  };
+
+  // ─── INIT ────────────────────────────────────────────────────────────────────
+
+  loadData();
+  renderSprintBoard();
+  renderLifeGoals();
+  renderSemesterTimeline();
   autoSyncGoalsFromCanvas();
 </script>
 </body>

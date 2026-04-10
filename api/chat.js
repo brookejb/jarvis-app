@@ -354,7 +354,19 @@ Example of multi-day scheduling:
 [ACTION]{"type":"set_schedule","date":"2026-04-04","items":[{"time":"10:00 AM","title":"ECON Lecture","color":"blue"}]}[/ACTION]
 [ACTION]{"type":"set_schedule","date":"2026-04-05","items":[{"time":"10:00 AM","title":"ECON Problem Set","color":"blue"}]}[/ACTION]
 
-When in doubt between set_schedule and any other action type, always pick set_schedule if a concrete event was mentioned.`;
+When in doubt between set_schedule and any other action type, always pick set_schedule if a concrete event was mentioned.
+
+Set/update life goals hierarchy (when Brooke defines or updates her goals at any level — yearly, semester, monthly milestones):
+[ACTION]{"type":"set_life_goals","goals":{"academic":[{"id":"masters-business","title":"Master's in Business","timeframe":"4-5 years","color":"#5092eb","yearly":[{"id":"y1","label":"Get into Ross","done":false}],"semester":[],"monthly":[]}],"personal":[],"health":[]}}[/ACTION]
+Always send the full goals object for all three categories (academic, personal, health). Preserve existing goals in other categories unless she's explicitly changing them.
+
+Add a sprint item (when Brooke mentions something she's actively working on right now or this week — "I'm working on," "need to get done this week," "right now I'm focused on"):
+[ACTION]{"type":"add_sprint_item","item":{"id":"sp1","title":"Submit 3 internship apps","goalId":"job-you-love","goalTitle":"Job You Love","goalColor":"#5092eb"}}[/ACTION]
+id: unique lowercase-hyphenated slug. goalId/goalTitle/goalColor: link to a life goal if she mentions one. If no goal mentioned, omit those fields.
+
+Complete a sprint item (when Brooke says she finished, completed, or crossed off something from her sprint board):
+[ACTION]{"type":"complete_sprint_item","id":"sp1"}[/ACTION]
+id: the exact id of the sprint item. Use complete_sprint_item instead of set_goal_progress when the item is explicitly on her sprint board.`;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');

@@ -98,6 +98,18 @@ function handleAction(a) {
       localStorage.setItem('noa_ross_status', a.status);
     } else if (a.type === 'set_rotating_stats' && Array.isArray(a.items)) {
       localStorage.setItem('noa_rotating_stats', JSON.stringify(a.items));
+    } else if (a.type === 'set_life_goals' && a.goals) {
+      localStorage.setItem('noa_life_goals', JSON.stringify(a.goals));
+    } else if (a.type === 'add_sprint_item' && a.item) {
+      const existing = JSON.parse(localStorage.getItem('noa_sprint_items') || '[]');
+      if (!existing.find(i => i.id === a.item.id)) {
+        existing.push({ ...a.item, done: false, addedAt: new Date().toISOString().split('T')[0] });
+        localStorage.setItem('noa_sprint_items', JSON.stringify(existing));
+      }
+    } else if (a.type === 'complete_sprint_item' && a.id) {
+      const existing = JSON.parse(localStorage.getItem('noa_sprint_items') || '[]');
+      const idx = existing.findIndex(i => i.id === a.id);
+      if (idx >= 0) { existing[idx].done = true; localStorage.setItem('noa_sprint_items', JSON.stringify(existing)); }
     }
     // start_deep_work is handled by the page via window.onNoaAction below
   } catch (e) {}
