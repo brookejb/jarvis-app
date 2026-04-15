@@ -398,8 +398,25 @@ export default async function handler(req, res) {
     // KV not configured yet - degrade gracefully
   }
 
-  const memoryBlock = memoryFacts.length > 0
-    ? `\n\nWhat you've learned about Brooke from past conversations:\n${memoryFacts.map(f => `- ${f}`).join('\n')}`
+  // Support both legacy string format and new {fact, date} object format
+  // Only surface facts from the last 45 days as active context; older ones become background
+  const cutoff = new Date(todayISO + 'T00:00:00');
+  cutoff.setDate(cutoff.getDate() - 45);
+  const recentFacts = [];
+  const backgroundFacts = [];
+  for (const f of memoryFacts) {
+    if (typeof f === 'string') {
+      recentFacts.push(f); // legacy: no date, treat as recent
+    } else if (f && f.fact) {
+      const age = f.date ? new Date(f.date + 'T00:00:00') : null;
+      if (!age || age >= cutoff) recentFacts.push(`[${f.date}] ${f.fact}`);
+      else backgroundFacts.push(f.fact);
+    }
+  }
+
+  const memoryBlock = recentFacts.length > 0
+    ? `\n\nWhat you've learned about Brooke (recent):\n${recentFacts.map(f => `- ${f}`).join('\n')}`
+      + (backgroundFacts.length > 0 ? `\n\nOlder background context (lower priority):\n${backgroundFacts.slice(-10).map(f => `- ${f}`).join('\n')}` : '')
     : '';
 
   const correctYear = todayISO.split('-')[0]; // e.g. "2026"
@@ -628,8 +645,21 @@ export default async function handler(req, res) {
         const { facts } = JSON.parse(memoryMatch[1]);
         if (Array.isArray(facts) && facts.length > 0) {
           const existing = await kv.get(MEMORY_KEY) || [];
-          const updated = [...new Set([...existing, ...facts])].slice(-100);
-          await kv.set(MEMORY_KEY, updated);
+          // Convert new facts to {fact, date} objects
+          const newFacts = facts.map(f =>
+            typeof f === 'string' ? { fact: f, date: todayISO } : f
+          );
+          // Deduplicate by fact text, keep newest version
+          const merged = [...existing];
+          for (const nf of newFacts) {
+            const factText = typeof nf === 'string' ? nf : nf.fact;
+            const existingIdx = merged.findIndex(e =>
+              (typeof e === 'string' ? e : e.fact) === factText
+            );
+            if (existingIdx >= 0) merged[existingIdx] = nf; // update date
+            else merged.push(nf);
+          }
+          await kv.set(MEMORY_KEY, merged.slice(-150));
         }
       } catch (e) {
         // Memory parse failed - not critical
