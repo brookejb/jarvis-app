@@ -46,7 +46,6 @@ export default async function handler(req, res) {
   dates.forEach((d, i) => { if (daySchedules[i]) specificDays[d] = daySchedules[i]; });
 
   res.json({
-    _v: 3,
     today,
     recurring_schedule: recurring || {},
     specific_days: specificDays,
