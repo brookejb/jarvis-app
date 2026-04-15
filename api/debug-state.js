@@ -5,7 +5,14 @@ const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','satur
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // POST to reset memory
+  if (req.method === 'POST' && req.body?.reset_memory) {
+    await kv.set('noa_memory', req.body.facts || []);
+    return res.json({ ok: true, count: (req.body.facts || []).length });
+  }
 
   const today = new Date().toLocaleDateString('en-CA');
 
