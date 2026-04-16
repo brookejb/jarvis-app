@@ -427,13 +427,17 @@ export default async function handler(req, res) {
     student: `\n\nACTIVE MODE: Student. Brooke is in heads-down academic mode. Focus on classes, Canvas deadlines, problem sets, exam prep, and deep work blocks. Keep suggestions academic. Don't bring up M Racing unless she asks.`,
     racing: `\n\nACTIVE MODE: M Racing. Brooke is in racing/team mode. Focus on M Racing tasks, team meetings, Wilson Center schedule, business subteam responsibilities, Director role progress. Don't bring up academic assignments unless she asks.`,
     builder: `\n\nACTIVE MODE: Builder. Brooke is thinking long-horizon. Focus on the Ross application, the team website, anything she's constructing toward her future. The Sydney vision is the north star here. Think in months and years, not just today.`,
-    personal: `\n\nACTIVE MODE: Personal. This is Brooke's quieter, grounding mode. Focus on her anchors - Bible reading streak, gym sessions, morning routine, the Sydney vision. Keep the tone calm and reflective. No task lists, no deadlines. This is about who she is, not what she has to do.`,
+    personal: `\n\nACTIVE MODE: Personal. This is Brooke's quieter, grounding mode. Focus on her anchors - Bible reading streak, gym sessions, morning routine, the Sydney vision. Keep the tone calm and reflective. No task lists, no Canvas deadlines, no academic pressure. Canvas data has been withheld from your context intentionally. This is about who she is, not what she has to do.`,
   };
   const mode = req.body.mode || 'student';
   const modeBlock = MODE_CONTEXT[mode] || MODE_CONTEXT.student;
 
-  // Load live Canvas data so Noa actually knows what's on Canvas during chat
-  const { block: canvasBlock, courses } = await loadCanvasForChat(todayISO);
+  // Load live Canvas data — skip in personal mode (no deadlines in that space)
+  // In racing mode, load but don't surface the full list — proactive behavior handles imminent flags
+  const showCanvas = mode !== 'personal';
+  const { block: canvasBlock, courses } = showCanvas
+    ? await loadCanvasForChat(todayISO)
+    : { block: '', courses: [] };
   const coursesLine = courses.length > 0
     ? `\n\nCourses detected from Canvas this semester: ${courses.join(', ')}`
     : '';
