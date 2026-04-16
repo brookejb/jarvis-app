@@ -54,7 +54,6 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-  #greeting-text { transition: opacity 0.35s ease; }
 </style>
 </head>
 <body class="bg-background min-h-screen flex flex-col">
@@ -94,12 +93,6 @@
       Evening Wind-Down
       <span class="material-symbols-outlined">arrow_forward</span>
     </a>
-  </div>
-
-  <!-- Morning Brief -->
-  <div id="brief-card" class="glass-card rounded-2xl px-5 py-4 space-y-1 hidden">
-    <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant" id="brief-type-label">Morning Brief</p>
-    <div id="brief-text" class="text-sm text-on-surface leading-relaxed space-y-1"></div>
   </div>
 
   <!-- Energy Check-in -->
@@ -463,26 +456,6 @@
       weekday: 'long', month: 'short', day: 'numeric',
     }).toUpperCase();
   }
-
-  // Personalized greeting
-  async function loadGreeting() {
-    try {
-      const clientDate = new Date().toLocaleDateString('en-CA');
-      const clientHour = new Date().getHours();
-      const initMode = localStorage.getItem('noa_mode') || 'student';
-      const res = await fetch(`/api/greeting?date=${clientDate}&hour=${clientHour}&mode=${initMode}`);
-      const data = await res.json();
-      const el = document.getElementById('greeting-text');
-      if (el && data.greeting) {
-        el.textContent = data.greeting;
-        el.classList.remove('opacity-50');
-      }
-    } catch (e) {
-      const el = document.getElementById('greeting-text');
-      if (el) { el.textContent = 'Good morning, Brooke. What are we tackling today?'; el.classList.remove('opacity-50'); }
-    }
-  }
-  loadGreeting();
 
   // Energy check-in
   const ENERGY_KEY = `noa_energy_${TODAY}`;
@@ -854,85 +827,6 @@
   }
   loadBacklog();
 
-  // ---- Noa Brief ----
-  async function loadBrief() {
-    const hour = new Date().getHours();
-    // Only show brief in morning (before 2pm) or evening (after 6pm)
-    if (hour >= 14 && hour < 18) return;
-
-    const briefType = hour < 14 ? 'morning' : 'evening';
-    const cacheKey = `noa_brief_${TODAY}_${briefType}`;
-    const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
-
-    // Use cache if less than 90 minutes old
-    if (cached && cached.text && (Date.now() - cached.fetchedAt) < 90 * 60 * 1000) {
-      showBrief(cached.text, briefType);
-      return;
-    }
-
-    const card = document.getElementById('noa-brief-card');
-    card.classList.remove('hidden');
-
-    try {
-      const clientDate = new Date().toLocaleDateString('en-CA');
-      const clientTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-      const priorities = JSON.parse(localStorage.getItem('noa_priorities') || '[]');
-      const habitLog = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
-      const energy = localStorage.getItem(`noa_energy_${TODAY}`) || null;
-      const semesterGoals = JSON.parse(localStorage.getItem('noa_semester_goals') || '[]');
-      const racingChecklist = JSON.parse(localStorage.getItem('noa_racing_checklist') || '[]');
-      const deepWorkLog = JSON.parse(localStorage.getItem('noa_deep_work_log') || '[]');
-      const todayDW = deepWorkLog.filter(s => s.date === clientDate);
-
-      // 3 weeks of habits
-      const weekHabits = {};
-      for (let i = 20; i >= 0; i--) {
-        const d = new Date(); d.setDate(d.getDate() - i);
-        const k = d.toLocaleDateString('en-CA');
-        if (habitLog[k]) weekHabits[k] = habitLog[k];
-      }
-
-      const res = await fetch('/api/brief', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientDate, clientTime, priorities, weekHabits, energy, racingChecklist, semesterGoals, todayDW }),
-      });
-      const data = await res.json();
-      if (data.brief) {
-        localStorage.setItem(cacheKey, JSON.stringify({ text: data.brief, fetchedAt: Date.now() }));
-        showBrief(data.brief, briefType);
-      }
-    } catch(e) {
-      document.getElementById('noa-brief-card').classList.add('hidden');
-    }
-  }
-
-  function showBrief(text, type) {
-    const card = document.getElementById('noa-brief-card');
-    const label = document.getElementById('noa-brief-label');
-    const textEl = document.getElementById('noa-brief-text');
-    if (!card || !textEl) return;
-
-    label.textContent = type === 'morning' ? 'Morning Brief' : 'Evening Recap';
-    const lines = text.split('\n').filter(l => l.trim());
-    textEl.innerHTML = lines.map(line =>
-      `<p class="text-sm text-on-surface/80 leading-relaxed">${line.trim()}</p>`
-    ).join('');
-    card.classList.remove('hidden');
-  }
-
-  function dismissBrief() {
-    const card = document.getElementById('noa-brief-card');
-    if (card) card.classList.add('hidden');
-    // Remember dismissed for this session
-    sessionStorage.setItem('noa_brief_dismissed', '1');
-  }
-
-  // Don't load brief if already dismissed this session
-  if (!sessionStorage.getItem('noa_brief_dismissed')) {
-    loadBrief();
-  }
-
   // ---- What Should I Do Right Now ----
   function askRightNow() {
     window.noaSend && window.noaSend('What should I do right now?');
@@ -1156,7 +1050,7 @@
     ).join('');
   }
 
-  function setMode(mode, reloadGreeting = true) {
+  function setMode(mode) {
     if (!MODE_CONFIG[mode]) return;
     localStorage.setItem('noa_mode', mode);
     const cfg = MODE_CONFIG[mode];
@@ -1202,34 +1096,13 @@
     // Quick replies
     renderQuickReplies(mode);
 
-    // Reload greeting with mode context — this is what makes it feel like a different personality
-    if (reloadGreeting) {
-      const greetingEl = document.getElementById('greeting-text');
-      if (greetingEl) {
-        greetingEl.style.opacity = '0.2';
-      }
-      const clientDate = new Date().toLocaleDateString('en-CA');
-      const clientHour = new Date().getHours();
-      fetch(`/api/greeting?date=${clientDate}&hour=${clientHour}&mode=${mode}`)
-        .then(r => r.json())
-        .then(data => {
-          if (greetingEl && data.greeting) {
-            greetingEl.textContent = data.greeting;
-            greetingEl.style.opacity = '1';
-          }
-        })
-        .catch(() => {
-          if (greetingEl) greetingEl.style.opacity = '1';
-        });
-    }
   }
 
   window.getCurrentMode = function() {
     return localStorage.getItem('noa_mode') || 'student';
   };
 
-  // Init mode — skip greeting reload since loadGreeting() already handles initial load with mode
-  setMode(localStorage.getItem('noa_mode') || 'student', false);
+  setMode(localStorage.getItem('noa_mode') || 'student');
 
   // ---- Focus Experiences ----
   // Each experience: { name, render({ container, task, duration }) → { cleanup() } }

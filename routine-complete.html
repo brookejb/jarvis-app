@@ -61,14 +61,6 @@
 
   <div class="w-full space-y-6">
 
-    <!-- Noa send-off -->
-    <div class="glass-card rounded-2xl p-6 relative overflow-hidden">
-      <div class="absolute -right-10 -top-10 w-40 h-40 bg-primary-container/10 blur-3xl rounded-full"></div>
-      <div class="relative z-10">
-        <h4 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-primary-container mb-3">Noa says</h4>
-        <p id="noa-sendoff" class="text-base leading-relaxed text-on-surface opacity-40">Loading...</p>
-      </div>
-    </div>
 
     <!-- Today's top priority -->
     <div id="priority-card" class="hidden bg-surface-container-low rounded-xl p-5 border border-outline-variant/10">
@@ -168,22 +160,6 @@
     }
   } catch (e) {}
 
-  // Load Noa send-off
-  async function loadSendoff() {
-    try {
-      const res = await fetch('/api/greeting');
-      const data = await res.json();
-      const el = document.getElementById('noa-sendoff');
-      if (el && data.greeting) {
-        el.textContent = data.greeting;
-        el.classList.remove('opacity-40');
-      }
-    } catch (e) {
-      const el = document.getElementById('noa-sendoff');
-      if (el) { el.textContent = 'Routine done. You showed up for yourself today. That matters.'; el.classList.remove('opacity-40'); }
-    }
-  }
-  loadSendoff();
 </script>
 </body>
 </html>

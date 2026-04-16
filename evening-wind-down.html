@@ -291,7 +291,7 @@
   }
 
   // ── STEP 4: Let go ───────────────────────────────────────────────────────
-  async function renderLetGo() {
+  function renderLetGo() {
     document.getElementById('next-label').textContent = 'Done';
     document.getElementById('skip-btn').style.display = 'none';
 
@@ -303,47 +303,12 @@
           <p class="text-on-surface-variant text-sm mt-2">You've done what you can today. That's enough.</p>
         </div>
 
-        <div class="glass-card rounded-2xl p-6 mt-4 space-y-4">
-          <p id="noa-closing" class="text-base leading-relaxed text-on-surface opacity-40 italic">Loading...</p>
-        </div>
-
         <div class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/10">
           <span class="material-symbols-outlined text-secondary mb-4 block opacity-60" style="font-variation-settings:'FILL' 1;">nightlight</span>
           <p class="text-sm leading-relaxed text-on-surface-variant">Tomorrow is already set up. Close this and rest.</p>
         </div>
       </div>
     `;
-
-    // Load Noa's closing thought from brief API
-    try {
-      const clientTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-      const habitLog = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
-      const weekHabits = {};
-      for (let i = 20; i >= 0; i--) {
-        const d = new Date(); d.setDate(d.getDate() - i);
-        const k = d.toLocaleDateString('en-CA');
-        if (habitLog[k]) weekHabits[k] = habitLog[k];
-      }
-      const res = await fetch('/api/brief', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientDate: TODAY, clientTime, priorities, weekHabits }),
-      });
-      const data = await res.json();
-      const el = document.getElementById('noa-closing');
-      if (el && data.brief) {
-        el.textContent = data.brief;
-        el.classList.remove('opacity-40');
-        el.classList.remove('italic');
-      }
-    } catch (e) {
-      const el = document.getElementById('noa-closing');
-      if (el) {
-        el.textContent = 'Today happened. Some of it went right. Tomorrow is a clean slate.';
-        el.classList.remove('opacity-40');
-        el.classList.remove('italic');
-      }
-    }
   }
 
   // ── Navigation ───────────────────────────────────────────────────────────

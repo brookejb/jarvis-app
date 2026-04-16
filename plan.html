@@ -68,18 +68,6 @@
   <!-- THIS WEEK VIEW -->
   <div id="view-week">
 
-    <!-- Weekly Insight -->
-    <section class="relative group">
-      <div class="absolute -inset-1 bg-gradient-to-r from-primary-container to-secondary-container rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
-      <div class="relative glass-card rounded-2xl p-8">
-        <div class="space-y-2">
-          <p class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">Weekly Insight</p>
-          <h1 id="weekly-insight" class="text-3xl font-bold tracking-tighter text-on-surface leading-tight opacity-40">Loading...</h1>
-          <p id="weekly-detail" class="text-on-surface-variant max-w-md opacity-40"></p>
-        </div>
-      </div>
-    </section>
-
     <!-- Plan status bar -->
     <div id="plan-status" class="hidden flex items-center gap-3 px-4 py-2 rounded-xl bg-surface-container-low border border-outline-variant/10 mt-4">
       <span id="plan-status-icon" class="material-symbols-outlined text-sm text-on-surface-variant animate-spin">refresh</span>
@@ -444,25 +432,7 @@
       const res = await fetch(`/api/weekly?date=${dateKey(selectedDate)}`);
       const data = await res.json();
       renderSchedule(data.schedule || []);
-
-      const insightEl = document.getElementById('weekly-insight');
-      const detailEl = document.getElementById('weekly-detail');
-      if (insightEl && data.insight) {
-        insightEl.textContent = data.insight;
-        insightEl.classList.remove('opacity-40');
-      }
-      if (detailEl && data.insightDetail) {
-        detailEl.textContent = data.insightDetail;
-        detailEl.classList.remove('opacity-40');
-      }
-
-    } catch (e) {
-      const insightEl = document.getElementById('weekly-insight');
-      if (insightEl) {
-        insightEl.textContent = 'Could not load weekly insight.';
-        insightEl.classList.remove('opacity-40');
-      }
-    }
+    } catch (e) {}
   }
 
   // --- Coming Up (next 30 days) ---
