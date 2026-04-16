@@ -78,6 +78,15 @@
     </a>
   </div>
 
+  <!-- Evening Wind-Down CTA (shown after 8pm if not done today) -->
+  <div id="evening-cta" class="hidden">
+    <a href="evening-wind-down.html" class="w-full py-5 rounded-full bg-gradient-to-r from-[#523787] to-[#7c56c5] text-white font-bold text-sm tracking-tight flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(82,55,135,0.2)]">
+      <span class="material-symbols-outlined text-base">nightlight</span>
+      Evening Wind-Down
+      <span class="material-symbols-outlined">arrow_forward</span>
+    </a>
+  </div>
+
   <!-- Morning Brief -->
   <div id="brief-card" class="glass-card rounded-2xl px-5 py-4 space-y-1 hidden">
     <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant" id="brief-type-label">Morning Brief</p>
@@ -1899,18 +1908,36 @@
   // ── Morning Routine Check ──────────────────────────────
   function checkMorningRoutine() {
     const today = new Date().toLocaleDateString('en-CA');
+    const hour = new Date().getHours();
     const routineLog = JSON.parse(localStorage.getItem('noa_routine_log') || '{}');
     const done = routineLog[today]?.completed;
     const cta = document.getElementById('morning-routine-cta');
     const shortcut = document.getElementById('routine-shortcut');
-    if (!done) {
+    // Only show morning CTA before 2pm
+    if (!done && hour < 14) {
       cta.classList.remove('hidden');
     } else {
       cta.classList.add('hidden');
-      if (shortcut) shortcut.classList.remove('hidden');
+      if (shortcut && done) shortcut.classList.remove('hidden');
     }
   }
   checkMorningRoutine();
+
+  // ── Evening Wind-Down Check ─────────────────────────────
+  function checkEveningWindDown() {
+    const today = new Date().toLocaleDateString('en-CA');
+    const hour = new Date().getHours();
+    const windDownLog = JSON.parse(localStorage.getItem('noa_wind_down_log') || '{}');
+    const done = windDownLog[today]?.completed;
+    const cta = document.getElementById('evening-cta');
+    // Show after 8pm if not done yet today
+    if (!done && hour >= 20) {
+      cta.classList.remove('hidden');
+    } else {
+      cta.classList.add('hidden');
+    }
+  }
+  checkEveningWindDown();
 
   // ── Next Up (compact schedule, max 3 upcoming events) ──
   // ── Free time tracking (set by renderNextUp, used by buildTaskDeck) ──

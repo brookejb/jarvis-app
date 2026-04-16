@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Noa -- Evening Complete</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary-container": "#f0607a",
+          "surface-container": "#211f22",
+          "surface-container-highest": "#373437",
+          "on-primary-container": "#5b001c",
+          "on-primary-fixed": "#400011",
+          "secondary-container": "#523787",
+          "surface-container-low": "#1d1b1e",
+          "on-surface": "#e7e1e5",
+          "on-surface-variant": "#dfbfc1",
+          "background": "#151316",
+          "outline-variant": "#584143",
+          "secondary": "#d2bbff",
+        },
+        fontFamily: { "headline": ["Inter"], "body": ["Inter"] },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  .glass-card { background: rgba(55, 52, 55, 0.15); backdrop-filter: blur(20px); border: 1px solid rgba(88, 65, 67, 0.15); }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { background-color: #151316; color: #e7e1e5; font-family: 'Inter', sans-serif; min-height: max(884px, 100dvh); }
+</style>
+</head>
+<body class="min-h-screen flex flex-col items-center overflow-x-hidden">
+
+<header class="flex justify-between items-center w-full px-6 py-4 max-h-20 fixed top-0 z-50 bg-transparent">
+  <div class="text-xl font-bold text-[#e7e1e5] flex items-center gap-2">
+    <span class="material-symbols-outlined text-[#F0607A]" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span>
+    <span class="text-2xl font-bold tracking-tighter">Noa</span>
+  </div>
+</header>
+
+<main class="flex-1 w-full max-w-lg px-6 flex flex-col items-start pt-28 pb-40">
+
+  <div class="mb-10 w-full">
+    <p class="uppercase tracking-[0.15rem] text-[10px] font-bold text-[#523787] mb-4">Day Complete</p>
+    <h1 class="text-5xl font-extrabold tracking-tight text-on-surface leading-tight mb-2">Good work,<br/>Brooke.</h1>
+    <p class="text-on-surface-variant text-lg">Tomorrow is already set up.</p>
+  </div>
+
+  <div class="w-full space-y-4">
+
+    <!-- Habit summary -->
+    <div id="habit-summary" class="glass-card rounded-2xl p-5">
+      <h4 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant mb-4">Today's habits</h4>
+      <div class="flex gap-4">
+        <div id="bible-chip" class="flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold"></div>
+        <div id="gym-chip" class="flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold"></div>
+      </div>
+    </div>
+
+    <!-- Tomorrow anchor -->
+    <div id="anchor-card" class="hidden bg-surface-container-low rounded-xl p-5 border border-outline-variant/10">
+      <h4 class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant mb-3">Tomorrow starts with</h4>
+      <div class="flex items-center gap-3">
+        <div id="anchor-bar" class="w-1 h-8 rounded-full flex-shrink-0"></div>
+        <p id="anchor-label" class="font-bold text-sm text-on-surface"></p>
+      </div>
+    </div>
+
+    <!-- Rest note -->
+    <div class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/10">
+      <span class="material-symbols-outlined text-secondary mb-4 block opacity-60" style="font-variation-settings:'FILL' 1;">nightlight</span>
+      <p class="text-base italic leading-relaxed text-on-surface-variant">"Come to me, all who labor and are heavy laden, and I will give you rest."</p>
+      <span class="uppercase tracking-[0.15rem] text-[10px] font-bold text-on-surface-variant mt-3 block">Matthew 11:28</span>
+    </div>
+
+  </div>
+
+  <!-- CTA -->
+  <div class="fixed bottom-24 left-0 right-0 px-6 max-w-lg mx-auto z-40">
+    <a href="index.html" class="w-full bg-[#523787] hover:opacity-90 active:scale-95 transition-all py-4 rounded-full text-white font-extrabold text-sm uppercase tracking-[0.15rem] flex items-center justify-center gap-2 shadow-[0_10px_30px_-5px_#52378740]">
+      Close out
+      <span class="material-symbols-outlined text-base">nightlight</span>
+    </a>
+  </div>
+
+</main>
+
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-16 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
+  <a href="index.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">bolt</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Now</span>
+  </a>
+  <a href="plan.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">calendar_month</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Plan</span>
+  </a>
+  <a href="goals.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined">ads_click</span>
+    <span class="uppercase tracking-[0.15rem] text-[9px] font-bold">Goals</span>
+  </a>
+</nav>
+
+<div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
+  <div class="absolute top-[10%] right-[-10%] w-[50%] h-[50%] bg-[#523787] opacity-10 blur-[120px] rounded-full"></div>
+  <div class="absolute bottom-[20%] left-[-5%] w-[40%] h-[40%] bg-[#F0607A] opacity-5 blur-[100px] rounded-full"></div>
+</div>
+
+<script>
+  const TODAY = new Date().toLocaleDateString('en-CA');
+  const COLOR_MAP = { blue: '#5092eb', orange: '#E87D4A', green: '#7DD4B0', pink: '#F0607A', purple: '#c3a6ff' };
+
+  // Habit summary
+  try {
+    const log = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
+    const h = log[TODAY] || {};
+
+    const bibleChip = document.getElementById('bible-chip');
+    bibleChip.style.background = h.bible ? 'rgba(240,96,122,0.15)' : 'rgba(55,52,55,0.4)';
+    bibleChip.style.color = h.bible ? '#F0607A' : '#6B6070';
+    bibleChip.innerHTML = `<span class="material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' ${h.bible ? 1 : 0};">${h.bible ? 'check_circle' : 'radio_button_unchecked'}</span> Bible`;
+
+    const gymChip = document.getElementById('gym-chip');
+    gymChip.style.background = h.gym ? 'rgba(125,212,176,0.15)' : 'rgba(55,52,55,0.4)';
+    gymChip.style.color = h.gym ? '#7DD4B0' : '#6B6070';
+    gymChip.innerHTML = `<span class="material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' ${h.gym ? 1 : 0};">${h.gym ? 'check_circle' : 'radio_button_unchecked'}</span> Gym`;
+  } catch(e) {}
+
+  // Tomorrow anchor
+  try {
+    const anchor = JSON.parse(localStorage.getItem('noa_tomorrow_anchor') || 'null');
+    const tomorrow = (() => { const t = new Date(); t.setDate(t.getDate()+1); return t.toLocaleDateString('en-CA'); })();
+    if (anchor && anchor.forDate === tomorrow && anchor.label) {
+      document.getElementById('anchor-card').classList.remove('hidden');
+      document.getElementById('anchor-label').textContent = anchor.label;
+
+      // Try to find the color from priorities
+      const priorities = JSON.parse(localStorage.getItem('noa_priorities') || '[]');
+      const match = priorities.find(p => p.label === anchor.label);
+      const c = match ? (COLOR_MAP[match.color] || COLOR_MAP.blue) : COLOR_MAP.blue;
+      const bar = document.getElementById('anchor-bar');
+      bar.style.backgroundColor = c;
+      bar.style.boxShadow = `0 0 8px ${c}`;
+    }
+  } catch(e) {}
+</script>
+</body>
+</html>

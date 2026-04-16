@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Noa -- Evening Wind-Down</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary-container": "#f0607a",
+          "surface-container": "#211f22",
+          "surface-container-highest": "#373437",
+          "on-primary-container": "#5b001c",
+          "on-primary-fixed": "#400011",
+          "secondary-container": "#523787",
+          "surface-container-low": "#1d1b1e",
+          "on-surface": "#e7e1e5",
+          "on-surface-variant": "#dfbfc1",
+          "background": "#151316",
+          "outline-variant": "#584143",
+          "secondary": "#d2bbff",
+        },
+        fontFamily: { "headline": ["Inter"], "body": ["Inter"] },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  .glass-card { background: rgba(55, 52, 55, 0.15); backdrop-filter: blur(20px); border: 1px solid rgba(88, 65, 67, 0.15); }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { background-color: #151316; color: #e7e1e5; font-family: 'Inter', sans-serif; min-height: max(884px, 100dvh); }
+  .step-fade { animation: fadeUp 0.3s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body class="min-h-screen flex flex-col items-center overflow-x-hidden">
+
+<header class="flex justify-between items-center w-full px-6 py-4 max-h-20 fixed top-0 z-50 bg-transparent">
+  <div class="text-xl font-bold text-[#e7e1e5] flex items-center gap-2">
+    <span class="material-symbols-outlined text-[#F0607A]" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span>
+    <span class="text-2xl font-bold tracking-tighter">Noa</span>
+  </div>
+  <span id="step-label" class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold"></span>
+</header>
+
+<main class="flex-1 w-full max-w-lg px-6 flex flex-col pt-24 pb-44">
+
+  <!-- Progress bar -->
+  <div id="progress-bar" class="w-full flex gap-1.5 h-1 mb-10">
+    <div class="flex-1 h-full rounded-full transition-colors duration-500"></div>
+    <div class="flex-1 h-full rounded-full transition-colors duration-500"></div>
+    <div class="flex-1 h-full rounded-full transition-colors duration-500"></div>
+    <div class="flex-1 h-full rounded-full transition-colors duration-500"></div>
+  </div>
+
+  <!-- Step container -->
+  <div id="step-container" class="flex-1"></div>
+
+</main>
+
+<footer class="fixed bottom-20 left-0 right-0 px-6 max-w-lg mx-auto z-40 flex flex-col items-center gap-3">
+  <button id="next-btn" onclick="nextStep()" class="w-full h-14 bg-gradient-to-r from-[#523787] to-[#7c56c5] rounded-full text-white font-bold text-sm flex items-center justify-center gap-2 shadow-[0_20px_40px_rgba(82,55,135,0.25)] active:scale-95 transition-all">
+    <span id="next-label">Continue</span>
+    <span class="material-symbols-outlined">arrow_forward</span>
+  </button>
+  <button id="skip-btn" onclick="skipStep()" class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold hover:text-on-surface transition-colors">Skip</button>
+</footer>
+
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-12 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
+  <a href="index.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined text-lg">bolt</span>
+  </a>
+  <a href="plan.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined text-lg">calendar_month</span>
+  </a>
+  <a href="goals.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined text-lg">ads_click</span>
+  </a>
+</nav>
+
+<div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
+  <div class="absolute top-[10%] right-[-10%] w-[50%] h-[50%] bg-[#523787] opacity-10 blur-[120px] rounded-full"></div>
+  <div class="absolute bottom-[20%] left-[-5%] w-[40%] h-[40%] bg-[#F0607A] opacity-5 blur-[100px] rounded-full"></div>
+</div>
+
+<script>
+  const TODAY = new Date().toLocaleDateString('en-CA');
+  const COLOR_MAP = { blue: '#5092eb', orange: '#E87D4A', green: '#7DD4B0', pink: '#F0607A', purple: '#c3a6ff' };
+
+  // Load state
+  const habitLog = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
+  const todayHabits = habitLog[TODAY] || {};
+  const priorities = JSON.parse(localStorage.getItem('noa_priorities') || '[]');
+  const checkedPriorities = JSON.parse(localStorage.getItem(`noa_daily_checks_${TODAY}`) || '[]');
+
+  // Track what the user sets during this flow
+  let habitState = {
+    bible: todayHabits.bible || false,
+    gym: todayHabits.gym || false,
+  };
+  let tomorrowAnchor = null; // chosen in step 3
+
+  let currentStep = 0;
+  const STEPS = ['habits', 'wins', 'tomorrow', 'letgo'];
+
+  function updateProgressBar() {
+    const bars = document.getElementById('progress-bar').children;
+    for (let i = 0; i < bars.length; i++) {
+      bars[i].style.backgroundColor = i <= currentStep ? '#523787' : '#373437';
+    }
+    document.getElementById('step-label').textContent = `Step ${currentStep + 1} of ${STEPS.length}`;
+  }
+
+  // ── STEP 1: Habits close-out ──────────────────────────────────────────────
+  function renderHabits() {
+    document.getElementById('next-label').textContent = 'Next';
+    document.getElementById('skip-btn').style.display = '';
+
+    const bibleColor = habitState.bible ? '#F0607A' : '#373437';
+    const gymColor   = habitState.gym   ? '#7DD4B0' : '#373437';
+
+    document.getElementById('step-container').innerHTML = `
+      <div class="step-fade space-y-6">
+        <div>
+          <p class="uppercase tracking-[0.15rem] text-[10px] font-bold text-[#523787] mb-3">Close Out Today</p>
+          <h2 class="text-3xl font-extrabold tracking-tight leading-tight">Habits done today?</h2>
+          <p class="text-on-surface-variant text-sm mt-2">Tap to toggle. This is just a record, not a report card.</p>
+        </div>
+
+        <div class="space-y-3 mt-6">
+          <button onclick="toggleHabit('bible')" id="bible-btn"
+            class="w-full glass-card rounded-2xl p-5 flex items-center gap-4 active:scale-[0.98] transition-all border-2"
+            style="border-color: ${bibleColor}40;">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-colors duration-300" style="background: ${bibleColor}22;">
+              <span class="material-symbols-outlined" style="color:${bibleColor}; font-variation-settings:'FILL' ${habitState.bible ? 1 : 0};">auto_stories</span>
+            </div>
+            <div class="flex-1 text-left">
+              <p class="font-bold text-sm">Bible reading</p>
+              <p id="bible-status" class="text-[10px] uppercase tracking-wider font-bold mt-0.5" style="color:${habitState.bible ? '#F0607A' : '#6B6070'}">${habitState.bible ? 'Done' : 'Not yet'}</p>
+            </div>
+            <span class="material-symbols-outlined" style="color:${bibleColor}; font-variation-settings:'FILL' ${habitState.bible ? 1 : 0};">
+              ${habitState.bible ? 'check_circle' : 'radio_button_unchecked'}
+            </span>
+          </button>
+
+          <button onclick="toggleHabit('gym')" id="gym-btn"
+            class="w-full glass-card rounded-2xl p-5 flex items-center gap-4 active:scale-[0.98] transition-all border-2"
+            style="border-color: ${gymColor}40;">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-colors duration-300" style="background: ${gymColor}22;">
+              <span class="material-symbols-outlined" style="color:${gymColor}; font-variation-settings:'FILL' ${habitState.gym ? 1 : 0};">fitness_center</span>
+            </div>
+            <div class="flex-1 text-left">
+              <p class="font-bold text-sm">Gym / movement</p>
+              <p id="gym-status" class="text-[10px] uppercase tracking-wider font-bold mt-0.5" style="color:${habitState.gym ? '#7DD4B0' : '#6B6070'}">${habitState.gym ? 'Done' : 'Not today'}</p>
+            </div>
+            <span class="material-symbols-outlined" style="color:${gymColor}; font-variation-settings:'FILL' ${habitState.gym ? 1 : 0};">
+              ${habitState.gym ? 'check_circle' : 'radio_button_unchecked'}
+            </span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function toggleHabit(type) {
+    habitState[type] = !habitState[type];
+    renderHabits(); // re-render to update colors
+  }
+
+  function saveHabits() {
+    const log = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
+    log[TODAY] = { ...( log[TODAY] || {}), bible: habitState.bible, gym: habitState.gym };
+    localStorage.setItem('noa_habit_log', JSON.stringify(log));
+  }
+
+  // ── STEP 2: Today's wins ──────────────────────────────────────────────────
+  function renderWins() {
+    document.getElementById('next-label').textContent = 'Next';
+    document.getElementById('skip-btn').style.display = '';
+
+    const done = priorities.filter(p => checkedPriorities.includes(p.label));
+    const notDone = priorities.filter(p => !checkedPriorities.includes(p.label));
+
+    let html = `
+      <div class="step-fade space-y-6">
+        <div>
+          <p class="uppercase tracking-[0.15rem] text-[10px] font-bold text-[#523787] mb-3">Today's Wins</p>
+          <h2 class="text-3xl font-extrabold tracking-tight leading-tight">What got done.</h2>
+          <p class="text-on-surface-variant text-sm mt-2">Checked items from your focus list today.</p>
+        </div>
+    `;
+
+    if (done.length > 0) {
+      html += `<div class="space-y-2 mt-4">`;
+      for (const p of done) {
+        const c = COLOR_MAP[p.color] || COLOR_MAP.blue;
+        html += `
+          <div class="glass-card rounded-xl px-4 py-3 flex items-center gap-3">
+            <span class="material-symbols-outlined text-[18px]" style="color:${c}; font-variation-settings:'FILL' 1;">check_circle</span>
+            <p class="text-sm font-medium line-through opacity-50">${p.label}</p>
+          </div>`;
+      }
+      html += `</div>`;
+    }
+
+    if (notDone.length > 0) {
+      html += `<div class="space-y-2 ${done.length > 0 ? 'mt-2' : 'mt-4'}">`;
+      for (const p of notDone) {
+        const c = COLOR_MAP[p.color] || COLOR_MAP.blue;
+        html += `
+          <div class="glass-card rounded-xl px-4 py-3 flex items-center gap-3 opacity-40">
+            <span class="material-symbols-outlined text-[18px]" style="color:${c};">radio_button_unchecked</span>
+            <p class="text-sm font-medium">${p.label}</p>
+          </div>`;
+      }
+      html += `</div>`;
+    }
+
+    if (priorities.length === 0) {
+      html += `
+        <div class="glass-card rounded-xl px-4 py-6 text-center mt-4">
+          <p class="text-on-surface-variant text-sm">No focus list items today. That's okay.</p>
+        </div>`;
+    }
+
+    html += `</div>`;
+    document.getElementById('step-container').innerHTML = html;
+  }
+
+  // ── STEP 3: Tomorrow's anchor ─────────────────────────────────────────────
+  async function renderTomorrow() {
+    document.getElementById('next-label').textContent = 'Set anchor';
+    document.getElementById('skip-btn').style.display = '';
+
+    // Pull from priorities — pick first unchecked, or first overall
+    const unchecked = priorities.filter(p => !checkedPriorities.includes(p.label));
+    const suggested = unchecked[0] || priorities[0] || null;
+    tomorrowAnchor = suggested?.label || null;
+
+    let html = `
+      <div class="step-fade space-y-6">
+        <div>
+          <p class="uppercase tracking-[0.15rem] text-[10px] font-bold text-[#523787] mb-3">Tomorrow Starts Now</p>
+          <h2 class="text-3xl font-extrabold tracking-tight leading-tight">One thing<br/>tomorrow.</h2>
+          <p class="text-on-surface-variant text-sm mt-2">The single most important thing when you wake up. Everything else is secondary.</p>
+        </div>
+    `;
+
+    if (suggested) {
+      const c = COLOR_MAP[suggested.color] || COLOR_MAP.blue;
+      html += `
+        <div class="glass-card rounded-2xl p-5 border-2 mt-4" style="border-color:${c}40;">
+          <p class="text-[10px] uppercase tracking-wider font-bold text-on-surface-variant mb-3">Suggested anchor</p>
+          <div class="flex items-center gap-3">
+            <div class="w-1.5 h-10 rounded-full flex-shrink-0" style="background:${c}; box-shadow: 0 0 8px ${c};"></div>
+            <div>
+              <p class="font-bold text-base">${suggested.label}</p>
+              <p class="text-[10px] uppercase tracking-wider font-bold mt-0.5" style="color:${c}">${suggested.category}</p>
+            </div>
+          </div>
+        </div>
+        <p class="text-[11px] text-on-surface-variant text-center -mt-2">Noa will surface this first tomorrow morning.</p>
+      `;
+    } else {
+      html += `
+        <div class="glass-card rounded-2xl p-5 mt-4">
+          <p class="text-on-surface-variant text-sm text-center">No focus list set yet. Tell Noa what tomorrow should start with.</p>
+        </div>
+      `;
+    }
+
+    html += `</div>`;
+    document.getElementById('step-container').innerHTML = html;
+  }
+
+  function saveTomorrowAnchor() {
+    if (!tomorrowAnchor) return;
+    // Save as a note for tomorrow in localStorage — NOW page will pick it up
+    localStorage.setItem('noa_tomorrow_anchor', JSON.stringify({
+      label: tomorrowAnchor,
+      setAt: new Date().toISOString(),
+      forDate: (() => { const t = new Date(); t.setDate(t.getDate()+1); return t.toLocaleDateString('en-CA'); })(),
+    }));
+  }
+
+  // ── STEP 4: Let go ───────────────────────────────────────────────────────
+  async function renderLetGo() {
+    document.getElementById('next-label').textContent = 'Done';
+    document.getElementById('skip-btn').style.display = 'none';
+
+    document.getElementById('step-container').innerHTML = `
+      <div class="step-fade space-y-6">
+        <div>
+          <p class="uppercase tracking-[0.15rem] text-[10px] font-bold text-[#523787] mb-3">Wind Down</p>
+          <h2 class="text-3xl font-extrabold tracking-tight leading-tight">Let it rest.</h2>
+          <p class="text-on-surface-variant text-sm mt-2">You've done what you can today. That's enough.</p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 mt-4 space-y-4">
+          <p id="noa-closing" class="text-base leading-relaxed text-on-surface opacity-40 italic">Loading...</p>
+        </div>
+
+        <div class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/10">
+          <span class="material-symbols-outlined text-secondary mb-4 block opacity-60" style="font-variation-settings:'FILL' 1;">nightlight</span>
+          <p class="text-sm leading-relaxed text-on-surface-variant">Tomorrow is already set up. Close this and rest.</p>
+        </div>
+      </div>
+    `;
+
+    // Load Noa's closing thought from brief API
+    try {
+      const clientTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      const habitLog = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
+      const weekHabits = {};
+      for (let i = 20; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const k = d.toLocaleDateString('en-CA');
+        if (habitLog[k]) weekHabits[k] = habitLog[k];
+      }
+      const res = await fetch('/api/brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientDate: TODAY, clientTime, priorities, weekHabits }),
+      });
+      const data = await res.json();
+      const el = document.getElementById('noa-closing');
+      if (el && data.brief) {
+        el.textContent = data.brief;
+        el.classList.remove('opacity-40');
+        el.classList.remove('italic');
+      }
+    } catch (e) {
+      const el = document.getElementById('noa-closing');
+      if (el) {
+        el.textContent = 'Today happened. Some of it went right. Tomorrow is a clean slate.';
+        el.classList.remove('opacity-40');
+        el.classList.remove('italic');
+      }
+    }
+  }
+
+  // ── Navigation ───────────────────────────────────────────────────────────
+  const RENDERERS = [renderHabits, renderWins, renderTomorrow, renderLetGo];
+
+  function renderCurrentStep() {
+    updateProgressBar();
+    RENDERERS[currentStep]();
+  }
+
+  function nextStep() {
+    // Run saves on step completion
+    if (currentStep === 0) saveHabits();
+    if (currentStep === 2) saveTomorrowAnchor();
+
+    if (currentStep === STEPS.length - 1) {
+      // Done — log wind-down completion and go to evening-complete
+      const log = JSON.parse(localStorage.getItem('noa_wind_down_log') || '{}');
+      log[TODAY] = { completed: true, timestamp: new Date().toISOString() };
+      localStorage.setItem('noa_wind_down_log', JSON.stringify(log));
+      window.location.href = 'evening-complete.html';
+      return;
+    }
+
+    currentStep++;
+    renderCurrentStep();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function skipStep() {
+    if (currentStep === 0) saveHabits(); // still save whatever state they had
+    if (currentStep === STEPS.length - 1) {
+      window.location.href = 'evening-complete.html';
+      return;
+    }
+    currentStep++;
+    renderCurrentStep();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Start
+  renderCurrentStep();
+</script>
+</body>
+</html>

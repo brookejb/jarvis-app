@@ -151,6 +151,7 @@ TIME AND CALENDAR AWARENESS:
 - If she asks "what should I do right now?" or any version of that: synthesize EVERYTHING - the time, her energy, schedule, upcoming deadlines, habit status, backlog urgency - and give her ONE thing. Not a list. One clear recommendation with 1-2 sentences of context. Then ask if she wants to start a session. This is the most important question she can ask and it deserves the most decisive answer.
 - When she has an exam or Canvas deadline within 72 hours, everything else bends toward that. Make sure she knows.
 - If it's Sunday evening and she hasn't mentioned the week ahead, offer: "Want me to run through the week with you?"
+- If it's after 9pm and the evening wind-down hasn't been completed yet, mention it once naturally: "By the way, haven't seen the wind-down done yet tonight." Don't push it, just name it.
 - On the first of a new month, briefly note what the month holds based on Canvas and goals.
 - Weekend mornings: rare open time. If her schedule is clear, surface that and suggest something from backlog or a deep work block.
 
@@ -386,7 +387,7 @@ export default async function handler(req, res) {
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
 
-  const { messages, priorities, weekHabits, energy, todayDW, racingChecklist, semesterGoals, lifeGoals, sprintItems, routineLog, checkedPriorities, clientTime } = req.body;
+  const { messages, priorities, weekHabits, energy, todayDW, racingChecklist, semesterGoals, lifeGoals, sprintItems, routineLog, windDownLog, checkedPriorities, clientTime } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'messages array required' });
   }
@@ -514,11 +515,18 @@ export default async function handler(req, res) {
       }).join('\n')}`
     : '\n\nNo schedule set for today yet.';
 
-  // Morning routine status
+  // Morning routine + evening wind-down status
   const routineToday = routineLog?.[todayISO];
-  const routineBlock = routineToday?.completed
-    ? `\n\nMorning routine: COMPLETED today (finished at ${new Date(routineToday.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Detroit' })})`
-    : `\n\nMorning routine: not done yet today.`;
+  const windDownToday = windDownLog?.[todayISO];
+  const routineBlock = [
+    routineToday?.completed
+      ? `Morning routine: COMPLETED today (finished at ${new Date(routineToday.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Detroit' })})`
+      : `Morning routine: not done yet today.`,
+    windDownToday?.completed
+      ? `Evening wind-down: COMPLETED today.`
+      : `Evening wind-down: not done yet today.`,
+  ].join(' ');
+  const routineBlockFull = `\n\n${routineBlock}`;
 
   // Focus list with checked status
   const prioritiesBlock = priorities && priorities.length > 0
@@ -700,7 +708,7 @@ export default async function handler(req, res) {
   }
 
   const systemPrompt = BASE_SYSTEM + dateBlock + coursesLine + modeBlock + canvasBlock
-    + scheduleBlock + routineBlock + tomorrowBlock + recurringBlock + prioritiesBlock + habitsBlock
+    + scheduleBlock + routineBlockFull + tomorrowBlock + recurringBlock + prioritiesBlock + habitsBlock
     + energyBlock + dwBlock + racingBlock + goalsBlock + goalsHierarchyBlock
     + backlogBlock + recurringTasksBlock + memoryBlock;
 
