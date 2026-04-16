@@ -379,7 +379,7 @@ export default async function handler(req, res) {
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
 
-  const { messages, priorities, weekHabits, energy, todayDW, racingChecklist, semesterGoals, clientTime } = req.body;
+  const { messages, priorities, weekHabits, energy, todayDW, racingChecklist, semesterGoals, lifeGoals, sprintItems, clientTime } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'messages array required' });
   }
@@ -607,10 +607,69 @@ export default async function handler(req, res) {
       }).join('\n')}`
     : '';
 
+  // Life goals + sprint board block
+  let goalsHierarchyBlock = '';
+  if (lifeGoals || (sprintItems && sprintItems.length > 0)) {
+    const lines = ['\n\nLife Goals & Sprint Board:'];
+
+    // Sprint board first — what she's actively working on right now
+    if (sprintItems && sprintItems.length > 0) {
+      lines.push('\nSPRINT BOARD (active right now):');
+      for (const item of sprintItems) {
+        const check = item.done ? '[x]' : '[ ]';
+        const goal = item.goalTitle ? ` -> ${item.goalTitle}` : '';
+        const age = item.addedAt ? ` (added ${item.addedAt})` : '';
+        lines.push(`  ${check} ${item.title}${goal}${age}`);
+      }
+    } else {
+      lines.push('\nSPRINT BOARD: empty — nothing added yet.');
+    }
+
+    // Life goals hierarchy — compact but complete
+    if (lifeGoals) {
+      const CATEGORIES = [
+        { key: 'academic', label: 'ACADEMIC & CAREER' },
+        { key: 'personal', label: 'PERSONAL' },
+        { key: 'health',   label: 'HEALTH' },
+      ];
+      for (const { key, label } of CATEGORIES) {
+        const goals = lifeGoals[key];
+        if (!goals || goals.length === 0) continue;
+        lines.push(`\n${label}:`);
+        for (const g of goals) {
+          const meta = g.isNorthStar ? ' [north star]' : g.isRhythm ? ' [rhythm goal]' : ` (${g.timeframe})`;
+          lines.push(`  * ${g.title}${meta}`);
+
+          // Semester milestones
+          if (g.semester && g.semester.length > 0) {
+            const sem = g.semester.map(t => `${t.done ? '[x]' : '[ ]'} ${t.label}`).join(', ');
+            lines.push(`    Semester: ${sem}`);
+          }
+          // Monthly milestones
+          if (g.monthly && g.monthly.length > 0) {
+            const mon = g.monthly.map(t => `${t.done ? '[x]' : '[ ]'} ${t.label}`).join(', ');
+            lines.push(`    Monthly: ${mon}`);
+          }
+          // Yearly milestones (just labels, briefer)
+          if (g.yearly && g.yearly.length > 0) {
+            const yr = g.yearly.map(t => `${t.done ? '[x]' : '[ ]'} ${t.label}`).join(', ');
+            lines.push(`    Yearly: ${yr}`);
+          }
+          if ((!g.semester || !g.semester.length) && (!g.monthly || !g.monthly.length) && (!g.yearly || !g.yearly.length)) {
+            lines.push(`    No milestones set yet.`);
+          }
+        }
+      }
+    }
+
+    lines.push('\nWhen Brooke completes something that maps to a sprint item, use complete_sprint_item. When she mentions a new focus this week, use add_sprint_item and link it to the matching life goal. When she updates a semester/monthly milestone, use set_life_goals with the full updated goals object.');
+    goalsHierarchyBlock = lines.join('\n');
+  }
+
   const systemPrompt = BASE_SYSTEM + dateBlock + coursesLine + modeBlock + canvasBlock
     + scheduleBlock + tomorrowBlock + recurringBlock + prioritiesBlock + habitsBlock
-    + energyBlock + dwBlock + racingBlock + goalsBlock + backlogBlock + recurringTasksBlock
-    + memoryBlock;
+    + energyBlock + dwBlock + racingBlock + goalsBlock + goalsHierarchyBlock
+    + backlogBlock + recurringTasksBlock + memoryBlock;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
