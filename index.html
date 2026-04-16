@@ -78,6 +78,15 @@
     </a>
   </div>
 
+  <!-- Weekly Review CTA (shown Sundays if not done this week) -->
+  <div id="weekly-review-cta" class="hidden">
+    <a href="weekly-review.html" class="w-full py-5 rounded-full bg-[#523787]/30 border border-[#523787]/40 text-[#d2bbff] font-bold text-sm tracking-tight flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all">
+      <span class="material-symbols-outlined text-base">event_available</span>
+      Weekly Review
+      <span class="material-symbols-outlined">arrow_forward</span>
+    </a>
+  </div>
+
   <!-- Evening Wind-Down CTA (shown after 8pm if not done today) -->
   <div id="evening-cta" class="hidden">
     <a href="evening-wind-down.html" class="w-full py-5 rounded-full bg-gradient-to-r from-[#523787] to-[#7c56c5] text-white font-bold text-sm tracking-tight flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(82,55,135,0.2)]">
@@ -1922,6 +1931,28 @@
     }
   }
   checkMorningRoutine();
+
+  // ── Weekly Review Check ─────────────────────────────────
+  function checkWeeklyReview() {
+    const dayOfWeek = new Date().getDay(); // 0 = Sunday
+    const cta = document.getElementById('weekly-review-cta');
+    if (dayOfWeek !== 0) { cta.classList.add('hidden'); return; }
+    // Sunday — check if review done this week
+    const getWeekKey = () => {
+      const d = new Date(TODAY + 'T12:00:00');
+      const day = d.getDay() || 7;
+      d.setDate(d.getDate() + 4 - day);
+      const year = d.getFullYear();
+      const start = new Date(year, 0, 1);
+      const week = Math.ceil((((d - start) / 86400000) + 1) / 7);
+      return `${year}-W${String(week).padStart(2,'0')}`;
+    };
+    const log = JSON.parse(localStorage.getItem('noa_weekly_review_log') || '{}');
+    const done = log[getWeekKey()]?.completed;
+    if (!done) cta.classList.remove('hidden');
+    else cta.classList.add('hidden');
+  }
+  checkWeeklyReview();
 
   // ── Evening Wind-Down Check ─────────────────────────────
   function checkEveningWindDown() {

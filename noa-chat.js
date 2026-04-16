@@ -196,6 +196,8 @@ async function sendMessage(text) {
     const sprintItems = JSON.parse(localStorage.getItem('noa_sprint_items') || '[]');
     const routineLog = JSON.parse(localStorage.getItem('noa_routine_log') || '{}');
     const windDownLog = JSON.parse(localStorage.getItem('noa_wind_down_log') || '{}');
+    const weeklyReviewLog = JSON.parse(localStorage.getItem('noa_weekly_review_log') || '{}');
+    const weekIntention = localStorage.getItem('noa_week_intention') || null;
     const checkedPriorities = JSON.parse(localStorage.getItem(`noa_daily_checks_${clientDate}`) || '[]');
 
     // Send 3 weeks of habit history so Noa can detect patterns, not just this week
@@ -218,7 +220,7 @@ async function sendMessage(text) {
       body: JSON.stringify({
         messages: chatHistory, clientDate, clientTime, mode,
         priorities, weekHabits, energy, todayDW, racingChecklist, semesterGoals,
-        lifeGoals, sprintItems, routineLog, windDownLog, checkedPriorities,
+        lifeGoals, sprintItems, routineLog, windDownLog, weeklyReviewLog, weekIntention, checkedPriorities,
       }),
     });
     const data = await res.json();

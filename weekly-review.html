@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Noa -- Weekly Review</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary-container": "#f0607a",
+          "surface-container": "#211f22",
+          "surface-container-highest": "#373437",
+          "on-primary-container": "#5b001c",
+          "on-primary-fixed": "#400011",
+          "secondary-container": "#523787",
+          "surface-container-low": "#1d1b1e",
+          "on-surface": "#e7e1e5",
+          "on-surface-variant": "#dfbfc1",
+          "background": "#151316",
+          "outline-variant": "#584143",
+          "secondary": "#d2bbff",
+        },
+        fontFamily: { "headline": ["Inter"], "body": ["Inter"] },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  .glass-card { background: rgba(55, 52, 55, 0.15); backdrop-filter: blur(20px); border: 1px solid rgba(88, 65, 67, 0.15); }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { background-color: #151316; color: #e7e1e5; font-family: 'Inter', sans-serif; min-height: max(884px, 100dvh); }
+  .step-fade { animation: fadeUp 0.3s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .priority-chip.selected { background: rgba(240,96,122,0.15); border-color: rgba(240,96,122,0.5); color: #e7e1e5; }
+  .sprint-item.dropping { opacity: 0.3; text-decoration: line-through; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col items-center overflow-x-hidden">
+
+<header class="flex justify-between items-center w-full px-6 py-4 fixed top-0 z-50 bg-transparent">
+  <div class="text-xl font-bold text-[#e7e1e5] flex items-center gap-2">
+    <span class="material-symbols-outlined text-[#F0607A]" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span>
+    <span class="text-2xl font-bold tracking-tighter">Noa</span>
+  </div>
+  <span id="step-label" class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold"></span>
+</header>
+
+<main class="flex-1 w-full max-w-lg px-6 flex flex-col pt-24 pb-44">
+  <!-- Progress bar -->
+  <div id="progress-bar" class="w-full flex gap-1.5 h-1 mb-10">
+    <div class="flex-1 h-full rounded-full transition-colors duration-500"></div>
+    <div class="flex-1 h-full rounded-full transition-colors duration-500"></div>
+    <div class="flex-1 h-full rounded-full transition-colors duration-500"></div>
+    <div class="flex-1 h-full rounded-full transition-colors duration-500"></div>
+    <div class="flex-1 h-full rounded-full transition-colors duration-500"></div>
+  </div>
+
+  <div id="step-container" class="flex-1"></div>
+</main>
+
+<footer class="fixed bottom-20 left-0 right-0 px-6 max-w-lg mx-auto z-40 flex flex-col items-center gap-3">
+  <button id="next-btn" onclick="nextStep()" class="w-full h-14 bg-gradient-to-r from-[#523787] to-[#7c56c5] rounded-full text-white font-bold text-sm flex items-center justify-center gap-2 shadow-[0_20px_40px_rgba(82,55,135,0.25)] active:scale-95 transition-all">
+    <span id="next-label">Continue</span>
+    <span class="material-symbols-outlined">arrow_forward</span>
+  </button>
+  <button id="skip-btn" onclick="skipStep()" class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold hover:text-on-surface transition-colors">Skip</button>
+</footer>
+
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full px-4 bg-[#373437]/40 backdrop-blur-xl z-50 flex justify-around items-center h-12 shadow-[0_20px_40px_rgba(82,55,135,0.06)]">
+  <a href="index.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined text-lg">bolt</span>
+  </a>
+  <a href="plan.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined text-lg">calendar_month</span>
+  </a>
+  <a href="goals.html" class="flex flex-col items-center justify-center text-[#6B6070] hover:text-[#F0607A]/70 transition-colors">
+    <span class="material-symbols-outlined text-lg">ads_click</span>
+  </a>
+</nav>
+
+<div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
+  <div class="absolute top-[10%] right-[-10%] w-[50%] h-[50%] bg-[#523787] opacity-10 blur-[120px] rounded-full"></div>
+  <div class="absolute bottom-[20%] left-[-5%] w-[40%] h-[40%] bg-[#F0607A] opacity-5 blur-[100px] rounded-full"></div>
+</div>
+
+<script>
+  const TODAY = new Date().toLocaleDateString('en-CA');
+  const COLOR_MAP = { blue: '#5092eb', orange: '#E87D4A', green: '#7DD4B0', pink: '#F0607A', purple: '#c3a6ff' };
+  const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const DAY_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+  // Load local state
+  const habitLog = JSON.parse(localStorage.getItem('noa_habit_log') || '{}');
+  const sprintItems = JSON.parse(localStorage.getItem('noa_sprint_items') || '[]');
+  const existingPriorities = JSON.parse(localStorage.getItem('noa_priorities') || '[]');
+
+  // Mutable state for this review
+  let sprintState = sprintItems.map(i => ({ ...i, _drop: false }));
+  let selectedPriorities = new Set(existingPriorities.map(p => p.label));
+  let weekIntention = localStorage.getItem('noa_week_intention') || '';
+  let weekSchedule = {}; // filled in step 3
+
+  let currentStep = 0;
+  const TOTAL_STEPS = 5;
+
+  function updateProgressBar() {
+    const bars = document.getElementById('progress-bar').children;
+    for (let i = 0; i < bars.length; i++) {
+      bars[i].style.backgroundColor = i <= currentStep ? '#523787' : '#373437';
+    }
+    document.getElementById('step-label').textContent = `Step ${currentStep + 1} of ${TOTAL_STEPS}`;
+  }
+
+  // ── STEP 1: Last week recap ───────────────────────────────────────────────
+  function renderLastWeek() {
+    document.getElementById('next-label').textContent = 'Next';
+    document.getElementById('skip-btn').style.display = '';
+
+    // Build 7-day habit grid (Mon-Sun of the past week)
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(TODAY + 'T12:00:00');
+      d.setDate(d.getDate() - i);
+      const k = d.toLocaleDateString('en-CA');
+      const h = habitLog[k] || {};
+      days.push({ label: DAY_NAMES[d.getDay()], date: k, bible: h.bible, gym: h.gym });
+    }
+
+    const bibleCount = days.filter(d => d.bible).length;
+    const gymCount   = days.filter(d => d.gym).length;
+
+    const doneSprint = sprintItems.filter(i => i.done);
+    const pendingSprint = sprintItems.filter(i => !i.done);
+
+    document.getElementById('step-container').innerHTML = `
+      <div class="step-fade space-y-6">
+        <div>
+          <p class="uppercase tracking-[0.15rem] text-[10px] font-bold text-[#523787] mb-3">Weekly Review</p>
+          <h2 class="text-3xl font-extrabold tracking-tight leading-tight">Last 7 days.</h2>
+          <p class="text-on-surface-variant text-sm mt-2">Here's what the week actually looked like.</p>
+        </div>
+
+        <!-- Habit grid -->
+        <div class="glass-card rounded-2xl p-5 space-y-4">
+          <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant">Habits</p>
+          <div class="flex justify-between">
+            ${days.map(d => `
+              <div class="flex flex-col items-center gap-2">
+                <span class="text-[9px] uppercase tracking-wider text-on-surface-variant font-bold">${d.label}</span>
+                <div class="w-7 h-7 rounded-full flex items-center justify-center" style="background:${d.bible ? 'rgba(240,96,122,0.2)' : 'rgba(55,52,55,0.6)'}">
+                  <span class="material-symbols-outlined text-[13px]" style="color:${d.bible ? '#F0607A' : '#584143'}; font-variation-settings:'FILL' ${d.bible ? 1 : 0};">auto_stories</span>
+                </div>
+                <div class="w-7 h-7 rounded-full flex items-center justify-center" style="background:${d.gym ? 'rgba(125,212,176,0.2)' : 'rgba(55,52,55,0.6)'}">
+                  <span class="material-symbols-outlined text-[13px]" style="color:${d.gym ? '#7DD4B0' : '#584143'}; font-variation-settings:'FILL' ${d.gym ? 1 : 0};">fitness_center</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="flex gap-4 pt-1 border-t border-outline-variant/10">
+            <span class="text-xs text-on-surface-variant">Bible <span class="font-bold text-[#F0607A]">${bibleCount}/7</span></span>
+            <span class="text-xs text-on-surface-variant">Gym <span class="font-bold text-[#7DD4B0]">${gymCount}/7</span></span>
+          </div>
+        </div>
+
+        <!-- Sprint recap -->
+        ${sprintItems.length > 0 ? `
+        <div class="glass-card rounded-2xl p-5 space-y-3">
+          <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant">Sprint board</p>
+          ${doneSprint.map(i => `
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-[16px] text-[#7DD4B0]" style="font-variation-settings:'FILL' 1;">check_circle</span>
+              <p class="text-sm line-through opacity-40">${i.title}</p>
+            </div>`).join('')}
+          ${pendingSprint.map(i => `
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-[16px] text-on-surface-variant">radio_button_unchecked</span>
+              <p class="text-sm">${i.title}</p>
+            </div>`).join('')}
+        </div>` : `
+        <div class="glass-card rounded-2xl p-5">
+          <p class="text-sm text-on-surface-variant text-center">No sprint items from last week.</p>
+        </div>`}
+      </div>
+    `;
+  }
+
+  // ── STEP 2: Sprint board cleanup ─────────────────────────────────────────
+  function renderSprintCleanup() {
+    document.getElementById('next-label').textContent = 'Next';
+    document.getElementById('skip-btn').style.display = '';
+
+    const pending = sprintState.filter(i => !i.done);
+
+    document.getElementById('step-container').innerHTML = `
+      <div class="step-fade space-y-6">
+        <div>
+          <p class="uppercase tracking-[0.15rem] text-[10px] font-bold text-[#523787] mb-3">Sprint Board</p>
+          <h2 class="text-3xl font-extrabold tracking-tight leading-tight">What carries<br/>forward?</h2>
+          <p class="text-on-surface-variant text-sm mt-2">Tap to drop anything that no longer belongs this week. Completed items are already cleared.</p>
+        </div>
+
+        <div id="sprint-list" class="space-y-2">
+          ${pending.length === 0 ? `
+            <div class="glass-card rounded-xl p-5 text-center">
+              <p class="text-on-surface-variant text-sm">Sprint board is clear. Good work.</p>
+            </div>` :
+            pending.map((item, idx) => {
+              const c = item.goalColor || COLOR_MAP.blue;
+              return `
+              <div id="sprint-row-${idx}" class="glass-card rounded-xl px-4 py-3.5 flex items-center gap-3 active:scale-[0.98] transition-all cursor-pointer ${item._drop ? 'opacity-30' : ''}"
+                   onclick="toggleDrop(${idx})">
+                <div class="w-2 h-2 rounded-full flex-shrink-0" style="background:${c};box-shadow:0 0 6px ${c};"></div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium ${item._drop ? 'line-through' : ''}">${item.title}</p>
+                  ${item.goalTitle ? `<p class="text-[10px] uppercase tracking-wider font-bold mt-0.5" style="color:${c}">${item.goalTitle}</p>` : ''}
+                </div>
+                <span class="material-symbols-outlined text-[18px] transition-all" style="color:${item._drop ? '#584143' : c}; font-variation-settings:'FILL' ${item._drop ? 0 : 1};">
+                  ${item._drop ? 'remove_circle' : 'check_circle'}
+                </span>
+              </div>`;
+            }).join('')
+          }
+        </div>
+
+        ${pending.length > 0 ? `<p class="text-[11px] text-on-surface-variant text-center">Tap an item to drop it from this week's sprint.</p>` : ''}
+      </div>
+    `;
+  }
+
+  function toggleDrop(idx) {
+    const pending = sprintState.filter(i => !i.done);
+    pending[idx]._drop = !pending[idx]._drop;
+    renderSprintCleanup();
+  }
+
+  function saveSprintCleanup() {
+    // Remove dropped items, keep the rest
+    const kept = sprintState.filter(i => !i._drop);
+    localStorage.setItem('noa_sprint_items', JSON.stringify(kept));
+  }
+
+  // ── STEP 3: Week ahead ───────────────────────────────────────────────────
+  async function renderWeekAhead() {
+    document.getElementById('next-label').textContent = 'Next';
+    document.getElementById('skip-btn').style.display = '';
+
+    document.getElementById('step-container').innerHTML = `
+      <div class="step-fade space-y-6">
+        <div>
+          <p class="uppercase tracking-[0.15rem] text-[10px] font-bold text-[#523787] mb-3">Week Ahead</p>
+          <h2 class="text-3xl font-extrabold tracking-tight leading-tight">What's coming.</h2>
+          <p class="text-on-surface-variant text-sm mt-2">Your schedule and deadlines for the next 7 days.</p>
+        </div>
+        <div id="week-schedule" class="space-y-3">
+          <div class="text-on-surface-variant text-sm text-center py-4">Loading...</div>
+        </div>
+      </div>
+    `;
+
+    try {
+      const res = await fetch('/api/debug-state');
+      const data = await res.json();
+      weekSchedule = data.specific_days || {};
+      const recurring = data.recurring_schedule || {};
+
+      const DAYS_ORDER = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+      const today = new Date(TODAY + 'T12:00:00');
+
+      // Build next 7 days
+      const weekDays = [];
+      for (let i = 1; i <= 7; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        const iso = d.toLocaleDateString('en-CA');
+        const dayName = DAY_FULL[d.getDay()];
+        const dayKey = DAYS_ORDER[d.getDay() === 0 ? 6 : d.getDay() - 1];
+        const recurringItems = recurring[dayKey.toLowerCase()] || [];
+        const specificItems = weekSchedule[iso] || [];
+        const allItems = [...recurringItems, ...specificItems].sort((a, b) => {
+          const toMin = t => { const m = (t||'').match(/(\d+):(\d+)\s*(AM|PM)/i); if(!m) return 0; let h=parseInt(m[1]),mn=parseInt(m[2]); if(m[3].toUpperCase()==='PM'&&h!==12)h+=12; if(m[3].toUpperCase()==='AM'&&h===12)h=0; return h*60+mn; };
+          return toMin(a.time) - toMin(b.time);
+        });
+        weekDays.push({ iso, dayName, shortDay: DAY_NAMES[d.getDay()], items: allItems });
+      }
+
+      const ITEM_COLORS = { blue: '#5092eb', orange: '#E87D4A', green: '#7DD4B0', pink: '#F0607A', purple: '#c3a6ff' };
+
+      const html = weekDays.map(day => `
+        <div class="glass-card rounded-xl overflow-hidden">
+          <div class="px-4 py-2.5 flex items-center justify-between border-b border-outline-variant/10">
+            <p class="text-[11px] font-bold uppercase tracking-[0.1rem] text-on-surface-variant">${day.dayName} <span class="opacity-50 font-normal">${day.iso.slice(5).replace('-','/')}</span></p>
+            ${day.items.length === 0 ? '<span class="text-[10px] text-on-surface-variant opacity-40">Open</span>' : ''}
+          </div>
+          ${day.items.length > 0 ? `
+          <div class="divide-y divide-outline-variant/5">
+            ${day.items.map(item => {
+              const c = ITEM_COLORS[item.color] || ITEM_COLORS.blue;
+              return `<div class="px-4 py-2.5 flex items-center gap-2.5">
+                <div class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:${c};"></div>
+                <span class="text-[11px] text-on-surface-variant w-14 flex-shrink-0">${item.time}</span>
+                <span class="text-sm text-on-surface">${item.title}</span>
+              </div>`;
+            }).join('')}
+          </div>` : ''}
+        </div>
+      `).join('');
+
+      document.getElementById('week-schedule').innerHTML = html;
+    } catch (e) {
+      document.getElementById('week-schedule').innerHTML = `<p class="text-on-surface-variant text-sm text-center">Could not load schedule. Open Plan to see your week.</p>`;
+    }
+  }
+
+  // ── STEP 4: This week's focus ────────────────────────────────────────────
+  function renderWeeklyFocus() {
+    document.getElementById('next-label').textContent = 'Set focus';
+    document.getElementById('skip-btn').style.display = '';
+
+    // Build suggestions: existing priorities + goal-linked sprint items
+    const sprintItems = JSON.parse(localStorage.getItem('noa_sprint_items') || '[]');
+    const suggestions = [];
+    const seen = new Set();
+
+    for (const p of existingPriorities) {
+      if (!seen.has(p.label)) { suggestions.push(p); seen.add(p.label); }
+    }
+    for (const s of sprintItems.filter(i => !i.done && !i._drop)) {
+      if (!seen.has(s.title)) {
+        suggestions.push({ label: s.title, category: s.goalTitle || 'Sprint', color: 'blue' });
+        seen.add(s.title);
+      }
+    }
+
+    document.getElementById('step-container').innerHTML = `
+      <div class="step-fade space-y-6">
+        <div>
+          <p class="uppercase tracking-[0.15rem] text-[10px] font-bold text-[#523787] mb-3">Focus</p>
+          <h2 class="text-3xl font-extrabold tracking-tight leading-tight">What matters<br/>this week?</h2>
+          <p class="text-on-surface-variant text-sm mt-2">Pick up to 5. These pre-load your task deck every day this week.</p>
+        </div>
+
+        <div id="focus-list" class="space-y-2">
+          ${suggestions.map((p, idx) => {
+            const c = COLOR_MAP[p.color] || COLOR_MAP.blue;
+            const isSelected = selectedPriorities.has(p.label);
+            return `
+            <button onclick="togglePriority('${p.label.replace(/'/g,"\\'")}', '${p.category}', '${p.color}')"
+              id="pri-${idx}"
+              class="w-full glass-card rounded-xl px-4 py-3.5 flex items-center gap-3 active:scale-[0.98] transition-all border ${isSelected ? 'border-[#F0607A]/40' : 'border-transparent'}"
+              style="${isSelected ? 'background:rgba(240,96,122,0.08);' : ''}">
+              <div class="w-2 h-2 rounded-full flex-shrink-0" style="background:${c};box-shadow:0 0 6px ${c};"></div>
+              <div class="flex-1 text-left">
+                <p class="text-sm font-medium">${p.label}</p>
+                <p class="text-[10px] uppercase tracking-wider font-bold mt-0.5 opacity-50">${p.category}</p>
+              </div>
+              <span class="material-symbols-outlined text-[18px] transition-all" style="color:${isSelected ? '#F0607A' : '#584143'}; font-variation-settings:'FILL' ${isSelected ? 1 : 0};">
+                ${isSelected ? 'check_circle' : 'add_circle'}
+              </span>
+            </button>`;
+          }).join('')}
+        </div>
+
+        <!-- Custom add -->
+        <div class="flex gap-2">
+          <input id="custom-priority" placeholder="Add your own..." class="flex-1 h-11 bg-surface-container-low rounded-xl px-4 text-sm text-on-surface placeholder:text-on-surface-variant/40 border border-outline-variant/20 focus:outline-none focus:border-[#F0607A]/40" />
+          <button onclick="addCustomPriority()" class="h-11 w-11 rounded-xl bg-surface-container-highest flex items-center justify-center active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-on-surface-variant">add</span>
+          </button>
+        </div>
+
+        <p class="text-[11px] text-on-surface-variant text-center"><span id="selected-count">${selectedPriorities.size}</span>/5 selected</p>
+      </div>
+    `;
+  }
+
+  function togglePriority(label, category, color) {
+    if (selectedPriorities.has(label)) {
+      selectedPriorities.delete(label);
+    } else {
+      if (selectedPriorities.size >= 5) return;
+      selectedPriorities.add(label);
+    }
+    renderWeeklyFocus();
+  }
+
+  function addCustomPriority() {
+    const input = document.getElementById('custom-priority');
+    const val = input.value.trim();
+    if (!val || selectedPriorities.size >= 5) return;
+    // Add to existing priorities array for reference
+    existingPriorities.push({ label: val, category: 'Other', color: 'purple' });
+    selectedPriorities.add(val);
+    input.value = '';
+    renderWeeklyFocus();
+  }
+
+  function saveWeeklyFocus() {
+    const priorityList = existingPriorities
+      .filter(p => selectedPriorities.has(p.label))
+      .slice(0, 5);
+    localStorage.setItem('noa_priorities', JSON.stringify(priorityList));
+    // Clear today's checks so the new week starts fresh
+    localStorage.removeItem(`noa_daily_checks_${TODAY}`);
+  }
+
+  // ── STEP 5: Intention ────────────────────────────────────────────────────
+  function renderIntention() {
+    document.getElementById('next-label').textContent = 'Finish review';
+    document.getElementById('skip-btn').style.display = '';
+
+    const lastIntention = localStorage.getItem('noa_week_intention') || '';
+
+    document.getElementById('step-container').innerHTML = `
+      <div class="step-fade space-y-6">
+        <div>
+          <p class="uppercase tracking-[0.15rem] text-[10px] font-bold text-[#523787] mb-3">Intention</p>
+          <h2 class="text-3xl font-extrabold tracking-tight leading-tight">One word<br/>for the week.</h2>
+          <p class="text-on-surface-variant text-sm mt-2">Not a goal. Not a task. Just a word that keeps you oriented when things get noisy.</p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 space-y-3">
+          <input id="intention-input" maxlength="30"
+            placeholder="${lastIntention || 'Focus. Steady. Present. Build.'}"
+            value="${lastIntention}"
+            class="w-full bg-transparent text-2xl font-extrabold tracking-tight text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none border-b border-outline-variant/20 pb-3"
+          />
+          <p class="text-[10px] uppercase tracking-[0.15rem] text-on-surface-variant font-bold">This week's word</p>
+        </div>
+
+        ${lastIntention ? `<p class="text-[11px] text-on-surface-variant text-center">Last week: <span class="font-bold">${lastIntention}</span></p>` : ''}
+
+        <div class="glass-card rounded-xl p-4">
+          <p class="text-[10px] uppercase tracking-[0.15rem] font-bold text-on-surface-variant mb-2">Week set up</p>
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[14px] text-[#7DD4B0]" style="font-variation-settings:'FILL' 1;">check_circle</span>
+              <p class="text-xs text-on-surface-variant">Sprint board cleaned up</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[14px] text-[#7DD4B0]" style="font-variation-settings:'FILL' 1;">check_circle</span>
+              <p class="text-xs text-on-surface-variant">${selectedPriorities.size} focus items set for the week</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[14px] text-[#7DD4B0]" style="font-variation-settings:'FILL' 1;">check_circle</span>
+              <p class="text-xs text-on-surface-variant">Week ahead reviewed</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function saveIntention() {
+    const val = document.getElementById('intention-input')?.value?.trim();
+    if (val) {
+      localStorage.setItem('noa_week_intention', val);
+      weekIntention = val;
+    }
+  }
+
+  // ── Navigation ───────────────────────────────────────────────────────────
+  const RENDERERS = [renderLastWeek, renderSprintCleanup, renderWeekAhead, renderWeeklyFocus, renderIntention];
+
+  function renderCurrentStep() {
+    updateProgressBar();
+    RENDERERS[currentStep]();
+  }
+
+  function nextStep() {
+    if (currentStep === 1) saveSprintCleanup();
+    if (currentStep === 3) saveWeeklyFocus();
+    if (currentStep === 4) {
+      saveIntention();
+      finishReview();
+      return;
+    }
+    currentStep++;
+    renderCurrentStep();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function skipStep() {
+    if (currentStep === 1) saveSprintCleanup();
+    if (currentStep === 4) {
+      finishReview();
+      return;
+    }
+    currentStep++;
+    renderCurrentStep();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function finishReview() {
+    const log = JSON.parse(localStorage.getItem('noa_weekly_review_log') || '{}');
+    const weekKey = getWeekKey();
+    log[weekKey] = { completed: true, timestamp: new Date().toISOString(), intention: weekIntention };
+    localStorage.setItem('noa_weekly_review_log', JSON.stringify(log));
+    window.location.href = 'index.html';
+  }
+
+  function getWeekKey() {
+    // ISO week: Monday-based
+    const d = new Date(TODAY + 'T12:00:00');
+    const day = d.getDay() || 7;
+    d.setDate(d.getDate() + 4 - day);
+    const year = d.getFullYear();
+    const start = new Date(year, 0, 1);
+    const week = Math.ceil((((d - start) / 86400000) + 1) / 7);
+    return `${year}-W${String(week).padStart(2,'0')}`;
+  }
+
+  // Start
+  renderCurrentStep();
+</script>
+</body>
+</html>

@@ -53,10 +53,16 @@
 </header>
 <main class="px-6 space-y-8 max-w-screen-xl mx-auto pt-4">
 
-  <!-- View Toggle -->
-  <div class="flex gap-2 p-1 rounded-full bg-[#211f22] w-fit">
-    <button id="toggle-week" onclick="switchView('week')" class="px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.12rem] transition-all bg-primary-container text-on-primary-container">This Week</button>
-    <button id="toggle-coming" onclick="switchView('coming')" class="px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.12rem] transition-all text-on-surface-variant hover:text-on-surface">Coming Up</button>
+  <!-- View Toggle + Weekly Review -->
+  <div class="flex items-center gap-3 flex-wrap">
+    <div class="flex gap-2 p-1 rounded-full bg-[#211f22] w-fit">
+      <button id="toggle-week" onclick="switchView('week')" class="px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.12rem] transition-all bg-primary-container text-on-primary-container">This Week</button>
+      <button id="toggle-coming" onclick="switchView('coming')" class="px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.12rem] transition-all text-on-surface-variant hover:text-on-surface">Coming Up</button>
+    </div>
+    <a href="weekly-review.html" id="weekly-review-btn" class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#523787]/20 border border-[#523787]/30 text-[11px] font-bold uppercase tracking-[0.12rem] text-[#d2bbff] hover:bg-[#523787]/30 transition-all">
+      <span class="material-symbols-outlined text-[14px]">event_available</span>
+      Weekly Review
+    </a>
   </div>
 
   <!-- THIS WEEK VIEW -->
