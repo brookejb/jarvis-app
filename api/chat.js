@@ -308,7 +308,7 @@ task is the specific thing she's working on. duration is in minutes (integer). O
 Save recurring weekly class schedule (when Brooke tells you her class schedule that repeats weekly - e.g. "Thermo is MWF 10-11am"):
 [ACTION]{"type":"set_recurring_schedule","schedule":{"monday":[{"time":"10:00 AM","title":"ME 335 Thermodynamics","color":"blue"}],"wednesday":[{"time":"10:00 AM","title":"ME 335 Thermodynamics","color":"blue"}],"friday":[{"time":"10:00 AM","title":"ME 335 Thermodynamics","color":"blue"}]}}[/ACTION]
 Keys are lowercase day names (monday-sunday). Each item needs time (12-hour AM/PM), title, and color (blue/orange/green/pink/purple).
-This saves permanently - it auto-populates every future occurrence of that day for the rest of the semester.
+IMPORTANT: This is a full replacement, not a merge. Always include the complete schedule for every day that has recurring events. If you only send Monday, Tuesday through Sunday get wiped. Pull the current recurring schedule from your context and include all existing days, then add or remove what she told you. If a class is dropped or moved, omit it - it won't come back.
 If a class meets MWF, write it under monday, wednesday, AND friday separately. Confirm warmly once saved.
 
 Snooze a focus list item until a specific time (when Brooke says "take X off my list until [time]", "hide X until Friday", "remove X for now and bring it back [when]"):
@@ -788,12 +788,13 @@ export default async function handler(req, res) {
 
         // All other action types: run Redis side effects, then collect
         if (parsed.type === 'set_recurring_schedule' && parsed.schedule) {
-          const existing = await kv.get(RECURRING_KEY) || {};
-          const merged = { ...existing };
+          // Full replacement — build a clean object from what Noa sends, no merging with stale data
+          const clean = {};
           for (const [day, items] of Object.entries(parsed.schedule)) {
-            if (Array.isArray(items)) merged[day.toLowerCase()] = items;
+            if (Array.isArray(items) && items.length > 0) clean[day.toLowerCase()] = items;
+            // empty arrays are intentional clears — just omit the day entirely
           }
-          await kv.set(RECURRING_KEY, merged);
+          await kv.set(RECURRING_KEY, clean);
         }
         if (parsed.type === 'add_to_backlog' && Array.isArray(parsed.items)) {
           const existing = await kv.get(BACKLOG_KEY) || [];

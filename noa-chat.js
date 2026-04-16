@@ -84,12 +84,12 @@ function handleAction(a) {
     } else if (a.type === 'update_racing_checklist') {
       localStorage.setItem('noa_racing_checklist', JSON.stringify(a.items));
     } else if (a.type === 'set_recurring_schedule' && a.schedule) {
-      const existing = JSON.parse(localStorage.getItem('noa_recurring_schedule') || '{}');
-      const merged = { ...existing };
+      // Full replacement — no merging, so dead classes can't survive
+      const clean = {};
       for (const [day, items] of Object.entries(a.schedule)) {
-        if (Array.isArray(items)) merged[day.toLowerCase()] = items;
+        if (Array.isArray(items) && items.length > 0) clean[day.toLowerCase()] = items;
       }
-      localStorage.setItem('noa_recurring_schedule', JSON.stringify(merged));
+      localStorage.setItem('noa_recurring_schedule', JSON.stringify(clean));
     } else if (a.type === 'set_countdown_list' && Array.isArray(a.items)) {
       localStorage.setItem('noa_countdown_list', JSON.stringify(a.items));
     } else if (a.type === 'set_future_states' && Array.isArray(a.items)) {
