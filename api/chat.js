@@ -348,7 +348,7 @@ Updates lastDone so Noa calculates the next optimal occurrence. Use today's date
 Remove from backlog (when a backlog item gets placed on the calendar or is no longer needed):
 [ACTION]{"type":"remove_from_backlog","id":"item-slug"}[/ACTION]
 
-For set_schedule: emit one [ACTION] block per day when scheduling multiple days. You can and should send multiple set_schedule blocks in a single response - one per date. This is the only case where multiple ACTION blocks are allowed. All other action types: one per response, pick the most important one.
+You can and should emit multiple [ACTION] blocks in a single response whenever more than one thing needs updating. For set_schedule, emit one block per day. For other types, emit as many as are needed - if Brooke finishes a lab AND logs her habit AND you're updating priorities, send all three blocks. Every action runs.
 
 Example of multi-day scheduling:
 [ACTION]{"type":"set_schedule","date":"2026-04-04","items":[{"time":"10:00 AM","title":"ECON Lecture","color":"blue"}]}[/ACTION]
@@ -747,80 +747,70 @@ export default async function handler(req, res) {
       }
     }
 
-    // Extract ALL action blocks (multiple set_schedule blocks allowed for multi-day planning)
+    // Extract ALL action blocks — every one runs, no limit
     const allActionMatches = [...cleanReply.matchAll(/\[ACTION\]([\s\S]*?)\[\/ACTION\]/g)];
     const finalReply = cleanReply.replace(/\[ACTION\][\s\S]*?\[\/ACTION\]/g, '').trim();
 
-    const scheduleActions = [];
-    let primaryAction = null;
+    const allActions = [];
 
     for (const match of allActionMatches) {
       try {
         const parsed = JSON.parse(match[1]);
         if (!parsed.type) continue;
 
-        // Persist one-off schedule to Redis (handle multiple set_schedule blocks)
+        // Schedule: persist to Redis and collect
         if (parsed.type === 'set_schedule' && Array.isArray(parsed.items)) {
-          let scheduleDate = (parsed.date || todayISO).replace(/^\d{4}/, correctYear);
+          const scheduleDate = (parsed.date || todayISO).replace(/^\d{4}/, correctYear);
           await kv.set(`noa_schedule_${scheduleDate}`, parsed.items);
-          scheduleActions.push({ ...parsed, date: scheduleDate });
-          continue; // schedule actions collected separately
+          allActions.push({ ...parsed, date: scheduleDate });
+          continue;
         }
 
-        // Only one non-schedule action processed per response
-        if (!primaryAction) {
-          primaryAction = parsed;
-
-          if (parsed.type === 'set_recurring_schedule' && parsed.schedule) {
-            const existing = await kv.get(RECURRING_KEY) || {};
-            const merged = { ...existing };
-            for (const [day, items] of Object.entries(parsed.schedule)) {
-              if (Array.isArray(items)) merged[day.toLowerCase()] = items;
-            }
-            await kv.set(RECURRING_KEY, merged);
+        // All other action types: run Redis side effects, then collect
+        if (parsed.type === 'set_recurring_schedule' && parsed.schedule) {
+          const existing = await kv.get(RECURRING_KEY) || {};
+          const merged = { ...existing };
+          for (const [day, items] of Object.entries(parsed.schedule)) {
+            if (Array.isArray(items)) merged[day.toLowerCase()] = items;
           }
-          if (parsed.type === 'add_to_backlog' && Array.isArray(parsed.items)) {
-            const existing = await kv.get(BACKLOG_KEY) || [];
-            const newItems = parsed.items.map(item => ({
-              ...item,
-              id: item.id || Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-              addedAt: todayISO,
-            }));
-            await kv.set(BACKLOG_KEY, [...existing, ...newItems]);
-          }
-          if (parsed.type === 'remove_from_backlog' && parsed.id) {
-            const existing = await kv.get(BACKLOG_KEY) || [];
-            await kv.set(BACKLOG_KEY, existing.filter(i => i.id !== parsed.id));
-          }
-          if (parsed.type === 'set_recurring_task' && parsed.task) {
-            const existing = await kv.get(RECURRING_TASKS_KEY) || [];
-            const idx = existing.findIndex(t => t.id === parsed.task.id);
-            if (idx >= 0) existing[idx] = parsed.task;
-            else existing.push(parsed.task);
+          await kv.set(RECURRING_KEY, merged);
+        }
+        if (parsed.type === 'add_to_backlog' && Array.isArray(parsed.items)) {
+          const existing = await kv.get(BACKLOG_KEY) || [];
+          const newItems = parsed.items.map(item => ({
+            ...item,
+            id: item.id || Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+            addedAt: todayISO,
+          }));
+          await kv.set(BACKLOG_KEY, [...existing, ...newItems]);
+        }
+        if (parsed.type === 'remove_from_backlog' && parsed.id) {
+          const existing = await kv.get(BACKLOG_KEY) || [];
+          await kv.set(BACKLOG_KEY, existing.filter(i => i.id !== parsed.id));
+        }
+        if (parsed.type === 'set_recurring_task' && parsed.task) {
+          const existing = await kv.get(RECURRING_TASKS_KEY) || [];
+          const idx = existing.findIndex(t => t.id === parsed.task.id);
+          if (idx >= 0) existing[idx] = parsed.task;
+          else existing.push(parsed.task);
+          await kv.set(RECURRING_TASKS_KEY, existing);
+        }
+        if (parsed.type === 'complete_recurring_task' && parsed.id) {
+          const existing = await kv.get(RECURRING_TASKS_KEY) || [];
+          const idx = existing.findIndex(t => t.id === parsed.id);
+          if (idx >= 0) {
+            existing[idx].lastDone = parsed.date || todayISO;
             await kv.set(RECURRING_TASKS_KEY, existing);
           }
-          if (parsed.type === 'complete_recurring_task' && parsed.id) {
-            const existing = await kv.get(RECURRING_TASKS_KEY) || [];
-            const idx = existing.findIndex(t => t.id === parsed.id);
-            if (idx >= 0) {
-              existing[idx].lastDone = parsed.date || todayISO;
-              await kv.set(RECURRING_TASKS_KEY, existing);
-            }
-          }
         }
+
+        allActions.push(parsed);
       } catch (e) {
         // Action parse failed - not critical
       }
     }
 
-    // Return: multiple schedule actions as array, single primary action as object
-    const actionsToReturn = scheduleActions.length > 0
-      ? scheduleActions.length === 1
-        ? scheduleActions[0]                    // single schedule: object (backward compat)
-        : scheduleActions                       // multiple schedules: array
-      : primaryAction;                          // non-schedule action: object
-
-    res.json({ reply: finalReply, ...(actionsToReturn && { actions: actionsToReturn }) });
+    res.json({ reply: finalReply, ...(allActions.length > 0 && { actions: allActions }) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
