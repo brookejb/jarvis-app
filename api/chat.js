@@ -379,7 +379,7 @@ export default async function handler(req, res) {
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
 
-  const { messages, priorities, weekHabits, energy, todayDW, racingChecklist, semesterGoals, lifeGoals, sprintItems, clientTime } = req.body;
+  const { messages, priorities, weekHabits, energy, todayDW, racingChecklist, semesterGoals, lifeGoals, sprintItems, routineLog, checkedPriorities, clientTime } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'messages array required' });
   }
@@ -483,16 +483,38 @@ export default async function handler(req, res) {
       ).join('\n')}`
     : '\n\nNo recurring class schedule saved yet.';
 
-  // Merge recurring + one-off for today's full schedule
+  // Merge recurring + one-off for today's full schedule, sorted by time
   const todayDayName = DAYS[new Date(todayISO + 'T12:00:00').getDay()];
   const recurringToday = recurringSchedule[todayDayName] || [];
-  const fullTodaySchedule = [...recurringToday, ...todaySchedule];
+  const toMin = t => {
+    const m = t?.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!m) return 0;
+    let h = parseInt(m[1]); const min = parseInt(m[2]);
+    if (m[3].toUpperCase() === 'PM' && h !== 12) h += 12;
+    if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
+    return h * 60 + min;
+  };
+  const fullTodaySchedule = [...recurringToday, ...todaySchedule]
+    .sort((a, b) => toMin(a.time) - toMin(b.time));
   const scheduleBlock = fullTodaySchedule.length > 0
-    ? `\n\nToday's full schedule:\n${fullTodaySchedule.map(i => `- ${i.time}: ${i.title}${i.note ? ` (${i.note})` : ''}`).join('\n')}`
+    ? `\n\nToday's full schedule:\n${fullTodaySchedule.map(i => {
+        const doneMarker = i.done ? ' [DONE]' : '';
+        return `- ${i.time}: ${i.title}${i.note ? ` (${i.note})` : ''}${doneMarker}`;
+      }).join('\n')}`
     : '\n\nNo schedule set for today yet.';
 
+  // Morning routine status
+  const routineToday = routineLog?.[todayISO];
+  const routineBlock = routineToday?.completed
+    ? `\n\nMorning routine: COMPLETED today (finished at ${new Date(routineToday.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Detroit' })})`
+    : `\n\nMorning routine: not done yet today.`;
+
+  // Focus list with checked status
   const prioritiesBlock = priorities && priorities.length > 0
-    ? `\n\nCurrent focus list (Today's Focus on dashboard):\n${priorities.map(p => `- ${p.label} (${p.category})`).join('\n')}\nTo remove an item, re-emit set_priorities without it. To add, include it in the list.`
+    ? `\n\nCurrent focus list (Today's Focus on dashboard):\n${priorities.map(p => {
+        const checked = checkedPriorities && checkedPriorities.includes(p.label);
+        return `- ${checked ? '[x]' : '[ ]'} ${p.label} (${p.category})`;
+      }).join('\n')}\nTo remove an item, re-emit set_priorities without it. To add, include it in the list.`
     : '\n\nNo items on the focus list right now.';
 
   // Habits - up to 3 weeks of data with computed summaries
@@ -667,7 +689,7 @@ export default async function handler(req, res) {
   }
 
   const systemPrompt = BASE_SYSTEM + dateBlock + coursesLine + modeBlock + canvasBlock
-    + scheduleBlock + tomorrowBlock + recurringBlock + prioritiesBlock + habitsBlock
+    + scheduleBlock + routineBlock + tomorrowBlock + recurringBlock + prioritiesBlock + habitsBlock
     + energyBlock + dwBlock + racingBlock + goalsBlock + goalsHierarchyBlock
     + backlogBlock + recurringTasksBlock + memoryBlock;
 
