@@ -730,21 +730,37 @@ export default async function handler(req, res) {
         const { facts } = JSON.parse(memoryMatch[1]);
         if (Array.isArray(facts) && facts.length > 0) {
           const existing = await kv.get(MEMORY_KEY) || [];
+
           // Convert new facts to {fact, date} objects
           const newFacts = facts.map(f =>
             typeof f === 'string' ? { fact: f, date: todayISO } : f
           );
-          // Deduplicate by fact text, keep newest version
+
+          // Normalize a fact string for fuzzy dedup: lowercase, collapse whitespace, strip punctuation
+          const normalize = s => (s || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+
+          // Merge: if normalized text matches an existing fact, update its date instead of adding a duplicate
           const merged = [...existing];
           for (const nf of newFacts) {
-            const factText = typeof nf === 'string' ? nf : nf.fact;
+            const nfNorm = normalize(typeof nf === 'string' ? nf : nf.fact);
             const existingIdx = merged.findIndex(e =>
-              (typeof e === 'string' ? e : e.fact) === factText
+              normalize(typeof e === 'string' ? e : e.fact) === nfNorm
             );
-            if (existingIdx >= 0) merged[existingIdx] = nf; // update date
+            if (existingIdx >= 0) merged[existingIdx] = nf; // refresh date, same fact
             else merged.push(nf);
           }
-          await kv.set(MEMORY_KEY, merged.slice(-150));
+
+          // Prune: drop anything older than 45 days at save time (not just display time)
+          const pruneCutoff = new Date(todayISO + 'T00:00:00');
+          pruneCutoff.setDate(pruneCutoff.getDate() - 45);
+          const pruned = merged.filter(f => {
+            if (typeof f === 'string') return true; // legacy strings: keep until touched
+            if (!f.date) return true; // no date: keep
+            return new Date(f.date + 'T00:00:00') >= pruneCutoff;
+          });
+
+          // Hard cap at 80 — well below the 150 that caused the original bloat
+          await kv.set(MEMORY_KEY, pruned.slice(-80));
         }
       } catch (e) {
         // Memory parse failed - not critical
