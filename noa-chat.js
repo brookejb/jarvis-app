@@ -44,6 +44,58 @@ function setLoading(on) {
   btn.disabled = on;
 }
 
+const ACTION_LABELS = {
+  set_schedule:           { icon: 'calendar_today',   label: 'Schedule updated' },
+  set_recurring_schedule: { icon: 'event_repeat',     label: 'Recurring schedule saved' },
+  set_priorities:         { icon: 'checklist',        label: 'Focus list updated' },
+  snooze_priority:        { icon: 'snooze',           label: 'Item snoozed' },
+  update_rituals:         { icon: 'self_improvement', label: 'Habit logged' },
+  set_goal_progress:      { icon: 'track_changes',    label: 'Goal updated' },
+  update_racing_checklist:{ icon: 'directions_car',   label: 'Racing checklist updated' },
+  start_deep_work:        { icon: 'timer',            label: 'Deep work started' },
+  add_to_backlog:         { icon: 'add_task',         label: 'Added to backlog' },
+  remove_from_backlog:    { icon: 'remove_done',      label: 'Removed from backlog' },
+  set_recurring_task:     { icon: 'autorenew',        label: 'Recurring task saved' },
+  complete_recurring_task:{ icon: 'task_alt',         label: 'Recurring task done' },
+  set_ross_status:        { icon: 'school',           label: 'Ross status updated' },
+  set_rotating_stats:     { icon: 'bar_chart',        label: 'Stats updated' },
+  set_future_states:      { icon: 'explore',          label: 'Future states updated' },
+  set_countdown_list:     { icon: 'hourglass_empty',  label: 'Countdown updated' },
+  set_life_goals:         { icon: 'flag',             label: 'Goals updated' },
+  add_sprint_item:        { icon: 'sprint',           label: 'Sprint item added' },
+  complete_sprint_item:   { icon: 'check_circle',     label: 'Sprint item done' },
+};
+
+function appendActionConfirmation(actions) {
+  if (!actions || actions.length === 0) return;
+
+  // Deduplicate by type so "Schedule updated" only shows once even with multiple days
+  const seen = new Set();
+  const chips = [];
+  for (const a of actions) {
+    const key = a.type === 'set_schedule' ? 'set_schedule' : a.type;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const meta = ACTION_LABELS[key];
+    if (meta) chips.push(meta);
+  }
+  if (chips.length === 0) return;
+
+  const container = document.getElementById('noa-messages');
+  if (!container) return;
+
+  const row = document.createElement('div');
+  row.className = 'flex flex-wrap gap-1.5 px-1 pb-2';
+  row.innerHTML = chips.map(({ icon, label }) => `
+    <span class="flex items-center gap-1 text-[10px] text-on-surface-variant/50 bg-surface-variant/20 rounded-full px-2 py-0.5">
+      <span class="material-symbols-outlined text-[11px]" style="font-variation-settings:'FILL' 1;">${icon}</span>
+      ${label}
+    </span>
+  `).join('');
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+}
+
 function handleAction(a) {
   try {
     if (a.type === 'snooze_priority') {
@@ -176,6 +228,7 @@ async function sendMessage(text) {
     if (data.actions) {
       const actionList = Array.isArray(data.actions) ? data.actions : [data.actions];
       actionList.forEach(handleAction);
+      appendActionConfirmation(actionList);
     }
   } catch (e) {
     appendMessage('assistant', 'Connection error. Try again.');
